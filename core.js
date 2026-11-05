@@ -241,13 +241,16 @@ export function tiredStreak(state, today) {
 export function microOptions(state, today) {
   const out = [];
   const used0 = new Set((state.log[today] || []).map(x => x.kind + "|" + x.ref));
-  if ((state.cards || []).length >= 3 && !used0.has("micro|quiz")) out.push({ kind: "quiz", ref: "quiz", title: "Ответить на 3 вопроса по карточкам — я спрошу прямо тут", subject: "", min: 5 });
+  if (((state.cards || []).length >= 3 || state.subjects.length) && !used0.has("micro|quiz")) {
+    const due = state.topics.find(t => t.next && t.next <= today);
+    out.push({ kind: "quiz", ref: "quiz", topicId: due?.id || null, title: due ? `3 быстрых вопроса по теме «${due.title}» — я спрошу прямо тут` : "3 быстрых вопроса — я спрошу прямо тут", subject: due?.subject || "", min: 5 });
+  }
   const used = new Set((state.log[today] || []).map(x => x.ref + "|" + x.kind));
-  for (const t of state.topics.filter(t => t.next && t.next <= today).sort((a, b) => a.next.localeCompare(b.next)))
-    if (!used.has(t.id + "|review")) out.push({ kind: "review", ref: t.id, title: `Повторить: ${t.title}`, subject: t.subject, min: 5 });
+  for (const t of state.topics.filter(t => t.next && t.next <= today).sort((a, b) => a.next.localeCompare(b.next)).slice(1))
+    if (!used.has("quiz-" + t.id + "|micro") && !used.has(t.id + "|review")) out.push({ kind: "quiz", ref: "quiz-" + t.id, topicId: t.id, title: `3 вопроса по теме «${t.title}»`, subject: t.subject, min: 5 });
   const tasks = state.tasks.filter(t => t.done < t.sessions).sort((a, b) => (a.due || "9999").localeCompare(b.due || "9999"));
   for (const t of tasks) if (!used.has(t.id + "|micro")) out.push({ kind: "micro", ref: t.id, title: `Начать «${t.title}» — просто 5 минут`, subject: t.subject, min: 5 });
-  for (const s of state.subjects) if (!used.has(s.name + "|micro")) out.push({ kind: "micro", ref: s.name, title: `${s.name}: 5 терминов или дат на карточках`, subject: s.name, min: 5 });
+  for (const s of state.subjects) if (!used.has("quiz-" + s.name + "|micro")) out.push({ kind: "quiz", ref: "quiz-" + s.name, title: `3 вопроса по предмету «${s.name}» — я спрошу`, subject: s.name, min: 5 });
   return out;
 }
 
