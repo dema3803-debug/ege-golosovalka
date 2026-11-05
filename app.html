@@ -3,163 +3,246 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4f5f7">
 <title>Мой план ЕГЭ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600&family=Golos+Text:wght@400;500;600&display=swap">
 <style>
-/* Layout: одна колонка как тетрадный лист; план дня списком блоков, внизу закреплённая строка помощника */
+/* Layout: телефон — одна колонка и нижнее меню; компьютер — план слева, помощник справа */
 :root{
-  --paper:#f6f8fb; --grid:#e3e9f2; --sheet:#ffffff; --ink:#1b2333; --muted:#5d6779; --line:#d3dbe7; --cell:#f1f4f9;
-  --accent:#2348d6; --accent-soft:#e3e9ff; --warn:#b4471c; --warn-soft:#fbeee6; --ok:#13795b; --ok-soft:#e2f4ec;
-  --c1:#2348d6; --c2:#0f8a6a; --c3:#b5651d; --c4:#8a3fb8; --c5:#c0306b; --c0:#6b7487;
+  --bg:#f4f5f7; --surface:#ffffff; --raised:#f7f8fa; --line:#e4e6eb; --line2:#d3d7de; --ink:#17191f; --muted:#6a707c; --faint:#9aa0ab;
+  --accent:#2f5bea; --accent-ink:#ffffff; --accent-soft:#e9eefd; --accent-line:#b9c8f7;
+  --ok:#14825f; --ok-soft:#e3f4ec; --warn:#b35418; --warn-soft:#fdf0e6;
+  --s1:#2f5bea; --s2:#14825f; --s3:#c06a1b; --s4:#8a44c2; --s5:#c3326f; --s0:#7a8190;
   --display:"Unbounded","Arial Black",system-ui,sans-serif;
-  --body:"Golos Text","Segoe UI",system-ui,sans-serif;
-  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --body:"Golos Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:14px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --paper:#11151d; --grid:#1a2030; --sheet:#171c27; --ink:#e7ebf3; --muted:#9aa4b8; --line:#2a3245; --cell:#1e2432;
-  --accent:#7d97ff; --accent-soft:#232d52; --warn:#f08a5d; --warn-soft:#3a2418; --ok:#3fc79f; --ok-soft:#163328;
-  --c1:#7d97ff; --c2:#3fc79f; --c3:#e09a55; --c4:#c38be6; --c5:#ec7aa6; --c0:#9aa4b8; color-scheme:dark}}
+  --bg:#0f1115; --surface:#181b21; --raised:#1f232b; --line:#2a2f39; --line2:#363c48; --ink:#eceef2; --muted:#9aa1ad; --faint:#6d7480;
+  --accent:#7b97ff; --accent-ink:#0f1115; --accent-soft:#222a44; --accent-line:#3a4775;
+  --ok:#47c99c; --ok-soft:#173329; --warn:#f0965d; --warn-soft:#38251a;
+  --s1:#7b97ff; --s2:#47c99c; --s3:#e8a05c; --s4:#c38be6; --s5:#ef7fab; --s0:#9aa1ad; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --paper:#11151d; --grid:#1a2030; --sheet:#171c27; --ink:#e7ebf3; --muted:#9aa4b8; --line:#2a3245; --cell:#1e2432;
-  --accent:#7d97ff; --accent-soft:#232d52; --warn:#f08a5d; --warn-soft:#3a2418; --ok:#3fc79f; --ok-soft:#163328;
-  --c1:#7d97ff; --c2:#3fc79f; --c3:#e09a55; --c4:#c38be6; --c5:#ec7aa6; --c0:#9aa4b8; color-scheme:dark}
+  --bg:#0f1115; --surface:#181b21; --raised:#1f232b; --line:#2a2f39; --line2:#363c48; --ink:#eceef2; --muted:#9aa1ad; --faint:#6d7480;
+  --accent:#7b97ff; --accent-ink:#0f1115; --accent-soft:#222a44; --accent-line:#3a4775;
+  --ok:#47c99c; --ok-soft:#173329; --warn:#f0965d; --warn-soft:#38251a;
+  --s1:#7b97ff; --s2:#47c99c; --s3:#e8a05c; --s4:#c38be6; --s5:#ef7fab; --s0:#9aa1ad; color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0}
+html,body{margin:0;height:100%}
 [hidden]{display:none!important}
-:root{padding-block:env(safe-area-inset-top,0px) 0}
-body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
-  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px}
-.wrap{max-width:720px;margin:0 auto;padding-block:22px 190px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
-.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,6vw,36px);line-height:1.1;margin:4px 0 0}
-h2{font-family:var(--display);font-weight:500;font-size:17px;margin:0}
-button{font:inherit;color:inherit}
-.tabs{display:flex;gap:6px;background:var(--sheet);border:1px solid var(--line);border-radius:8px;padding:4px;align-self:flex-start}
-.tab{all:unset;cursor:pointer;padding:7px 14px;border-radius:5px;font-weight:500;font-size:14px}
-.tab[aria-selected="true"]{background:var(--accent);color:var(--sheet)}
-.tab:focus-visible,.btn:focus-visible,.chk:focus-visible,.link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.status{font-size:13px;padding:10px 14px;border-radius:6px;border:1px dashed var(--warn);color:var(--warn);background:var(--sheet)}
-.card{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
-.blocks{display:flex;flex-direction:column;gap:6px}
-.b{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 12px 10px 14px;border-radius:6px;background:var(--cell);position:relative;transition:background .4s}
-.b::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--c,var(--c0))}
-.b .tm{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;grid-column:1/3}
-.b .ti{grid-column:1/3;font-weight:600;line-height:1.3;min-width:0;overflow-wrap:anywhere}
-.b .mt{grid-column:1/3;font-size:12px;color:var(--muted)}
-.b .act{grid-column:3;grid-row:1/4;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.b.lesson{background:transparent;border:1.5px solid var(--c)}
-.b.lesson::before{display:none}
-.b.done{background:transparent;border:1px dashed var(--line)}
-.b.done .ti{text-decoration:line-through;color:var(--muted);font-weight:500}
-.b.review{background:var(--accent-soft)}
-.b.new{background:var(--ok-soft)}
-.b.free{background:transparent;border:1px dashed var(--line);padding:8px 12px}
-.b.free::before{display:none}
-.b.free .ti{font-weight:400;color:var(--muted);font-size:13px}
-.tag{display:inline-block;font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:3px;background:var(--warn);color:var(--sheet);margin-left:6px;vertical-align:1px;font-weight:500}
-.chk{all:unset;cursor:pointer;width:34px;height:34px;border-radius:50%;border:2px solid var(--c,var(--accent));display:grid;place-items:center;font-size:16px}
-.chk:hover{background:var(--accent-soft)}
-.btn{all:unset;cursor:pointer;padding:8px 13px;border-radius:6px;border:1px solid var(--line);background:var(--sheet);font-size:14px;font-weight:500;text-align:center}
-.btn:hover{border-color:var(--accent)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
-.btn.small{padding:5px 9px;font-size:13px}
-.link{all:unset;cursor:pointer;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* каркас */
+.shell{display:grid;grid-template-columns:minmax(0,1fr);min-height:100%}
+.main{padding-block:calc(18px + env(safe-area-inset-top,0px)) 170px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.date{font-size:13px;color:var(--muted);font-weight:500}
+h1{font-family:var(--display);font-weight:600;font-size:26px;line-height:1.15;margin:2px 0 0;letter-spacing:-.01em}
+h2{font-size:17px;font-weight:600;margin:0}
+h3{font-size:14px;font-weight:600;margin:0}
+.toptabs{display:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px}
+.cardhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.status{font-size:13px;padding:10px 12px;border-radius:10px;background:var(--warn-soft);color:var(--ink)}
+
+/* кнопки */
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:500;line-height:1.2}
+.btn:hover{border-color:var(--accent-line);background:var(--accent-soft)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.soft{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+.btn.danger{color:var(--warn);border-color:var(--line2)}
+.btn.sm{padding:6px 11px;font-size:13px}
+.iconbtn{border:0;background:transparent;width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--muted)}
+.iconbtn:hover{background:var(--raised);color:var(--ink)}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.note{font-size:13px;color:var(--muted);padding:8px 12px;border-left:3px solid var(--line)}
-.warnbox{font-size:13px;padding:10px 12px;border-radius:6px;background:var(--warn-soft);color:var(--ink)}
-.tired{background:var(--sheet);border:1.5px solid var(--accent);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px}
-.say{font-size:16px;line-height:1.5}
-.micro{padding:12px 14px;border-radius:8px;background:var(--accent-soft);font-weight:600}
-.empty{color:var(--muted);font-size:14px;margin:0}
-.week{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;align-items:start}
-.day{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.day.today{border-color:var(--accent)}
-.dh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:6px}
-.dh b{font-family:var(--display);font-size:14px;font-weight:700}
-.dh span{font-family:var(--mono);font-size:12px;color:var(--muted)}
-.wb{font-size:13px;line-height:1.35;padding:6px 8px 6px 10px;border-radius:4px;background:var(--cell);position:relative}
-.wb::before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:3px;border-radius:2px;background:var(--c,var(--c0))}
-.wb.lesson{background:transparent;border:1px solid var(--c)}
-.wb.lesson::before{display:none}
-.wb .tm{display:block;font-family:var(--mono);font-size:11px;color:var(--muted)}
-.tasks .t{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
-.tasks .t:last-child{border-bottom:0}
-.tasks .t .mt{font-size:12px;color:var(--muted)}
-.bar{height:5px;background:var(--cell);border-radius:3px;overflow:hidden;grid-column:1}
-.bar i{display:block;height:100%;background:var(--ok)}
-form.topic{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto;gap:8px}
-input,select{font:inherit;color:var(--ink);background:var(--cell);border:1px solid var(--line);border-radius:6px;padding:9px 11px;min-width:0;width:100%}
-input:focus-visible,select:focus-visible{outline:2px solid var(--accent);border-color:var(--accent)}
-.dock{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--paper);border-top:1px solid var(--line);
-  padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.dock .in{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
-.reply{background:var(--sheet);border:1px solid var(--line);border-radius:12px 12px 12px 4px;padding:10px 64px 10px 12px;font-size:14px;position:relative;max-height:30vh;overflow:auto}
-.reply .x{position:absolute;top:4px;right:6px}
-.reply .ch{font-size:12px;color:var(--muted);margin-top:4px}
-.send{display:flex;gap:8px}
-.send input{border-radius:20px;padding:11px 16px;background:var(--sheet)}
-.send button{all:unset;cursor:pointer;width:44px;height:44px;flex:none;border-radius:50%;background:var(--accent);color:var(--sheet);display:grid;place-items:center;font-size:18px}
-.send button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.send button[disabled]{opacity:.5;cursor:wait}
-.hint{font-size:12px;color:var(--muted)}
-@media (max-width:480px){form.topic{grid-template-columns:1fr}}
+.ico{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* переписка */
+.chat{display:flex;flex-direction:column;gap:8px}
+.msg{max-width:86%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.user{align-self:flex-end;background:var(--accent-soft);color:var(--ink);border-bottom-right-radius:6px}
+.msg.assistant{align-self:flex-start;background:var(--raised);border:1px solid var(--line);border-bottom-left-radius:6px}
+.msg .ch{display:block;margin-top:4px;font-size:12px;color:var(--muted)}
+.msg.typing{color:var(--muted)}
+.micro{align-self:stretch;border:1.5px solid var(--accent-line);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;background:var(--surface)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.more{align-self:center;font-size:13px;color:var(--muted);background:none;border:0;text-decoration:underline;text-underline-offset:2px}
+
+/* план */
+.blocks{display:flex;flex-direction:column;gap:8px}
+.b{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);transition:background .5s,border-color .5s}
+.b .mark{grid-row:1/3;width:22px;height:22px;border-radius:6px;border:1.8px solid var(--c,var(--s0));display:grid;place-items:center;background:transparent;padding:0;color:var(--accent-ink)}
+.b .mark:hover{background:var(--accent-soft)}
+.b .mark svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.6;fill:none}
+.b .tm{grid-column:2;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.b .tt{grid-column:2;font-weight:500;min-width:0;overflow-wrap:anywhere;background:none;border:0;padding:0;text-align:left;cursor:pointer}
+.b .tt:hover{color:var(--accent)}
+.b .side{grid-column:3;grid-row:1/3;display:flex;gap:6px}
+.b .dot{width:8px;height:8px;border-radius:50%;background:var(--c);display:inline-block;margin-right:6px;vertical-align:1px}
+.b.lesson{background:var(--raised)}
+.b.lesson .mark{border:0;background:transparent;color:var(--c)}
+.b.done{opacity:.6}
+.b.done .mark{background:var(--c,var(--s0));border-color:var(--c,var(--s0))}
+.b.done .tt{text-decoration:line-through}
+.b.review{background:var(--accent-soft);border-color:var(--accent-line)}
+.b.review .mark{border-style:dashed}
+.b.new{background:var(--ok-soft);border-color:var(--ok)}
+.b.free{border-style:dashed;background:transparent;padding:8px 12px;grid-template-columns:minmax(0,1fr) auto}
+.b.free .tm{grid-column:1}
+.grades{grid-column:2/4;display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--warn-soft);color:var(--warn);margin-left:6px;vertical-align:1px}
+.tag.pin{background:var(--accent-soft);color:var(--accent)}
+.note{font-size:13px;color:var(--muted);padding:8px 12px;border-radius:10px;background:var(--raised)}
+.warnbox{font-size:13px;padding:10px 12px;border-radius:10px;background:var(--warn-soft)}
+.empty{color:var(--muted);font-size:14px;margin:0;padding:6px 0}
+.progress{height:6px;border-radius:999px;background:var(--raised);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--ok);border-radius:999px}
+
+/* неделя */
+.week{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;align-items:start}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.day.today{border-color:var(--accent-line);box-shadow:0 0 0 2px var(--accent-soft)}
+.dayhead{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.dayhead b{font-weight:600}
+.wb{display:flex;gap:8px;align-items:baseline;padding:6px 8px;border-radius:8px;font-size:13px;line-height:1.35;background:var(--raised);border:0;text-align:left;width:100%}
+.wb:hover{background:var(--accent-soft)}
+.wb .tm{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;flex:none;min-width:84px}
+.wb .dot{width:7px;height:7px;border-radius:50%;background:var(--c);flex:none;align-self:center}
+.wb.lesson{background:transparent;box-shadow:inset 0 0 0 1px var(--line2)}
+
+/* списки */
+.list{display:flex;flex-direction:column}
+.li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.li:last-child{border-bottom:0}
+.li .meta{font-size:12px;color:var(--muted)}
+.li .t{font-weight:500;background:none;border:0;padding:0;text-align:left}
+.li button.t:hover{color:var(--accent)}
+.steps{display:flex;gap:4px;margin-top:4px}
+.steps i{width:16px;height:6px;border-radius:3px;background:var(--line)}
+.steps i.on{background:var(--ok)}
+.week-free{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:center}
+.week-free label{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;white-space:nowrap}
+
+/* формы */
+input[type=text],input[type=time],input[type=date],input[type=number],select,textarea{width:100%;min-width:0;background:var(--raised);border:1px solid var(--line2);border-radius:10px;padding:10px 12px}
+textarea{min-height:90px;resize:vertical}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field>span{font-size:13px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.days{display:flex;gap:6px;flex-wrap:wrap}
+.daybtn{width:40px;height:36px;border-radius:9px;border:1px solid var(--line2);background:var(--surface);font-size:13px;font-weight:500}
+.daybtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+dialog{border:0;border-radius:18px;padding:0;width:min(520px,calc(100vw - 24px));max-height:calc(100vh - 40px);background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(15,17,21,.45)}
+dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
+.dlgfoot{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;margin-top:4px}
+
+/* композер и меню */
+.composer{display:flex;gap:8px;align-items:center}
+.composer input{border-radius:999px;padding:11px 16px;background:var(--surface);border:1px solid var(--line2)}
+.send{width:44px;height:44px;flex:none;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.send:disabled{opacity:.5;cursor:wait}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line)}
+.dock .composer{max-width:640px;margin:0 auto;padding:10px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px))}
+.nav{display:flex;justify-content:space-around;max-width:640px;margin:0 auto;padding:2px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:500;color:var(--muted);padding:6px 8px;border-radius:10px;min-width:58px}
+.nav button[aria-current="page"]{color:var(--accent)}
+.nav .ico{width:22px;height:22px}
+.chatcol{display:none}
+
+@media (min-width:1000px){
+  .shell{grid-template-columns:minmax(0,1fr) 400px}
+  .main{max-width:760px;padding-bottom:40px}
+  .toptabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;align-self:flex-start}
+  .toptabs button{border:0;background:none;padding:7px 14px;border-radius:999px;font-weight:500;font-size:14px;color:var(--muted)}
+  .toptabs button[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+  .dock{display:none}
+  .chatcol{display:flex;flex-direction:column;position:sticky;top:0;height:100vh;border-left:1px solid var(--line);background:var(--surface)}
+  .chatcol .head{padding:18px 18px 10px;border-bottom:1px solid var(--line)}
+  .chatcol .chat{flex:1;overflow:auto;padding:16px 18px}
+  .chatcol .composer{padding:12px 18px 16px;border-top:1px solid var(--line)}
+  .preview,.navchat{display:none!important}
+}
+@media (max-width:420px){.week-free{grid-template-columns:36px 1fr 1fr}.week-free label{grid-column:2/-1}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="eyebrow" id="today-label">Загружаем план…</div>
-    <h1 id="hello">Мой план</h1>
-  </header>
-  <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tab-today" aria-selected="true" type="button">Сегодня</button>
-    <button class="tab" role="tab" id="tab-week" aria-selected="false" type="button">Неделя</button>
-  </div>
-  <div id="status" class="status" hidden></div>
-  <div id="view"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-today" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-week" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-topics" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></symbol>
+  <symbol id="i-set" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+</svg>
+
+<div class="shell">
+  <main class="main">
+    <div class="top">
+      <div><div class="date" id="date">Загружаем…</div><h1 id="hello">Мой план</h1></div>
+    </div>
+    <nav class="toptabs" id="toptabs" aria-label="Разделы"></nav>
+    <div id="status" class="status" hidden></div>
+    <div id="view"></div>
+  </main>
+  <aside class="chatcol" aria-label="Помощник">
+    <div class="head"><h2>Помощник</h2><div class="small muted">Пиши как есть — я поправлю план</div></div>
+    <div class="chat" id="chat-desk"></div>
+    <form class="composer" data-composer><input id="msg-desk" type="text" autocomplete="off" maxlength="600" placeholder="Напиши, что у тебя сегодня…" aria-label="Сообщение помощнику"><button class="send" type="submit" aria-label="Отправить"><svg class="ico"><use href="#i-send"/></svg></button></form>
+  </aside>
 </div>
 <div class="dock" id="dock" hidden>
-  <div class="in">
-    <div class="reply" id="reply" hidden></div>
-    <form class="send" id="send">
-      <label for="msg" class="hint" style="position:absolute;left:-9999px">Сообщение помощнику</label>
-      <input id="msg" autocomplete="off" maxlength="600" placeholder="Напиши, что у тебя: «завтра зачёт по обществу»">
-      <button type="submit" id="sendbtn" aria-label="Отправить">↑</button>
-    </form>
-  </div>
+  <form class="composer" data-composer id="composer-m"><input id="msg-m" type="text" autocomplete="off" maxlength="600" placeholder="Напиши, что у тебя сегодня…" aria-label="Сообщение помощнику"><button class="send" type="submit" aria-label="Отправить"><svg class="ico"><use href="#i-send"/></svg></button></form>
+  <nav class="nav" id="nav" aria-label="Разделы"></nav>
 </div>
+<dialog id="dlg"><form method="dialog" id="dlgform"></form></dialog>
 
 <script type="module">
 import * as C from "/core.js";
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const U = new URLSearchParams(location.search).get("u");
-let S = null, view = location.hash === "#week" ? "week" : "today", highlight = new Set(), saving = false, savePending = false, topicFormOpen = false, tiredMsg = null;
+const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Темы", "i-topics"], ["chat", "Помощник", "i-chat"], ["setup", "Расписание", "i-set"]];
+let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
+if (!VIEWS.some(v => v[0] === view)) view = "today";
 
-const COLORS = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)"];
-const color = subj => { if (!subj || subj === "Школа") return "var(--c0)"; const i = S.subjects.findIndex(x => x.name === subj); return COLORS[(i >= 0 ? i : [...subj].reduce((a, c) => a + c.charCodeAt(0), 0)) % COLORS.length]; };
+const COLORS = ["var(--s1)", "var(--s2)", "var(--s3)", "var(--s4)", "var(--s5)"];
+const color = subj => { if (!subj || subj === "Школа") return "var(--s0)"; const i = S.subjects.findIndex(x => x.name === subj); return COLORS[(i >= 0 ? i : [...subj].reduce((a, c) => a + c.charCodeAt(0), 0)) % COLORS.length]; };
 const pad = n => String(n).padStart(2, "0");
-function nowInfo() { const d = new Date(); return { today: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, min: d.getHours() * 60 + d.getMinutes(), hhmm: `${pad(d.getHours())}:${pad(d.getMinutes())}` }; }
+function now() { const d = new Date(); return { today: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, min: d.getHours() * 60 + d.getMinutes(), hhmm: `${pad(d.getHours())}:${pad(d.getMinutes())}` }; }
 const pick = a => a[Math.floor(Math.random() * a.length)];
+const icon = (id, cls = "ico") => `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+const subjOptions = sel => [...S.subjects.map(x => x.name), "Школа", "Другое"].map(n => `<option${n === sel ? " selected" : ""}>${esc(n)}</option>`).join("");
+const word = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c; };
 
-const ASK = ["Окей, сегодня без подвигов 🫶 Всё остальное я тихо перенесла на другие дни. Но может, одну малюсенькую штуку? Это 5 минут, честно.",
-  "Понимаю, бывает 💛 Давай так: только одно крошечное дело на 5 минут, и свободна. Ну пожааалуйста?",
-  "Ничего страшного, отдых тоже часть подготовки. Но одну мааленькую штучку, а? 5 минут, я засеку 🥺"];
+const ASK = ["Окей, сегодня без подвигов 🫶 Остальное я тихо перенесла на другие дни. Но может, одну малюсенькую штуку? Это 5 минут, честно. Ну пожалуйста",
+  "Понимаю, бывает 💛 Давай так: одно крошечное дело на 5 минут — и свободна. Ну пожааалуйста?",
+  "Отдых — тоже часть подготовки. Но одну мааленькую штучку, а? 5 минут, я засеку 🥺"];
 const PRAISE = ["Ты молодец!! 🎉 А может, ещё одну? Тоже 5 минут. Но если нет — ты сегодня уже красавица, отдыхай.",
   "Вот это да, сделала! 💪 Ещё одну крошечную? Если нет — всё, ты заслужила отдых.",
   "Умница! ✨ Может, на волне ещё 5 минут? А если нет — ты и так сегодня молодец."];
 
-function flash(t) { const s = $("#status"); s.textContent = t; s.hidden = !t; }
+function flash(t) { const s = $("#status"); s.textContent = t || ""; s.hidden = !t; }
 
+// ---------- загрузка и сохранение ----------
 async function load() {
-  if (!U) { flash("Открой свою личную ссылку на план — в ней есть код после «?u=»."); $("#today-label").textContent = ""; return; }
+  if (!U) { flash("Открой свою личную ссылку на план — в ней есть код после «?u=»."); $("#date").textContent = ""; return; }
   try {
     const r = await fetch(`/api/app?u=${encodeURIComponent(U)}`, { cache: "no-store" });
     const j = await r.json();
     if (!r.ok) { flash(j.error || "Не удалось загрузить план."); return; }
-    S = j.state; flash(""); $("#dock").hidden = false; render();
+    S = j.state; S.chat ||= []; S.extraLessons ||= []; flash(""); $("#dock").hidden = false; render();
   } catch { flash("Нет связи. Проверь интернет и обнови страницу."); }
 }
 async function save() {
@@ -170,195 +253,374 @@ async function save() {
     const j = await r.json();
     if (r.status === 409) { S = j.state; flash("План обновился с другого устройства — показываю свежую версию."); render(); }
     else if (!r.ok) flash(j.error || "Не удалось сохранить. Проверь интернет.");
-    else { S.rev = j.state.rev; if ($("#status").textContent.startsWith("Не удалось")) flash(""); }
-  } catch { flash("Не удалось сохранить. Проверь интернет — отметки сохранятся, когда связь вернётся."); }
+    else { S.rev = j.state.rev; if (($("#status").textContent || "").startsWith("Не удалось")) flash(""); }
+  } catch { flash("Не удалось сохранить. Проверь интернет — попробую ещё раз при следующем действии."); }
   saving = false;
   if (savePending) { savePending = false; save(); }
 }
 const change = fn => { fn(); render(); save(); };
+const say = (role, text, extra) => C.pushChat(S, role, text, extra);
 
-function planKeys(plan) { const k = new Set(); for (const d of plan) for (const b of d.blocks) if (b.type !== "done") k.add(`${d.date}|${b.type}|${b.ref}|${b.start}`); return k; }
-
+// ---------- отрисовка ----------
 function render() {
-  const n = nowInfo();
-  $("#today-label").textContent = `${C.DAYS_FULL[C.weekday(n.today)]}, ${C.humanDate(n.today)}`;
+  const n = now();
+  $("#date").textContent = `${C.DAYS_FULL[C.weekday(n.today)]}, ${C.humanDate(n.today)}`;
   $("#hello").textContent = S.name ? `Привет, ${S.name}` : "Мой план";
-  $("#tab-today").setAttribute("aria-selected", view === "today");
-  $("#tab-week").setAttribute("aria-selected", view === "week");
+  const navHTML = VIEWS.map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
+  $("#nav").innerHTML = navHTML;
+  $("#toptabs").innerHTML = VIEWS.filter(v => v[0] !== "chat").map(([id, label]) => `<button type="button" data-view="${id}" ${view === id ? 'aria-current="page"' : ""}>${label}</button>`).join("");
+  $("#composer-m").hidden = !(view === "today" || view === "chat");
   const plan = C.buildPlan(S, n.today, 7, n.min);
-  $("#view").innerHTML = view === "today" ? renderToday(plan[0], n) : renderWeek(plan);
+  const v = view === "chat" && matchMedia("(min-width:1000px)").matches ? "today" : view;
+  $("#view").innerHTML = v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n);
+  $("#chat-desk").innerHTML = chatHTML(n, 60);
+  const cd = $("#chat-desk"); cd.scrollTop = cd.scrollHeight;
+  if (v === "chat") scrollTo(0, document.body.scrollHeight);
 }
 
-function blockHTML(b, date, i) {
-  const c = color(b.subject);
-  const time = `${C.toHHMM(b.start)}–${C.toHHMM(b.end)}`;
-  const key = `${date}|${b.type}|${b.ref}|${b.start}`;
-  const cls = ["b", b.type, highlight.has(key) ? "new" : ""].join(" ");
-  if (b.type === "lesson") return `<div class="${cls}" style="--c:${c}"><span class="tm">${time} · занятие</span><span class="ti">${esc(b.title)}</span></div>`;
-  if (b.type === "done") {
-    const lbl = b.kind === "review" ? "повторила" : b.kind === "micro" ? "маленький шаг" : "сделано";
-    return `<div class="${cls}" style="--c:${c}"><span class="tm">${b.start != null ? C.toHHMM(b.start) + " · " : ""}${lbl}</span><span class="ti">${esc(b.title)}</span>
-      <span class="act"><button class="link" data-undo="${b.idx}" type="button">вернуть</button></span></div>`;
-  }
-  if (b.type === "review") {
-    const nth = (b.step || 0) + 1;
-    return `<div class="${cls}" style="--c:${c}"><span class="tm">${time} · повторение, ${nth}-й раз</span><span class="ti">${esc(b.title)}</span>
-      <span class="mt">${esc(b.subject || "")}${b.overdue ? " · пропущенное" : ""} · как прошло?</span>
-      <span class="act"><button class="btn small" data-grade="easy" data-ref="${b.ref}" data-start="${b.start}" type="button">Легко</button><button class="btn small" data-grade="hard" data-ref="${b.ref}" data-start="${b.start}" type="button">С трудом</button><button class="btn small" data-grade="forgot" data-ref="${b.ref}" data-start="${b.start}" type="button">Забыла</button></span></div>`;
-  }
-  const t = b.type === "task" ? S.tasks.find(x => x.id === b.ref) : null;
-  const meta = [b.subject && b.subject !== "Школа" ? b.subject : "", b.count > 1 ? `${b.count} × ${S.sessionMin} мин с перерывами` : `${S.sessionMin} мин`, t?.due ? `срок ${t.due === date ? "сегодня" : C.humanDate(t.due)}${t.dueTime ? " до " + t.dueTime : ""}` : ""].filter(Boolean).join(" · ");
-  return `<div class="${cls}" style="--c:${c}"><span class="tm">${time}</span><span class="ti">${esc(b.title)}${b.overdue ? '<span class="tag">просрочено</span>' : ""}</span><span class="mt">${esc(meta)}</span>
-    <span class="act"><button class="chk" style="--c:${c}" data-done="${i}" aria-label="Сделала: ${esc(b.title)}" title="Сделала ${S.sessionMin} минут" type="button">✓</button></span></div>`;
+function chatHTML(n, limit) {
+  const list = (S.chat || []).slice(-limit);
+  let h = list.length ? list.map(m => `<div class="msg ${m.role}">${esc(m.text)}${m.changes?.length ? `<span class="ch">Изменила: ${esc(m.changes.join("; "))}</span>` : ""}</div>`).join("")
+    : `<div class="msg assistant">Привет${S.name ? ", " + esc(S.name) : ""}! Пиши мне всё, что меняется: «завтра зачёт по обществу», «англ отменили», «вернусь поздно». Я сама переставлю план 💙</div>`;
+  if (thinking) h += `<div class="msg assistant typing">Думаю…</div>`;
+  h += tiredWidget(n);
+  return `<div class="chat">${h}</div>`;
+}
+function tiredWidget(n) {
+  const t = S.tired[n.today];
+  if (!t || t.rest) return "";
+  const o = C.microOptions(S, n.today)[0];
+  if (!o) return "";
+  return `<div class="micro">${icon("i-check")}<div><div class="small muted">${o.min} минут${o.subject ? " · " + esc(o.subject) : ""}</div><div style="font-weight:500">${esc(o.title)}</div></div></div>
+    <div class="chips"><button class="btn soft sm" data-act="micro-yes" type="button">${t.micro ? "Давай ещё" : "Ну так и быть"}</button><button class="btn sm" data-act="micro-no" type="button">${t.micro ? "Всё, отдыхаю" : "Не сегодня"}</button></div>`;
 }
 
-let todayBlocks = [];
+function renderChatView(n) {
+  return `<div class="card" style="padding:12px">${chatHTML(n, 60)}</div>`;
+}
+
 function renderToday(d, n) {
   let h = "";
-  const streak = C.tiredStreak(S, d.date);
-  if (streak >= 3 && (S.capFactor || 1) >= 1 && !S.lightenAsked?.[d.date]) {
-    h += `<div class="warnbox row" style="justify-content:space-between"><span>Ты устаёшь уже несколько дней подряд. Это не лень — похоже, нагрузка великовата. Облегчить план на неделю?</span>
-      <span class="row"><button class="btn small primary" id="lighten" type="button">Да, облегчить</button><button class="btn small" id="nolighten" type="button">Нет</button></span></div>`;
+  // превью переписки (на телефоне)
+  const recent = (S.chat || []).slice(-3);
+  const tired = S.tired[d.date];
+  if (recent.length || thinking || (tired && !tired.rest)) {
+    h += `<div class="card preview" style="padding:12px">${chatHTML(n, 3)}${(S.chat || []).length > 3 ? `<button class="more" data-view="chat" type="button">Вся переписка</button>` : ""}</div>`;
   }
-  if (d.tired) return h + renderTired(d, n);
-  if (d.off) h += `<div class="card"><h2>Сегодня выходной 🌿</h2><p class="empty">Никакой подготовки. Отдыхай — завтра будет проще.</p></div>`;
-
-  // блоки дня: сделанное + план + свободные окна
+  if (C.tiredStreak(S, d.date) >= 3 && (S.capFactor || 1) >= 1 && !S.lightenAsked?.[d.date]) {
+    h += `<div class="warnbox row" style="justify-content:space-between"><span>Ты устаёшь уже несколько дней подряд. Это не лень — похоже, нагрузка великовата. Облегчить план?</span>
+      <span class="row"><button class="btn sm primary" data-act="lighten" type="button">Да, облегчить</button><button class="btn sm" data-act="nolighten" type="button">Нет</button></span></div>`;
+  }
   const done = (S.log[d.date] || []).map((x, idx) => ({ ...x, type: "done", idx, start: C.toMin(x.start), end: C.toMin(x.end) }));
   const live = C.mergeBlocks(d.blocks.filter(b => b.type !== "done"));
   todayBlocks = live;
   const free = (d.freeLeft || []).map(f => ({ type: "free", start: f.from, end: f.to }));
   const all = [...done, ...live.map((b, i) => ({ ...b, _i: i })), ...free].sort((a, b) => (a.start ?? -1) - (b.start ?? -1));
-  if (!d.off) {
-    h += `<div class="card"><div class="row" style="justify-content:space-between"><h2>План на сегодня</h2><span class="hint">${done.length ? `сделано ${done.length}` : ""}</span></div>`;
-    for (const nt of d.notes) h += `<div class="note">${esc(nt.title)} — время не указано. Напиши помощнику, во сколько, и я учту.</div>`;
-    for (const u of d.unplaced) h += `<div class="warnbox">Не влезает до срока: <b>${esc(u.title)}</b> (${u.count} × ${S.sessionMin} мин). Напиши, когда сможешь позаниматься, или сдвинь срок.</div>`;
-    if (!all.length) h += `<p class="empty">На сегодня задач нет. Напиши внизу, что нужно сделать, — я разложу по времени.</p>`;
-    h += `<div class="blocks">${all.map(b => b.type === "free" ? `<div class="b free"><span class="tm">${C.toHHMM(b.start)}–${C.toHHMM(b.end)}</span><span class="ti">Свободно</span></div>` : blockHTML(b, d.date, b._i)).join("")}</div></div>`;
+  const totalTasks = live.filter(b => b.type !== "lesson").length + done.length;
+
+  h += `<div class="card"><div class="cardhead"><h2>${d.off ? "Сегодня выходной 🌿" : tired && tired.rest ? "Сегодня отдыхаем 🫶" : "План на сегодня"}</h2><span class="small muted">${totalTasks ? `${done.length} из ${totalTasks}` : ""}</span></div>`;
+  if (tired && tired.rest) h += `<p class="empty">Всё несделанное перенесено на ближайшие дни.${tired.micro ? ` А ещё ты сделала ${tired.micro} ${word(tired.micro, "маленький шаг", "маленьких шага", "маленьких шагов")} — это считается!` : ""}</p><div class="row"><button class="btn sm" data-act="untired" type="button">Силы вернулись — показать план</button></div>`;
+  else if (tired) h += `<p class="empty">Режим «сил нет»: только маленькие шаги, без давления.</p><div class="row"><button class="btn sm" data-act="untired" type="button">Вернуть обычный план</button></div>`;
+  else if (d.off) h += `<p class="empty">Никакой подготовки. Отдыхай — завтра будет проще.</p>`;
+  if (!d.off && !tired) {
+    for (const nt of d.notes) h += `<div class="note">${esc(nt.title)} — время не указано. <button class="more" data-edit-lesson="${nt.id}" type="button">Указать</button></div>`;
+    for (const u of d.unplaced) h += `<div class="warnbox">Не влезает до срока: <b>${esc(u.title)}</b> (${u.count} × ${S.sessionMin} мин). Сдвинь срок или освободи время.</div>`;
+    if (!all.length) h += `<p class="empty">Задач на сегодня нет. Напиши помощнику или добавь задачу.</p>`;
+    h += `<div class="blocks">${all.map(b => blockHTML(b, d.date)).join("")}</div>`;
   }
-  h += `<div class="row"><button class="btn" id="tiredbtn" type="button">🪫 Сил нет</button><button class="btn" id="topicbtn" type="button" aria-expanded="${topicFormOpen}">📚 Изучила тему</button></div>`;
-  if (topicFormOpen) {
-    h += `<div class="card"><h2>Какую тему изучила?</h2><p class="empty" style="margin:0">Я поставлю повторения через 1, 3, 7, 14, 30 и 60 дней — они сами появятся в плане.</p>
-      <form class="topic" id="topicform"><input id="topic-title" required maxlength="80" placeholder="Например, реформы Петра I">
-      <select id="topic-subj">${S.subjects.map(x => `<option>${esc(x.name)}</option>`).join("")}</select>
-      <button class="btn primary" type="submit">Запомнить</button></form></div>`;
-  }
-  h += renderTasks();
-  h += renderTopics(d.date);
+  h += `</div>`;
+  h += `<div class="row"><button class="btn" data-act="new-task" type="button">${icon("i-plus")}Задача</button><button class="btn" data-act="learned" type="button">📚 Изучила тему</button>${tired ? "" : `<button class="btn" data-act="tired" type="button">🪫 Сил нет</button>`}</div>`;
+  h += tasksCard();
   return h;
 }
 
-function renderTired(d, n) {
-  const t = S.tired[d.date];
-  if (t.rest) return `<div class="tired"><div class="say">Отдыхай 🫶 Всё несделанное я перенесла на ближайшие дни, ничего не потеряется.${t.micro ? ` А ещё сегодня ты всё-таки сделала ${t.micro} ${t.micro === 1 ? "маленький шаг" : "маленьких шага"} — это считается!` : ""}</div>
-    <div class="row"><button class="btn" id="untired" type="button">Силы вернулись — показать план</button></div></div>`;
-  const opts = C.microOptions(S, d.date);
-  const o = opts[0];
-  tiredMsg ||= t.micro ? pick(PRAISE) : pick(ASK);
-  if (!o) return `<div class="tired"><div class="say">Отдыхай 🫶 Сегодня даже маленьких дел не осталось.</div><div class="row"><button class="btn" id="untired" type="button">Вернуть обычный план</button></div></div>`;
-  const dueToday = S.tasks.filter(x => x.done < x.sessions && x.due && x.due <= d.date);
-  const dueNote = dueToday.length ? `<div class="warnbox">Только помни: сегодня срок у ${dueToday.map(x => "«" + esc(x.title) + "»").join(", ")}. Если совсем никак — напиши помощнику, попробуем сдвинуть.</div>` : "";
-  return `<div class="tired"><div class="say">${esc(tiredMsg)}</div>${dueNote}
-    <div class="micro">${esc(o.title)}<div class="hint" style="font-weight:400">${esc(o.subject || "")} · ${o.min} минут</div></div>
-    <div class="row"><button class="btn primary" id="microyes" type="button">${t.micro ? "Давай ещё одну" : "Ну так и быть"}</button><button class="btn" id="microno" type="button">${t.micro ? "Всё, отдыхаю" : "Не сегодня"}</button></div></div>`;
+function blockHTML(b, date) {
+  const c = color(b.subject);
+  const time = b.start != null ? `${C.toHHMM(b.start)}${b.end != null ? "–" + C.toHHMM(b.end) : ""}` : "";
+  const key = `${date}|${b.type}|${b.ref}|${b.start}`;
+  if (b.type === "free") return `<div class="b free"><span class="tm">${time} · свободно</span><button class="btn sm" data-act="new-task" data-at="${C.toHHMM(b.start)}" type="button">${icon("i-plus")}Сюда задачу</button></div>`;
+  if (b.type === "lesson") return `<div class="b lesson" style="--c:${c}"><span class="mark">${icon("i-week")}</span><span class="tm">${time} · занятие</span><button class="tt" data-edit-lesson="${b.ref}" type="button"><span class="dot"></span>${esc(b.title)}</button></div>`;
+  if (b.type === "done") {
+    const lbl = b.kind === "review" ? "повторила" : b.kind === "micro" ? "маленький шаг" : "сделано";
+    return `<div class="b done" style="--c:${c}"><button class="mark" data-undo="${b.idx}" type="button" aria-label="Вернуть: ${esc(b.title)}">${icon("i-check", "")}</button><span class="tm">${time} · ${lbl}</span><span class="tt">${esc(b.title)}</span></div>`;
+  }
+  const cls = ["b", b.type, highlight.has(key) ? "new" : ""].join(" ");
+  if (b.type === "review") {
+    return `<div class="${cls}" style="--c:${c}"><span class="mark"></span><span class="tm">${time} · повторение, ${(b.step || 0) + 1}-й раз${b.overdue ? " · пропущенное" : ""}</span><span class="tt"><span class="dot"></span>${esc(b.title)}</span>
+      <div class="grades"><span class="small muted" style="align-self:center">Как прошло?</span><button class="btn sm" data-grade="easy" data-ref="${b.ref}" data-start="${b.start}" type="button">Легко</button><button class="btn sm" data-grade="hard" data-ref="${b.ref}" data-start="${b.start}" type="button">С трудом</button><button class="btn sm" data-grade="forgot" data-ref="${b.ref}" data-start="${b.start}" type="button">Забыла</button></div></div>`;
+  }
+  const t = b.type === "task" ? S.tasks.find(x => x.id === b.ref) : null;
+  const meta = [`${time}`, b.count > 1 ? `${b.count} × ${S.sessionMin} мин` : `${S.sessionMin} мин`, t?.due ? `срок ${t.due === date ? "сегодня" : C.humanDate(t.due)}${t.dueTime ? " " + t.dueTime : ""}` : ""].filter(Boolean).join(" · ");
+  return `<div class="${cls}" style="--c:${c}"><button class="mark" data-done="${b._i}" type="button" aria-label="Сделала ${S.sessionMin} минут: ${esc(b.title)}"></button><span class="tm">${esc(meta)}</span>
+    <button class="tt" ${t ? `data-edit-task="${t.id}"` : ""} type="button"><span class="dot"></span>${esc(b.title)}${b.overdue ? '<span class="tag">просрочено</span>' : ""}${b.pinned ? '<span class="tag pin">по времени</span>' : ""}</button></div>`;
 }
 
-function renderTasks() {
+function tasksCard() {
   const list = S.tasks.filter(t => t.done < t.sessions).sort((a, b) => (a.due || "9999").localeCompare(b.due || "9999"));
-  if (!list.length) return "";
-  return `<div class="card tasks"><h2>Все задачи</h2>${list.map(t => `<div class="t"><span><b>${esc(t.title)}</b><span class="mt" style="display:block">${esc([t.subject, `${t.done} из ${t.sessions} по ${S.sessionMin} мин`, t.due ? "срок " + C.humanDate(t.due) + (t.dueTime ? " " + t.dueTime : "") : "без срока"].filter(Boolean).join(" · "))}</span></span>
-    <button class="link" data-del="${t.id}" type="button" aria-label="Удалить ${esc(t.title)}">удалить</button><div class="bar"><i style="width:${t.done / t.sessions * 100}%"></i></div></div>`).join("")}</div>`;
-}
-function renderTopics(today) {
-  if (!S.topics.length) return "";
-  const list = [...S.topics].sort((a, b) => a.next.localeCompare(b.next)).slice(0, 8);
-  return `<div class="card tasks"><h2>Темы на повторении</h2>${list.map(t => `<div class="t"><span><b>${esc(t.title)}</b><span class="mt" style="display:block">${esc(t.subject || "")} · следующее повторение ${t.next <= today ? "сегодня" : C.humanDate(t.next)} · ${t.step + 1}-й круг из ${C.INTERVALS.length}</span></span></div>`).join("")}</div>`;
+  return `<div class="card"><div class="cardhead"><h2>Все задачи</h2><button class="btn sm" data-act="new-task" type="button">${icon("i-plus")}Добавить</button></div>
+    ${list.length ? `<div class="list">${list.map(t => `<div class="li"><div><button class="t" data-edit-task="${t.id}" type="button">${esc(t.title)}</button>
+      <div class="meta">${esc([t.subject, `${t.done} из ${t.sessions} по ${S.sessionMin} мин`, t.due ? "срок " + C.humanDate(t.due) + (t.dueTime ? " " + t.dueTime : "") : "без срока", t.pin ? `по времени: ${C.humanDate(t.pin.date)} ${t.pin.from}` : ""].filter(Boolean).join(" · "))}</div>
+      <div class="progress" style="margin-top:6px"><i style="width:${t.done / t.sessions * 100}%"></i></div></div>
+      <button class="iconbtn" data-edit-task="${t.id}" type="button" aria-label="Изменить ${esc(t.title)}">${icon("i-edit")}</button></div>`).join("")}</div>` : `<p class="empty">Задач нет. Добавь сама или напиши помощнику.</p>`}</div>`;
 }
 
 function renderWeek(plan) {
-  return `<div class="week">${plan.map(d => {
+  return `<div class="row"><button class="btn" data-act="new-task" type="button">${icon("i-plus")}Задача</button><button class="btn" data-act="new-event" type="button">${icon("i-plus")}Разовое событие</button></div>
+  <div class="week">${plan.map(d => {
     const items = C.mergeBlocks(d.blocks.filter(b => b.type !== "done"));
     const doneN = (S.log[d.date] || []).length;
+    const ov = S.avail[d.date];
     let body = "";
     if (d.off) body = `<p class="empty">Выходной</p>`;
     else if (d.tired) body = `<p class="empty">Режим «сил нет»</p>`;
     else {
-      body = d.notes.map(nt => `<div class="wb lesson" style="--c:${color(nt.subject)}"><span class="tm">время?</span>${esc(nt.title)}</div>`).join("");
-      body += items.map(b => `<div class="wb ${b.type}" style="--c:${color(b.subject)}"><span class="tm">${C.toHHMM(b.start)}–${C.toHHMM(b.end)}${b.count > 1 ? ` · ${b.count}×${S.sessionMin}` : ""}${b.type === "review" ? " · повторение" : ""}</span>${esc(b.title)}</div>`).join("");
+      body = d.notes.map(nt => `<button class="wb lesson" style="--c:${color(nt.subject)}" data-edit-lesson="${nt.id}" type="button"><span class="tm">время?</span><span>${esc(nt.title)}</span></button>`).join("");
+      body += items.map(b => {
+        const attr = b.type === "task" ? `data-edit-task="${b.ref}"` : b.type === "lesson" && !String(b.ref).startsWith("x") ? `data-edit-lesson="${b.ref}"` : b.type === "lesson" ? `data-edit-event="${b.ref}"` : b.type === "review" ? `data-view="topics"` : "";
+        return `<button class="wb ${b.type}" style="--c:${color(b.subject)}" ${attr} type="button"><span class="tm">${C.toHHMM(b.start)}–${C.toHHMM(b.end)}</span><span class="dot"></span><span>${esc(b.title)}${b.count > 1 ? ` <span class="muted">· ${b.count}×${S.sessionMin}</span>` : ""}${b.type === "review" ? ' <span class="muted">· повторение</span>' : ""}</span></button>`;
+      }).join("");
       if (!items.length && !d.notes.length) body += `<p class="empty">Свободный день</p>`;
       if (d.unplaced.length) body += `<div class="warnbox">Не влезает: ${d.unplaced.map(u => esc(u.title)).join(", ")}</div>`;
     }
-    return `<div class="day${d.isToday ? " today" : ""}"><div class="dh"><b>${C.DAYS[d.wd]}${d.isToday ? " · сегодня" : ""}</b><span>${C.humanDate(d.date)}${doneN ? ` · ✓${doneN}` : ""}</span></div>${body}</div>`;
-  }).join("")}</div>${renderTasks()}`;
+    return `<div class="day${d.isToday ? " today" : ""}"><div class="dayhead"><div><b>${C.DAYS[d.wd]}${d.isToday ? " · сегодня" : ""}</b> <span class="small muted">${C.humanDate(d.date)}${doneN ? ` · ✓${doneN}` : ""}</span></div>
+      <button class="iconbtn" data-edit-day="${d.date}" type="button" aria-label="Время на ${C.humanDate(d.date)}" title="Изменить время дня">${icon("i-edit")}</button></div>
+      ${ov ? `<div class="small muted">${ov.off ? "в этот день без подготовки" : `свободна ${ov.from}–${ov.to}`}</div>` : ""}${body}</div>`;
+  }).join("")}</div>${tasksCard()}`;
+}
+
+function renderTopics(n) {
+  const due = S.topics.filter(t => t.next <= n.today).sort((a, b) => a.next.localeCompare(b.next));
+  const later = S.topics.filter(t => t.next > n.today).sort((a, b) => a.next.localeCompare(b.next));
+  const doneToday = new Set((S.log[n.today] || []).filter(x => x.kind === "review").map(x => x.ref));
+  const steps = t => `<div class="steps" aria-label="Пройдено кругов: ${t.step} из ${C.INTERVALS.length}">${C.INTERVALS.map((_, i) => `<i class="${i < t.step ? "on" : ""}"></i>`).join("")}</div>`;
+  let h = `<div class="card"><h2>Как это работает</h2><p class="small muted" style="margin:0">Изучила тему — добавь её сюда. Я сама поставлю повторения через ${C.INTERVALS.join(", ")} дней, и они появятся в плане. После повторения отметь, как прошло: «легко» — следующий раз нескоро, «забыла» — начнём заново.</p>
+    <form class="field" id="topicform"><span>Новые темы — можно несколько, каждую с новой строки</span><textarea id="topic-titles" placeholder="Реформы Петра I&#10;Права человека&#10;Причастные обороты"></textarea>
+    <div class="grid2"><label class="field"><span>Предмет</span><select id="topic-subj">${subjOptions(S.subjects[0]?.name)}</select></label><div class="field"><span>&nbsp;</span><button class="btn primary" type="submit">Добавить темы</button></div></div></form></div>`;
+  h += `<div class="card"><div class="cardhead"><h2>Повторить сегодня</h2><span class="small muted">${due.length}</span></div>${due.length ? `<div class="list">${due.map(t => `<div class="li"><div><div class="t">${esc(t.title)}</div><div class="meta">${esc(t.subject || "")} · ${t.step + 1}-й раз${t.next < n.today ? " · пропущено" : ""}</div>${steps(t)}
+    ${doneToday.has(t.id) ? "" : `<div class="row" style="margin-top:8px"><button class="btn sm" data-grade="easy" data-ref="${t.id}" type="button">Легко</button><button class="btn sm" data-grade="hard" data-ref="${t.id}" type="button">С трудом</button><button class="btn sm" data-grade="forgot" data-ref="${t.id}" type="button">Забыла</button></div>`}</div>
+    <button class="iconbtn" data-del-topic="${t.id}" type="button" aria-label="Удалить тему ${esc(t.title)}">✕</button></div>`).join("")}</div>` : `<p class="empty">На сегодня всё повторено 🎉</p>`}</div>`;
+  h += `<div class="card"><div class="cardhead"><h2>Все темы</h2><span class="small muted">${S.topics.length}</span></div>${later.length ? `<div class="list">${later.map(t => `<div class="li"><div><div class="t">${esc(t.title)}</div><div class="meta">${esc(t.subject || "")} · следующее повторение ${C.humanDate(t.next)}</div>${steps(t)}</div>
+    <button class="iconbtn" data-del-topic="${t.id}" type="button" aria-label="Удалить тему ${esc(t.title)}">✕</button></div>`).join("")}</div>` : `<p class="empty">${S.topics.length ? "Остальные темы — в блоке выше." : "Пока тем нет. Добавь первую выше."}</p>`}</div>`;
+  return h;
+}
+
+function renderSetup() {
+  const lessons = S.lessons.map(l => `<div class="li"><div><button class="t" data-edit-lesson="${l.id}" type="button">${esc(l.title)}</button><div class="meta">${l.days.map(d => C.DAYS[d]).join(", ") || "дни не выбраны"} · ${l.from && l.to ? `${l.from}–${l.to}` : "время не указано"}</div></div><button class="iconbtn" data-edit-lesson="${l.id}" type="button" aria-label="Изменить">${icon("i-edit")}</button></div>`).join("");
+  const n = now();
+  const events = S.extraLessons.filter(e => e.date >= n.today).sort((a, b) => (a.date + a.from).localeCompare(b.date + b.from)).map(e => `<div class="li"><div><button class="t" data-edit-event="${e.id}" type="button">${esc(e.title)}</button><div class="meta">${C.humanDate(e.date)} · ${e.from}–${e.to}</div></div><button class="iconbtn" data-edit-event="${e.id}" type="button" aria-label="Изменить">${icon("i-edit")}</button></div>`).join("");
+  const habit = S.habits[0];
+  return `<div class="card"><div class="cardhead"><h2>Занятия по расписанию</h2><button class="btn sm" data-act="new-lesson" type="button">${icon("i-plus")}Добавить</button></div>${lessons ? `<div class="list">${lessons}</div>` : `<p class="empty">Нет регулярных занятий.</p>`}</div>
+  <div class="card"><div class="cardhead"><h2>Разовые события</h2><button class="btn sm" data-act="new-event" type="button">${icon("i-plus")}Добавить</button></div><p class="small muted" style="margin:0">Зачёт, пробник, кружок, поездка — то, что бывает один раз.</p>${events ? `<div class="list">${events}</div>` : ""}</div>
+  <div class="card"><h2>Свободное время по дням</h2><p class="small muted" style="margin:0">Когда можно заниматься самой. Занятия вычитаются автоматически.</p>
+    <div style="display:flex;flex-direction:column;gap:8px">${S.free.map((f, i) => `<div class="week-free"><b class="small">${C.DAYS[i]}</b><input type="time" id="free-from-${i}" data-free="${i}" data-k="from" value="${esc(f.from)}" aria-label="${C.DAYS[i]}, с" ${f.off ? "disabled" : ""}><input type="time" id="free-to-${i}" data-free="${i}" data-k="to" value="${esc(f.to)}" aria-label="${C.DAYS[i]}, до" ${f.off ? "disabled" : ""}><label><input type="checkbox" id="free-off-${i}" data-free="${i}" data-k="off" ${f.off ? "checked" : ""}> выходной</label></div>`).join("")}</div></div>
+  <div class="card"><h2>Как ты занимаешься</h2><div class="grid2">
+    <label class="field"><span>Одна сессия</span><select id="set-session" data-set="sessionMin">${[25, 30, 45, 50].map(m => `<option value="${m}" ${S.sessionMin === m ? "selected" : ""}>${m} минут</option>`).join("")}</select></label>
+    <label class="field"><span>Максимум в день на самоподготовку</span><select id="set-cap" data-set="dailyCapMin">${[60, 120, 180, 240, 300].map(m => `<option value="${m}" ${S.dailyCapMin === m ? "selected" : ""}>${m / 60} ${word(m / 60, "час", "часа", "часов")}</option>`).join("")}</select></label></div>
+    <label class="row small"><input type="checkbox" id="set-habit" ${habit ? "checked" : ""}> Каждый будний день ставить блок «Школьные задания»</label>
+    ${(S.capFactor || 1) < 1 ? `<div class="row small"><span class="muted">Сейчас нагрузка облегчена на четверть.</span><button class="btn sm" data-act="unlighten" type="button">Вернуть обычную</button></div>` : ""}</div>
+  <div class="card"><h2>Цели по предметам</h2><div class="list">${S.subjects.map(s => `<div class="li"><div><div class="t">${esc(s.name)}</div><div class="meta">сейчас ${s.current ?? "—"} → цель ${s.target ?? "—"}</div><div class="progress" style="margin-top:6px"><i style="width:${s.current || 0}%;background:${color(s.name)}"></i></div></div></div>`).join("")}</div></div>`;
+}
+
+// ---------- формы ----------
+const dlg = $("#dlg"), dlgform = $("#dlgform");
+let dlgSubmit = null, dlgAct = {};
+function openDialog(title, body, { submit, actions = {}, submitLabel = "Сохранить" }) {
+  dlgSubmit = submit; dlgAct = actions;
+  dlgform.innerHTML = `<div class="cardhead"><h2>${title}</h2><button class="iconbtn" value="cancel" formnovalidate type="submit" aria-label="Закрыть">✕</button></div>${body}
+    <div class="dlgfoot"><span class="row">${Object.entries(actions).map(([k, a]) => `<button class="btn sm ${a.cls || ""}" type="button" data-dlg="${k}">${a.label}</button>`).join("")}</span>
+    <span class="row"><button class="btn" value="cancel" formnovalidate type="submit">Отмена</button><button class="btn primary" value="ok" type="submit">${submitLabel}</button></span></div>`;
+  dlg.showModal();
+  dlgform.querySelector("input,select,textarea")?.focus();
+}
+dlgform.addEventListener("submit", e => {
+  const v = e.submitter?.value;
+  if (v === "ok" && dlgSubmit) { if (dlgSubmit() === false) { e.preventDefault(); return; } }
+});
+dlgform.addEventListener("click", e => {
+  const b = e.target.closest("[data-dlg]"); if (b) { dlgAct[b.dataset.dlg].run(); dlg.close(); return; }
+  const d = e.target.closest(".daybtn"); if (d) d.setAttribute("aria-pressed", d.getAttribute("aria-pressed") !== "true");
+});
+const val = id => dlgform.querySelector("#" + id)?.value?.trim() ?? "";
+
+function taskDialog(t, preset = {}) {
+  const n = now();
+  const isNew = !t;
+  t ||= { title: "", subject: S.subjects[0]?.name || "", sessions: 2, due: "", dueTime: "", pin: preset.at ? { date: n.today, from: preset.at } : null };
+  openDialog(isNew ? "Новая задача" : "Задача", `
+    <label class="field"><span>Что сделать</span><input type="text" id="f-title" required maxlength="100" value="${esc(t.title)}" placeholder="ДЗ по истории, доклад по биологии"></label>
+    <div class="grid2"><label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(t.subject)}</select></label>
+      <label class="field"><span>Сколько сессий по ${S.sessionMin} мин</span><input type="number" id="f-sess" min="1" max="20" value="${t.sessions}"></label></div>
+    <div class="grid2"><label class="field"><span>Срок (необязательно)</span><input type="date" id="f-due" value="${esc(t.due || "")}"></label>
+      <label class="field"><span>До скольки</span><input type="time" id="f-duetime" value="${esc(t.dueTime || "")}"></label></div>
+    <div class="field"><span>Сделать в конкретное время (необязательно)</span><div class="grid2"><input type="date" id="f-pindate" aria-label="День" value="${esc(t.pin?.date || "")}"><input type="time" id="f-pinfrom" aria-label="Начало" value="${esc(t.pin?.from || "")}"></div></div>
+    ${!isNew ? `<div class="small muted">Сделано ${t.done} из ${t.sessions}</div>` : ""}`, {
+    submit: () => {
+      const title = val("f-title"); if (!title) return false;
+      const sessions = Math.max(1, Math.min(20, parseInt(val("f-sess")) || 1));
+      const pd = val("f-pindate"), pf = val("f-pinfrom");
+      change(() => {
+        const target = isNew ? { id: C.uid("t"), done: 0, created: n.today } : S.tasks.find(x => x.id === t.id);
+        Object.assign(target, { title, subject: val("f-subj"), sessions: Math.max(sessions, target.done || 0), due: val("f-due") || null, dueTime: val("f-duetime") || null, kind: "other", pin: pd && pf ? { date: pd, from: pf } : null });
+        if (isNew) S.tasks.push(target);
+      });
+    },
+    actions: isNew ? {} : {
+      skip: { label: "Не сегодня", run: () => change(() => { const x = S.tasks.find(y => y.id === t.id); (x.skip ||= []).push(n.today); if (x.pin?.date === n.today) x.pin = null; }) },
+      done: { label: "Готово целиком", run: () => change(() => { const x = S.tasks.find(y => y.id === t.id); x.done = x.sessions; x.doneAt = n.today; }) },
+      del: { label: "Удалить", cls: "danger", run: () => change(() => { S.tasks = S.tasks.filter(y => y.id !== t.id); }) },
+    },
+  });
+}
+function lessonDialog(l) {
+  const isNew = !l;
+  l ||= { title: "", subject: S.subjects[0]?.name || "", days: [], from: "", to: "" };
+  openDialog(isNew ? "Новое занятие" : "Занятие", `
+    <label class="field"><span>Название</span><input type="text" id="f-title" required maxlength="80" value="${esc(l.title)}" placeholder="Репетитор по истории"></label>
+    <label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(l.subject)}</select></label>
+    <div class="field"><span>Дни</span><div class="days">${C.DAYS.map((d, i) => `<button type="button" class="daybtn" data-d="${i}" aria-pressed="${l.days.includes(i)}">${d}</button>`).join("")}</div></div>
+    <div class="grid2"><label class="field"><span>Начало</span><input type="time" id="f-from" value="${esc(l.from)}"></label><label class="field"><span>Конец</span><input type="time" id="f-to" value="${esc(l.to)}"></label></div>`, {
+    submit: () => {
+      const title = val("f-title"); if (!title) return false;
+      const days = [...dlgform.querySelectorAll(".daybtn[aria-pressed=true]")].map(b => +b.dataset.d);
+      let from = val("f-from"), to = val("f-to");
+      if (from && !to) to = C.toHHMM(Math.min(C.toMin(from) + 90, 1439));
+      change(() => {
+        const target = isNew ? { id: C.uid("l") } : S.lessons.find(x => x.id === l.id);
+        Object.assign(target, { title, subject: val("f-subj"), days, from, to });
+        if (isNew) S.lessons.push(target);
+      });
+    },
+    actions: isNew ? {} : {
+      cancelToday: { label: "Отменить сегодня", run: () => change(() => { const d = now().today; if (!S.cancelled.some(c => c.lessonId === l.id && c.date === d)) S.cancelled.push({ lessonId: l.id, date: d }); }) },
+      del: { label: "Удалить совсем", cls: "danger", run: () => change(() => { S.lessons = S.lessons.filter(x => x.id !== l.id); }) },
+    },
+  });
+}
+function eventDialog(e) {
+  const isNew = !e;
+  e ||= { title: "", subject: S.subjects[0]?.name || "", date: now().today, from: "", to: "" };
+  openDialog(isNew ? "Разовое событие" : "Событие", `
+    <label class="field"><span>Что</span><input type="text" id="f-title" required maxlength="80" value="${esc(e.title)}" placeholder="Зачёт по обществу, кружок, поездка"></label>
+    <div class="grid2"><label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(e.subject)}</select></label><label class="field"><span>Дата</span><input type="date" id="f-date" required value="${esc(e.date)}"></label></div>
+    <div class="grid2"><label class="field"><span>Начало</span><input type="time" id="f-from" required value="${esc(e.from)}"></label><label class="field"><span>Конец</span><input type="time" id="f-to" value="${esc(e.to)}"></label></div>`, {
+    submit: () => {
+      const title = val("f-title"), date = val("f-date"), from = val("f-from"); if (!title || !date || !from) return false;
+      const to = val("f-to") || C.toHHMM(Math.min(C.toMin(from) + 60, 1439));
+      change(() => {
+        const target = isNew ? { id: C.uid("x") } : S.extraLessons.find(x => x.id === e.id);
+        Object.assign(target, { title, subject: val("f-subj"), date, from, to });
+        if (isNew) S.extraLessons.push(target);
+      });
+    },
+    actions: isNew ? {} : { del: { label: "Удалить", cls: "danger", run: () => change(() => { S.extraLessons = S.extraLessons.filter(x => x.id !== e.id); }) } },
+  });
+}
+function dayDialog(date) {
+  const ov = S.avail[date] || {}, base = S.free[C.weekday(date)];
+  openDialog(`${C.DAYS_FULL[C.weekday(date)]}, ${C.humanDate(date)}`, `
+    <p class="small muted" style="margin:0">Обычно в этот день: ${base.off ? "выходной" : `${base.from}–${base.to}`}. Здесь можно поменять только этот день.</p>
+    <label class="row"><input type="checkbox" id="f-off" ${ov.off ? "checked" : ""}> В этот день без подготовки</label>
+    <div class="grid2"><label class="field"><span>Свободна с</span><input type="time" id="f-from" value="${esc(ov.from || base.from)}"></label><label class="field"><span>до</span><input type="time" id="f-to" value="${esc(ov.to || base.to)}"></label></div>`, {
+    submit: () => change(() => {
+      if (dlgform.querySelector("#f-off").checked) S.avail[date] = { off: true };
+      else { const f = val("f-from"), t = val("f-to"); if (f === base.from && t === base.to && !base.off) delete S.avail[date]; else S.avail[date] = { from: f, to: t }; }
+    }),
+    actions: S.avail[date] ? { reset: { label: "Как обычно", run: () => change(() => { delete S.avail[date]; }) } } : {},
+  });
+}
+function learnedDialog() {
+  openDialog("Какую тему изучила?", `<p class="small muted" style="margin:0">Повторения сами появятся в плане через ${C.INTERVALS.join(", ")} дней.</p>
+    <label class="field"><span>Тема</span><input type="text" id="f-title" required maxlength="80" placeholder="Реформы Петра I"></label>
+    <label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(S.subjects[0]?.name)}</select></label>`, {
+    submitLabel: "Запомнить",
+    submit: () => { const title = val("f-title"); if (!title) return false; const n = now();
+      change(() => { C.addTopic(S, title, val("f-subj"), n.today); say("assistant", `Запомнила «${title}» 📚 Первое повторение завтра, потом через 3, 7, 14, 30 и 60 дней.`); }); },
+  });
 }
 
 // ---------- действия ----------
 document.addEventListener("click", e => {
-  const t = e.target.closest("button"); if (!t || !S) return;
-  const n = nowInfo();
-  if (t.id === "tab-today" || t.id === "tab-week") { view = t.id === "tab-week" ? "week" : "today"; history.replaceState(null, "", view === "week" ? "#week" : location.pathname + location.search); render(); return; }
-  if (t.dataset.done !== undefined) { const b = todayBlocks[+t.dataset.done]; if (b) change(() => C.markDone(S, n.today, b)); return; }
-  if (t.dataset.undo !== undefined) { change(() => C.undoDone(S, n.today, +t.dataset.undo)); return; }
-  if (t.dataset.grade) { change(() => C.gradeReview(S, n.today, t.dataset.ref, t.dataset.grade, +t.dataset.start)); return; }
-  if (t.dataset.del) { change(() => { S.tasks = S.tasks.filter(x => x.id !== t.dataset.del); }); return; }
-  if (t.id === "tiredbtn") { tiredMsg = null; change(() => { S.tired[n.today] = { micro: 0 }; }); return; }
-  if (t.id === "untired") { tiredMsg = null; change(() => { delete S.tired[n.today]; }); return; }
-  if (t.id === "microyes") {
-    const o = C.microOptions(S, n.today)[0]; if (!o) return;
-    tiredMsg = pick(PRAISE);
-    change(() => {
-      if (o.kind === "review") C.gradeReview(S, n.today, o.ref, "hard", n.min);
-      else (S.log[n.today] ||= []).push({ kind: "micro", ref: o.ref, title: o.title, subject: o.subject, start: n.hhmm, end: C.toHHMM(Math.min(n.min + 5, 1439)) });
-      S.tired[n.today].micro = (S.tired[n.today].micro || 0) + 1;
-    }); return;
+  const t = e.target.closest("button"); if (!t || !S || t.closest("dialog")) return;
+  const n = now(), d = t.dataset;
+  if (d.view) { view = d.view; history.replaceState(null, "", "#" + view); render(); scrollTo(0, view === "chat" ? document.body.scrollHeight : 0); return; }
+  if (d.done !== undefined) { const b = todayBlocks[+d.done]; if (b) change(() => C.markDone(S, n.today, b)); return; }
+  if (d.undo !== undefined) { change(() => C.undoDone(S, n.today, +d.undo)); return; }
+  if (d.grade) { change(() => C.gradeReview(S, n.today, d.ref, d.grade, d.start ? +d.start : n.min)); return; }
+  if (d.editTask) { taskDialog(S.tasks.find(x => x.id === d.editTask)); return; }
+  if (d.editLesson) { const l = S.lessons.find(x => x.id === d.editLesson); if (l) lessonDialog(l); return; }
+  if (d.editEvent) { const x = S.extraLessons.find(y => y.id === d.editEvent); if (x) eventDialog(x); return; }
+  if (d.editDay) { dayDialog(d.editDay); return; }
+  if (d.delTopic) { change(() => { S.topics = S.topics.filter(x => x.id !== d.delTopic); }); return; }
+  switch (d.act) {
+    case "new-task": taskDialog(null, { at: d.at }); return;
+    case "new-lesson": lessonDialog(null); return;
+    case "new-event": eventDialog(null); return;
+    case "learned": learnedDialog(); return;
+    case "tired": change(() => { S.tired[n.today] = { micro: 0 }; say("user", "Сил нет 🪫"); say("assistant", pick(ASK)); }); return;
+    case "untired": change(() => { delete S.tired[n.today]; say("assistant", "Ура, силы вернулись! Показываю обычный план 💪"); }); return;
+    case "micro-yes": {
+      const o = C.microOptions(S, n.today)[0]; if (!o) return;
+      change(() => {
+        if (o.kind === "review") C.gradeReview(S, n.today, o.ref, "hard", n.min);
+        else (S.log[n.today] ||= []).push({ kind: "micro", ref: o.ref, title: o.title, subject: o.subject, start: n.hhmm, end: C.toHHMM(Math.min(n.min + 5, 1439)) });
+        S.tired[n.today].micro = (S.tired[n.today].micro || 0) + 1;
+        say("user", "Сделала ✓"); say("assistant", pick(PRAISE));
+      }); return;
+    }
+    case "micro-no": change(() => { S.tired[n.today].rest = true; say("user", S.tired[n.today].micro ? "Всё, отдыхаю" : "Не сегодня"); say("assistant", "Отдыхай 🫶 Всё несделанное я перенесла на ближайшие дни, ничего не потеряется."); }); return;
+    case "lighten": change(() => { S.capFactor = 0.75; (S.lightenAsked ||= {})[n.today] = true; say("assistant", "Готово: облегчила план на четверть. Если станет легче — верну обычную нагрузку в разделе «Расписание»."); }); return;
+    case "nolighten": change(() => { (S.lightenAsked ||= {})[n.today] = true; }); return;
+    case "unlighten": change(() => { S.capFactor = 1; }); return;
   }
-  if (t.id === "microno") { change(() => { S.tired[n.today].rest = true; }); return; }
-  if (t.id === "topicbtn") { topicFormOpen = !topicFormOpen; render(); if (topicFormOpen) $("#topic-title")?.focus(); return; }
-  if (t.id === "lighten") { change(() => { S.capFactor = 0.75; (S.lightenAsked ||= {})[n.today] = true; }); flash("Готово: на этой неделе нагрузка меньше на четверть."); return; }
-  if (t.id === "nolighten") { change(() => { (S.lightenAsked ||= {})[n.today] = true; }); return; }
-  if (t.classList.contains("x")) { $("#reply").hidden = true; return; }
+});
+document.addEventListener("change", e => {
+  if (!S) return;
+  const el = e.target, d = el.dataset;
+  if (d.free !== undefined) { change(() => { const f = S.free[+d.free]; if (d.k === "off") f.off = el.checked; else f[d.k] = el.value; }); return; }
+  if (d.set) { change(() => { S[d.set] = +el.value; }); return; }
+  if (el.id === "set-habit") { change(() => { S.habits = el.checked ? [{ id: C.uid("h"), title: "Школьные задания", subject: "Школа", days: [0, 1, 2, 3, 4], sessions: 1 }] : []; }); }
 });
 document.addEventListener("submit", async e => {
+  if (!S || e.target.closest("dialog")) return;
   e.preventDefault();
-  if (!S) return;
-  const n = nowInfo();
+  const n = now();
   if (e.target.id === "topicform") {
-    const title = $("#topic-title").value.trim(); if (!title) return;
-    topicFormOpen = false;
-    change(() => C.addTopic(S, title, $("#topic-subj").value, n.today));
-    showReply(`Запомнила «${title}» 📚 Первое повторение завтра, потом через 3, 7, 14, 30 и 60 дней.`, []);
+    const titles = $("#topic-titles").value.split("\n").map(s => s.trim()).filter(Boolean).slice(0, 30);
+    if (!titles.length) return;
+    const subj = $("#topic-subj").value;
+    change(() => { titles.forEach(t => C.addTopic(S, t, subj, n.today)); say("assistant", `Добавила ${titles.length} ${word(titles.length, "тему", "темы", "тем")} на повторение 📚 Первое — завтра.`); });
     return;
   }
-  if (e.target.id === "send") {
-    const msg = $("#msg").value.trim(); if (!msg) return;
-    const btn = $("#sendbtn"); btn.disabled = true; $("#msg").disabled = true;
-    showReply("Думаю…", []);
+  if (e.target.matches("[data-composer]")) {
+    const input = e.target.querySelector("input");
+    const msg = input.value.trim(); if (!msg || thinking) return;
     const before = planKeys(C.buildPlan(S, n.today, 7, n.min));
+    thinking = true; input.value = "";
+    S.chat.push({ role: "user", text: msg, at: Date.now(), pending: true });
+    render();
     try {
-      if (saving || savePending) await new Promise(r => setTimeout(r, 600));
+      if (saving || savePending) await new Promise(r => setTimeout(r, 700));
       const r = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, message: msg, today: n.today, now: n.hhmm }) });
       const j = await r.json();
-      if (!r.ok) { showReply(j.error || "Помощник не ответил. Попробуй ещё раз.", []); }
-      else {
-        S = j.state; tiredMsg = null;
-        const after = planKeys(C.buildPlan(S, n.today, 7, n.min));
-        highlight = new Set([...after].filter(k => !before.has(k)));
-        $("#msg").value = "";
-        showReply(j.reply, j.changes || []);
-        render();
-        setTimeout(() => { highlight = new Set(); render(); }, 4000);
-      }
-    } catch { showReply("Нет связи. Проверь интернет и отправь ещё раз — текст я оставила в поле.", []); }
-    btn.disabled = false; $("#msg").disabled = false; $("#msg").focus();
+      thinking = false;
+      if (!r.ok) { S.chat = S.chat.filter(m => !m.pending); S.chat.push({ role: "assistant", text: j.error || "Помощник не ответил. Попробуй ещё раз.", at: Date.now() }); input.value = msg; render(); return; }
+      S = j.state;
+      const after = planKeys(C.buildPlan(S, n.today, 7, n.min));
+      highlight = new Set([...after].filter(k => !before.has(k)));
+      render();
+      setTimeout(() => { highlight = new Set(); render(); }, 4000);
+    } catch {
+      thinking = false; S.chat = S.chat.filter(m => !m.pending);
+      S.chat.push({ role: "assistant", text: "Нет связи. Проверь интернет и отправь ещё раз — текст я вернула в поле.", at: Date.now() });
+      input.value = msg; render();
+    }
+    (matchMedia("(min-width:1000px)").matches ? $("#msg-desk") : $("#msg-m"))?.focus();
   }
 });
-function showReply(text, changes) {
-  const r = $("#reply"); r.hidden = false;
-  r.innerHTML = `<button class="link x" type="button" aria-label="Скрыть ответ">скрыть</button><div>${esc(text)}</div>${changes.length ? `<div class="ch">Изменила: ${esc(changes.join("; "))}</div>` : ""}`;
-}
-addEventListener("hashchange", () => { view = location.hash === "#week" ? "week" : "today"; if (S) render(); });
-setInterval(() => { if (S && !document.hidden && document.activeElement?.tagName !== "INPUT") render(); }, 60000);
-document.addEventListener("visibilitychange", () => { if (!document.hidden && S) load(); });
+function planKeys(plan) { const k = new Set(); for (const d of plan) for (const b of d.blocks) if (b.type !== "done") k.add(`${d.date}|${b.type}|${b.ref}|${b.start}`); return k; }
+addEventListener("hashchange", () => { const v = location.hash.slice(1); if (VIEWS.some(x => x[0] === v)) { view = v; if (S) render(); } });
+setInterval(() => { if (S && !document.hidden && !dlg.open && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) render(); }, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && S && !thinking && !dlg.open) load(); });
 load();
 </script>
 </body>

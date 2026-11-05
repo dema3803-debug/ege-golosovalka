@@ -1,7 +1,7 @@
 import { hasDb, redis } from "./_redis.js";
 import { validU, loadState, saveState, readBody } from "./_store.js";
 import { chat } from "./_giga.js";
-import { applyActions, DAYS_FULL, weekday, addDays, humanDate } from "../core.js";
+import { applyActions, pushChat, DAYS_FULL, weekday, addDays, humanDate } from "../core.js";
 
 // POST {u, message, today, now} — помощник понимает сообщение и правит план.
 export default async function handler(req, res) {
@@ -19,13 +19,14 @@ export default async function handler(req, res) {
   if (!state) return res.status(404).json({ error: "План не найден" });
 
   const prompt = buildPrompt(state, today, now);
+  const history = (state.chat || []).slice(-6).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.role === "user" ? m.text : JSON.stringify({ reply: m.text, actions: [] }) }));
   let raw;
   try {
-    const r = await chat([{ role: "system", content: prompt }, { role: "user", content: message }], { model: "GigaChat-2-Pro", temperature: 0.2, maxTokens: 900 });
+    const r = await chat([{ role: "system", content: prompt }, ...history, { role: "user", content: message }], { model: "GigaChat-2-Pro", temperature: 0.2, maxTokens: 900 });
     raw = r.text;
   } catch (e) {
     try {
-      const r = await chat([{ role: "system", content: prompt }, { role: "user", content: message }], { model: "GigaChat-2", temperature: 0.2, maxTokens: 900 });
+      const r = await chat([{ role: "system", content: prompt }, ...history, { role: "user", content: message }], { model: "GigaChat-2", temperature: 0.2, maxTokens: 900 });
       raw = r.text;
     } catch (e2) {
       return res.status(502).json({ error: "Помощник сейчас недоступен. Попробуй через минуту." });
@@ -48,17 +49,22 @@ export default async function handler(req, res) {
     await redis("LPUSH", "giga_log", JSON.stringify({ at: new Date().toISOString(), today, now, message, raw: String(raw).slice(0, 3000), repaired: repaired && repaired.slice(0, 2000), ok: !!parsed }));
     await redis("LTRIM", "giga_log", 0, 29);
   } catch {}
-  if (!parsed) return res.status(200).json({ reply: "Не до конца поняла 🙈 Скажи чуть по-другому: что, к какому дню и по какому предмету?", changes: [], state });
+  if (!parsed) {
+    const fallback = "Не до конца поняла 🙈 Скажи чуть по-другому: что, к какому дню и по какому предмету?";
+    pushChat(state, "user", message); pushChat(state, "assistant", fallback);
+    state.rev = (state.rev || 0) + 1; await saveState(b.u, state);
+    return res.status(200).json({ reply: fallback, changes: [], state });
+  }
 
   const notes = [];
   const actions = prepareActions(parsed.actions, today, now, notes);
   const changes = applyActions(state, actions, today);
-  if (changes.length) {
-    state.rev = (state.rev || 0) + 1;
-    await saveState(b.u, state);
-  }
   let reply = String(parsed.reply || "").replace(/["«»]\s*([^\p{L}\p{N}\s]{1,4})\s*["«»]/gu, "$1").replace(/"/g, "").trim().slice(0, 500) || (changes.length ? "Готово!" : "Окей!");
   if (notes.length) reply = (reply ? reply + " " : "") + notes.join(" ");
+  pushChat(state, "user", message);
+  pushChat(state, "assistant", reply, changes.length ? { changes } : {});
+  state.rev = (state.rev || 0) + 1;
+  await saveState(b.u, state);
   res.status(200).json({ reply, changes, state });
 }
 

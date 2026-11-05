@@ -27,7 +27,7 @@ export function emptyState() {
     free: DAYS.map(() => ({ off: false, from: "15:00", to: "21:00" })),
     sessionMin: 25, dailyCapMin: 240, capFactor: 1,
     lessons: [], extraLessons: [], cancelled: [], avail: {},
-    tasks: [], habits: [], topics: [], tired: {}, log: {},
+    tasks: [], habits: [], topics: [], tired: {}, log: {}, chat: [],
   };
 }
 
@@ -103,6 +103,18 @@ export function buildPlan(state, today, nDays = 7, nowMin = null) {
     const unplaced = [];
     let freeLeft = [];
 
+    // задачи, которые она сама поставила на конкретное время
+    const pinned = [];
+    for (const t of state.tasks) {
+      if (!t.pin || t.pin.date !== date || remaining[t.id] <= 0) continue;
+      let at = toMin(t.pin.from); if (at == null) continue;
+      while (remaining[t.id] > 0 && at + S <= 24 * 60) {
+        pinned.push({ type: "task", len: S, title: t.title, subject: t.subject, ref: t.id, due: t.due, dueTime: t.dueTime, pinned: true, start: at, end: at + S });
+        remaining[t.id]--; at += S + BREAK_MIN;
+      }
+    }
+    blocks.push(...pinned);
+
     if (!off && !tired) {
       const win = dayWindow(state, date);
       if (win.from != null && win.to != null) {
@@ -114,10 +126,10 @@ export function buildPlan(state, today, nDays = 7, nowMin = null) {
           if (f <= win.to + 30 && t >= win.from - 30) { win.from = Math.min(win.from, f); win.to = Math.max(win.to, t); }
         }
         if (isToday && nowMin != null) win.from = Math.max(win.from, Math.ceil(nowMin / 5) * 5);
-        const busy = [...timed.map(l => ({ from: l.from - 0, to: l.to + 15 })), ...done.filter(d => d.start != null).map(d => ({ from: d.start, to: d.end }))];
+        const busy = [...timed.map(l => ({ from: l.from - 0, to: l.to + 15 })), ...done.filter(d => d.start != null).map(d => ({ from: d.start, to: d.end })), ...pinned.map(p => ({ from: p.start, to: p.end + BREAK_MIN }))];
         const slots = win.to > win.from ? subtract(win, busy) : [];
         const doneMin = done.reduce((s, d) => s + Math.max(0, (d.end ?? 0) - (d.start ?? 0)), 0);
-        let cap = Math.round((state.dailyCapMin || 240) * (state.capFactor || 1)) - doneMin;
+        let cap = Math.round((state.dailyCapMin || 240) * (state.capFactor || 1)) - doneMin - pinned.reduce((a, p) => a + p.len, 0);
 
         const queue = [];
         // 1) повторения тем
@@ -131,7 +143,7 @@ export function buildPlan(state, today, nDays = 7, nowMin = null) {
           for (let k = 0; k < (h.sessions || 1); k++) queue.push({ type: "habit", len: S, title: h.title, subject: h.subject, ref: h.id });
         }
         // 3) задачи по срочности
-        const active = state.tasks.filter(t => remaining[t.id] > 0)
+        const active = state.tasks.filter(t => remaining[t.id] > 0 && !(t.skip || []).includes(date) && !(t.pin && t.pin.date > date))
           .map(t => ({ t, due: t.due || addDays(date, 14) }))
           .sort((a, b) => a.due.localeCompare(b.due) || (a.t.created || "").localeCompare(b.t.created || ""));
         for (const { t, due } of active) {
@@ -327,4 +339,10 @@ export function applyActions(state, actions, today) {
     }
   }
   return changes;
+}
+
+// ---------- переписка ----------
+export function pushChat(state, role, text, extra = {}) {
+  (state.chat ||= []).push({ role, text: String(text).slice(0, 800), at: Date.now(), ...extra });
+  if (state.chat.length > 60) state.chat.splice(0, state.chat.length - 60);
 }
