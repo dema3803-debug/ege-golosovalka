@@ -245,7 +245,7 @@ export function applyActions(state, actions, today) {
       case "add_task": {
         const title = clip(a.title, 100); if (!title) break;
         const sessions = Math.max(1, Math.min(20, parseInt(a.sessions) || 2));
-        const due = isDate(a.due_date) ? a.due_date : null;
+        const due = isDate(a.exam_date) ? (addDays(a.exam_date, -1) < today ? today : addDays(a.exam_date, -1)) : isDate(a.due_date) ? a.due_date : null;
         const kind = ["ege", "school", "other"].includes(a.kind) ? a.kind : "other";
         state.tasks.push({ id: uid("t"), title, subject: clip(a.subject, 40), kind, sessions, done: 0, due, dueTime: isTime(a.due_time) ? a.due_time : null, created: today });
         changes.push(`добавила «${title}»${due ? ` к ${humanDate(due)}` : ""}`);
@@ -275,6 +275,12 @@ export function applyActions(state, actions, today) {
         const l = state.lessons.find(x => x.id === a.lesson_id); if (!l || !isDate(a.date)) break;
         if (!state.cancelled.some(c => c.lessonId === l.id && c.date === a.date)) state.cancelled.push({ lessonId: l.id, date: a.date });
         changes.push(`убрала «${l.title}» ${humanDate(a.date)}`);
+        break;
+      }
+      case "set_lesson_time": {
+        const l = state.lessons.find(x => x.id === a.lesson_id); if (!l || !isTime(a.from)) break;
+        l.from = a.from; l.to = isTime(a.to) ? a.to : toHHMM(Math.min(toMin(a.from) + 90, 1439));
+        changes.push(`«${l.title}» теперь ${l.from}–${l.to}`);
         break;
       }
       case "add_lesson_once": {
