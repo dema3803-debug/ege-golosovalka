@@ -58,7 +58,7 @@ export async function getToken() {
   return cached.token;
 }
 
-const BASES = ["https://api.giga.chat", "https://gigachat.devices.sberbank.ru"];
+const BASES = ["https://gigachat.devices.sberbank.ru", "https://api.giga.chat"];
 
 export async function chat(messages, { model = "GigaChat-2", temperature = 0.3, maxTokens = 1500 } = {}) {
   const token = await getToken();
