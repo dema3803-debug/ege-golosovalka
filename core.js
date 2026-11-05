@@ -27,7 +27,7 @@ export function emptyState() {
     free: DAYS.map(() => ({ off: false, from: "15:00", to: "21:00" })),
     sessionMin: 25, dailyCapMin: 240, capFactor: 1,
     lessons: [], extraLessons: [], cancelled: [], avail: {},
-    tasks: [], habits: [], topics: [], tired: {}, log: {}, chat: [],
+    tasks: [], habits: [], topics: [], tired: {}, log: {}, chat: [], cards: [],
   };
 }
 
@@ -240,6 +240,8 @@ export function tiredStreak(state, today) {
 }
 export function microOptions(state, today) {
   const out = [];
+  const used0 = new Set((state.log[today] || []).map(x => x.kind + "|" + x.ref));
+  if ((state.cards || []).length >= 3 && !used0.has("micro|quiz")) out.push({ kind: "quiz", ref: "quiz", title: "Ответить на 3 вопроса по карточкам — я спрошу прямо тут", subject: "", min: 5 });
   const used = new Set((state.log[today] || []).map(x => x.ref + "|" + x.kind));
   for (const t of state.topics.filter(t => t.next && t.next <= today).sort((a, b) => a.next.localeCompare(b.next)))
     if (!used.has(t.id + "|review")) out.push({ kind: "review", ref: t.id, title: `Повторить: ${t.title}`, subject: t.subject, min: 5 });
@@ -309,6 +311,13 @@ export function applyActions(state, actions, today) {
         state.extraLessons.splice(i, 1);
         break;
       }
+      case "add_cards": {
+        const list = Array.isArray(a.cards) ? a.cards : [];
+        const topic = a.topic ? state.topics.find(t => t.title.toLowerCase() === String(a.topic).toLowerCase()) : null;
+        const n = addCards(state, list, { topicId: topic?.id || null, subject: clip(a.subject, 40) || topic?.subject || "", source: "chat" });
+        if (n) changes.push(`записала ${n} ${n === 1 ? "карточку" : n < 5 ? "карточки" : "карточек"} в базу знаний`);
+        break;
+      }
       case "set_lesson_time": {
         const l = state.lessons.find(x => x.id === a.lesson_id); if (!l || !isTime(a.from)) break;
         l.from = a.from; l.to = isTime(a.to) ? a.to : toHHMM(Math.min(toMin(a.from) + 90, 1439));
@@ -359,3 +368,37 @@ export function pushChat(state, role, text, extra = {}) {
   (state.chat ||= []).push({ role, text: String(text).slice(0, 800), at: Date.now(), ...extra });
   if (state.chat.length > 60) state.chat.splice(0, state.chat.length - 60);
 }
+
+// ---------- база знаний (карточки) ----------
+export function addCards(state, list, { topicId = null, subject = "", source = "manual" } = {}) {
+  state.cards ||= [];
+  const seen = new Set(state.cards.map(c => c.q.toLowerCase()));
+  let n = 0;
+  for (const c of (list || []).slice(0, 50)) {
+    const q = clip(c?.q, 300), a = clip(c?.a, 500);
+    if (!q || !a || seen.has(q.toLowerCase())) continue;
+    seen.add(q.toLowerCase());
+    state.cards.push({ id: uid("c"), q, a, topicId, subject: clip(c.subject || subject, 40), source, right: 0, wrong: 0, last: null });
+    n++;
+  }
+  return n;
+}
+// «термин — определение» построчно → карточки
+export function parseCardLines(text) {
+  return String(text || "").split(/\n+/).map(l => l.trim()).filter(Boolean).map(l => {
+    const m = l.match(/^(.+?)\s+[-—–]\s+(.+)$/) || l.match(/^(.+?)\s*[:=—–]\s*(.+)$/);
+    return m ? { q: m[1].trim(), a: m[2].trim() } : null;
+  }).filter(Boolean);
+}
+export function pickCards(state, { topicId = null, subject = null, n = 3, today } = {}) {
+  let pool = (state.cards || []).filter(c => (!topicId || c.topicId === topicId) && (!subject || c.subject === subject));
+  const dueTopics = new Set(state.topics.filter(t => t.next && t.next <= today).map(t => t.id));
+  const score = c => (dueTopics.has(c.topicId) ? 100 : 0) + (c.wrong - c.right) * 25 + (c.last ? Math.min(20, daysBetween(c.last, today)) : 20) + Math.random() * 5;
+  return pool.map(c => ({ c, s: score(c) })).sort((a, b) => b.s - a.s).slice(0, n).map(x => x.c);
+}
+export function recordAnswer(state, cardId, ok, today) {
+  const c = (state.cards || []).find(x => x.id === cardId); if (!c) return;
+  if (ok === true) c.right++; else if (ok === false) c.wrong++; else { c.right += 0.5; c.wrong += 0.5; }
+  c.last = today;
+}
+export function topicCards(state, topicId) { return (state.cards || []).filter(c => c.topicId === topicId); }

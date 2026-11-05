@@ -57,10 +57,12 @@ export default async function handler(req, res) {
   }
 
   const notes = [];
+  const quizAct = Array.isArray(parsed.actions) ? parsed.actions.find(a => a && a.type === "start_quiz") : null;
+  const quiz = quizAct ? { subject: quizAct.subject || null, topic: quizAct.topic || null, n: Math.max(3, Math.min(10, parseInt(quizAct.n) || 5)) } : null;
   const actions = prepareActions(parsed.actions, today, now, notes);
   const changes = applyActions(state, actions, today);
   let reply = String(parsed.reply || "").replace(/\{[\s\\n]*\}/g, " ").replace(/\\n/g, " ").replace(/\s{2,}/g, " ").replace(/["«»]\s*([^\p{L}\p{N}\s]{1,4})\s*["«»]/gu, "$1").replace(/"/g, "").trim().slice(0, 500) || (changes.length ? "Готово!" : "Окей!");
-  if (!changes.length && /(вернул|убрал|добавил|постав|перенес|перенёс|отменил|восстанов|удалил|сдвинул|записал|запомнил)/i.test(reply)) {
+  if (!changes.length && !quiz && /(вернул|убрал|добавил|постав|перенес|перенёс|отменил|восстанов|удалил|сдвинул|записал|запомнил)/i.test(reply)) {
     reply = "Хм, кажется, я ничего не поменяла 🙈 Скажи чуть по-другому — или поправь сама: нажми на занятие или задачу, либо открой раздел «Расписание».";
   }
   if (notes.length) reply = (reply ? reply + " " : "") + notes.join(" ");
@@ -68,7 +70,7 @@ export default async function handler(req, res) {
   pushChat(state, "assistant", reply, changes.length ? { changes } : {});
   state.rev = (state.rev || 0) + 1;
   await saveState(b.u, state);
-  res.status(200).json({ reply, changes, state });
+  res.status(200).json({ reply, changes, state, quiz });
 }
 
 const EXAM_RE = /(зач[её]т|контрольн|экзамен|пробник|тест|проверочн|самостоятельн)/i;
@@ -158,6 +160,8 @@ ${cancelledList ? "Уже отменённые занятия (вернуть �
 ${extra ? "Разовые занятия:\n" + extra : ""}
 Незавершённые задачи:
 ${tasks}
+Темы на повторении: ${s.topics.map(t => `«${t.title}» (${t.subject})`).join(", ") || "нет"}
+В базе знаний карточек: ${(s.cards || []).length}
 
 Доступные действия (поле "type"):
 - add_task: {"type":"add_task","title":"...","subject":"...","kind":"ege|school|other","sessions":число 1-20,"due_date":"YYYY-MM-DD или null","due_time":"HH:MM или null"}
@@ -169,6 +173,8 @@ ${tasks}
 - cancel_lesson: {"type":"cancel_lesson","lesson_id":"...","date":"YYYY-MM-DD"} — занятие в этот день отменили или «не надо». Это ЕДИНСТВЕННЫЙ способ убрать занятие.
 - restore_lesson: {"type":"restore_lesson","lesson_id":"...","date":"YYYY-MM-DD"} — вернуть отменённое занятие («верни английский», «англ всё-таки будет»). Бери из списка отменённых.
 - delete_event: {"type":"delete_event","event_id":"..."} — убрать разовое занятие/событие.
+- add_cards: {"type":"add_cards","subject":"...","topic":"название темы или null","cards":[{"q":"вопрос","a":"ответ"}]} — когда она просит запомнить факт/термин/дату («запомни: ...», «добавь в карточки ...»). Сформулируй вопрос сама.
+- start_quiz: {"type":"start_quiz","subject":"предмет или null","topic":"тема или null","n":число 3-10} — когда она просит её поспрашивать/проверить («спроси меня по истории», «погоняй по терминам»).
 - add_lesson_once: {"type":"add_lesson_once","title":"...","subject":"...","date":"YYYY-MM-DD","from":"HH:MM","to":"HH:MM"}
 - set_availability: {"type":"set_availability","date":"YYYY-MM-DD","from":"HH:MM","to":"HH:MM"} или {"type":"set_availability","date":"...","off":true} — ТОЛЬКО когда она сама говорит, во сколько свободна («сегодня свободна после 19», «в субботу уезжаю»). Не используй для отмены занятий.
 - set_lesson_time: {"type":"set_lesson_time","lesson_id":"...","from":"HH:MM","to":"HH:MM"} — указать время регулярного занятия (если конец неизвестен — плюс 1,5 часа)

@@ -73,6 +73,21 @@ h3{font-size:14px;font-weight:600;margin:0}
 .msg.typing{color:var(--muted)}
 .micro{align-self:stretch;border:1.5px solid var(--accent-line);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;background:var(--surface)}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
+.quizbox{display:flex;flex-direction:column;gap:8px;border:1.5px solid var(--accent-line);border-radius:12px;padding:10px;background:var(--surface)}
+.quizbox form{display:flex;gap:6px}
+.quizbox input{border-radius:999px;padding:9px 14px}
+.qn{font-size:12px;color:var(--muted)}
+details.topic{border-bottom:1px solid var(--line);padding:10px 0}
+details.topic:last-child{border-bottom:0}
+details.topic summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center}
+details.topic summary::-webkit-details-marker{display:none}
+.cardlist{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.kc{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;padding:8px 10px;border-radius:10px;background:var(--raised);font-size:13px}
+.kc b{font-weight:500;grid-column:1}
+.kc>span{color:var(--muted);grid-column:1}
+.kc .iconbtn{grid-column:2;grid-row:1/3}
+.genlist{display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow:auto}
+.genlist label{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;padding:8px 10px;border-radius:10px;background:var(--raised);font-size:13px}
 .more{align-self:center;font-size:13px;color:var(--muted);background:none;border:0;text-decoration:underline;text-underline-offset:2px}
 
 /* план */
@@ -213,8 +228,9 @@ import * as C from "/core.js";
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const U = new URLSearchParams(location.search).get("u");
-const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Темы", "i-topics"], ["chat", "Помощник", "i-chat"], ["setup", "Расписание", "i-set"]];
+const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Помощник", "i-chat"], ["setup", "Расписание", "i-set"]];
 let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
+let quiz = null; const openTopics = new Set();
 if (!VIEWS.some(v => v[0] === view)) view = "today";
 
 const COLORS = ["var(--s1)", "var(--s2)", "var(--s3)", "var(--s4)", "var(--s5)"];
@@ -242,7 +258,7 @@ async function load() {
     const r = await fetch(`/api/app?u=${encodeURIComponent(U)}`, { cache: "no-store" });
     const j = await r.json();
     if (!r.ok) { flash(j.error || "Не удалось загрузить план."); return; }
-    S = j.state; S.chat ||= []; S.extraLessons ||= []; flash(""); $("#dock").hidden = false; render();
+    S = j.state; S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; flash(""); $("#dock").hidden = false; render();
   } catch { flash("Нет связи. Проверь интернет и обнови страницу."); }
 }
 async function save() {
@@ -283,7 +299,7 @@ function chatHTML(n, limit) {
   let h = list.length ? list.map(m => `<div class="msg ${m.role}">${esc(m.text)}${m.changes?.length ? `<span class="ch">Изменила: ${esc(m.changes.join("; "))}</span>` : ""}</div>`).join("")
     : `<div class="msg assistant">Привет${S.name ? ", " + esc(S.name) : ""}! Пиши мне всё, что меняется: «завтра зачёт по обществу», «англ отменили», «вернусь поздно». Я сама переставлю план 💙</div>`;
   if (thinking) h += `<div class="msg assistant typing">Думаю…</div>`;
-  h += tiredWidget(n);
+  h += quiz ? quizWidget() : tiredWidget(n);
   return `<div class="chat">${h}</div>`;
 }
 function tiredWidget(n) {
@@ -295,6 +311,76 @@ function tiredWidget(n) {
     <div class="chips"><button class="btn soft sm" data-act="micro-yes" type="button">${t.micro ? "Давай ещё" : "Ну так и быть"}</button><button class="btn sm" data-act="micro-no" type="button">${t.micro ? "Всё, отдыхаю" : "Не сегодня"}</button></div>`;
 }
 
+function quizWidget() {
+  const q = quiz, c = q.cards[q.i];
+  let h = q.log.map(m => `<div class="msg ${m.role}">${esc(m.text)}</div>`).join("");
+  if (q.phase === "checking") h += `<div class="msg assistant typing">Проверяю…</div>`;
+  h += `<div class="quizbox">`;
+  if (q.phase === "ask") h += `<div class="qn">Вопрос ${q.i + 1} из ${q.cards.length}${c.subject ? " · " + esc(c.subject) : ""}</div>
+    <form data-quiz><input type="text" autocomplete="off" maxlength="500" placeholder="Твой ответ" aria-label="Твой ответ"><button class="send" type="submit" aria-label="Ответить">${icon("i-send")}</button></form>
+    <div class="chips"><button class="btn sm" data-act="quiz-skip" type="button">Не помню</button><button class="btn sm" data-act="quiz-stop" type="button">Хватит</button></div>`;
+  else if (q.phase === "self") h += `<div class="qn">Сверь сама: ты знала?</div><div class="chips"><button class="btn soft sm" data-act="quiz-self-yes" type="button">Знала</button><button class="btn sm" data-act="quiz-self-no" type="button">Не знала</button></div>`;
+  else if (q.phase === "result") h += `<div class="chips">${q.i + 1 < q.cards.length ? `<button class="btn soft sm" data-act="quiz-next" type="button">Дальше</button>` : `<button class="btn soft sm" data-act="quiz-next" type="button">Итог</button>`}<button class="btn sm" data-act="quiz-stop" type="button">Хватит</button></div>`;
+  else h += `<div class="qn">Проверяю ответ…</div>`;
+  return h + `</div>`;
+}
+
+// ---------- опрос по карточкам ----------
+function startQuiz({ topicId = null, subject = null, topicTitle = null, n = 5, mode = "free" } = {}) {
+  const d = now().today;
+  if (topicTitle && !topicId) topicId = S.topics.find(t => t.title.toLowerCase() === String(topicTitle).toLowerCase())?.id || null;
+  if (subject && !S.subjects.some(x => x.name === subject)) subject = S.subjects.find(x => x.name.toLowerCase().startsWith(String(subject).toLowerCase().slice(0, 5)))?.name || null;
+  const cards = C.pickCards(S, { topicId, subject, n, today: d });
+  if (!cards.length) {
+    change(() => say("assistant", topicId || subject ? "По этому пока нет карточек 🙈 Добавь их в разделе «Темы» — можно списком или нажать «Придумай карточки»." : "В базе знаний пока нет карточек. Добавь их в разделе «Темы» — и я начну тебя спрашивать."));
+    return;
+  }
+  const first = mode === "tired" ? "Тогда так: 3 быстрых вопроса, отвечай как помнишь 🙂" : mode === "topic" ? "Давай проверим тему — отвечай своими словами 🙂" : `Поехали! ${cards.length} ${word(cards.length, "вопрос", "вопроса", "вопросов")}, отвечай своими словами 🙂`;
+  quiz = { cards, i: 0, phase: "ask", mode, topicId, results: [], log: [{ role: "assistant", text: first }, { role: "assistant", text: cards[0].q }] };
+  if (view !== "today" && view !== "chat" && !matchMedia("(min-width:1000px)").matches) { view = "today"; history.replaceState(null, "", "#today"); }
+  render(); focusQuiz();
+}
+function focusQuiz() { setTimeout(() => { const f = [...document.querySelectorAll("form[data-quiz] input")].find(x => x.offsetParent); f?.focus(); }, 30); }
+async function answerQuiz(text) {
+  const q = quiz, c = q.cards[q.i], d = now().today;
+  q.log.push({ role: "user", text }); q.phase = "checking"; render();
+  let verdict = null, comment = "";
+  try {
+    const r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, mode: "check", q: c.q, a: c.a, answer: text }) });
+    const j = await r.json(); if (r.ok) { verdict = j.verdict; comment = j.comment || ""; }
+  } catch {}
+  if (quiz !== q) return;
+  if (!verdict) { q.log.push({ role: "assistant", text: `Правильный ответ: ${c.a}` }); q.phase = "self"; render(); return; }
+  const ok = verdict === "yes" ? true : verdict === "no" ? false : "partly";
+  q.results.push(ok); C.recordAnswer(S, c.id, ok, d);
+  q.log.push({ role: "assistant", text: verdict === "yes" ? `Верно! ✅ ${comment}` : verdict === "partly" ? `Почти 👌 ${comment} Полностью: ${c.a}` : `Не совсем. Правильно: ${c.a}${comment ? " — " + comment : ""}` });
+  q.phase = "result"; render(); save();
+}
+function quizSelf(ok) { const q = quiz, c = q.cards[q.i]; q.results.push(ok); C.recordAnswer(S, c.id, ok, now().today); q.log.push({ role: "user", text: ok ? "Знала" : "Не знала" }); q.phase = "result"; render(); save(); }
+function quizNext() {
+  const q = quiz;
+  if (q.i + 1 < q.cards.length) { q.i++; q.phase = "ask"; q.log.push({ role: "assistant", text: q.cards[q.i].q }); render(); focusQuiz(); return; }
+  finishQuiz();
+}
+function finishQuiz() {
+  const q = quiz; quiz = null; if (!q) return;
+  const n = now(), total = q.results.length;
+  const score = q.results.reduce((a, r) => a + (r === true ? 1 : r === "partly" ? 0.5 : 0), 0);
+  change(() => {
+    if (!total) { say("assistant", "Окей, в другой раз 🙂"); return; }
+    say("assistant", `Итог: ${score % 1 ? score.toFixed(1).replace(".", ",") : score} из ${total} 🎯 ${score / total >= 0.8 ? "Отлично держишь!" : score / total >= 0.4 ? "Неплохо, трудные вопросы спрошу пораньше." : "Ничего, эти карточки я спрошу снова совсем скоро."}`);
+    if (q.mode === "topic" && q.topicId && !(S.log[n.today] || []).some(x => x.kind === "review" && x.ref === q.topicId)) {
+      const ratio = score / total;
+      C.gradeReview(S, n.today, q.topicId, ratio >= 0.8 ? "easy" : ratio >= 0.4 ? "hard" : "forgot", n.min);
+    }
+    if (q.mode === "tired" && S.tired[n.today]) {
+      (S.log[n.today] ||= []).push({ kind: "micro", ref: "quiz", title: `Ответила на ${total} ${word(total, "вопрос", "вопроса", "вопросов")}`, subject: "", start: n.hhmm, end: C.toHHMM(Math.min(n.min + 5, 1439)) });
+      S.tired[n.today].micro = (S.tired[n.today].micro || 0) + 1;
+      say("assistant", pick(PRAISE));
+    }
+  });
+}
+
 function renderChatView(n) {
   return `<div class="card" style="padding:12px">${chatHTML(n, 60)}</div>`;
 }
@@ -304,7 +390,7 @@ function renderToday(d, n) {
   // превью переписки (на телефоне)
   const recent = (S.chat || []).slice(-3);
   const tired = S.tired[d.date];
-  if (recent.length || thinking || (tired && !tired.rest)) {
+  if (recent.length || thinking || quiz || (tired && !tired.rest)) {
     h += `<div class="card preview" style="padding:12px">${chatHTML(n, 3)}${(S.chat || []).length > 3 ? `<button class="more" data-view="chat" type="button">Вся переписка</button>` : ""}</div>`;
   }
   if (C.tiredStreak(S, d.date) >= 3 && (S.capFactor || 1) >= 1 && !S.lightenAsked?.[d.date]) {
@@ -347,7 +433,7 @@ function blockHTML(b, date) {
   const cls = ["b", b.type, highlight.has(key) ? "new" : ""].join(" ");
   if (b.type === "review") {
     return `<div class="${cls}" style="--c:${c}"><span class="mark"></span><span class="tm">${time} · повторение, ${(b.step || 0) + 1}-й раз${b.overdue ? " · пропущенное" : ""}</span><span class="tt"><span class="dot"></span>${esc(b.title)}</span>
-      <div class="grades"><span class="small muted" style="align-self:center">Как прошло?</span><button class="btn sm" data-grade="easy" data-ref="${b.ref}" data-start="${b.start}" type="button">Легко</button><button class="btn sm" data-grade="hard" data-ref="${b.ref}" data-start="${b.start}" type="button">С трудом</button><button class="btn sm" data-grade="forgot" data-ref="${b.ref}" data-start="${b.start}" type="button">Забыла</button></div></div>`;
+      <div class="grades">${C.topicCards(S, b.ref).length ? `<button class="btn soft sm" data-quiz-topic="${b.ref}" type="button">Проверь меня</button><span class="small muted" style="align-self:center">или отметь сама:</span>` : `<span class="small muted" style="align-self:center">Как прошло?</span>`}<button class="btn sm" data-grade="easy" data-ref="${b.ref}" data-start="${b.start}" type="button">Легко</button><button class="btn sm" data-grade="hard" data-ref="${b.ref}" data-start="${b.start}" type="button">С трудом</button><button class="btn sm" data-grade="forgot" data-ref="${b.ref}" data-start="${b.start}" type="button">Забыла</button></div></div>`;
   }
   const t = b.type === "task" ? S.tasks.find(x => x.id === b.ref) : null;
   const meta = [`${time}`, b.count > 1 ? `${b.count} × ${S.sessionMin} мин` : `${S.sessionMin} мин`, t?.due ? `срок ${t.due === date ? "сегодня" : C.humanDate(t.due)}${t.dueTime ? " " + t.dueTime : ""}` : ""].filter(Boolean).join(" · ");
@@ -389,19 +475,60 @@ function renderWeek(plan) {
 }
 
 function renderTopics(n) {
-  const due = S.topics.filter(t => t.next <= n.today).sort((a, b) => a.next.localeCompare(b.next));
-  const later = S.topics.filter(t => t.next > n.today).sort((a, b) => a.next.localeCompare(b.next));
   const doneToday = new Set((S.log[n.today] || []).filter(x => x.kind === "review").map(x => x.ref));
   const steps = t => `<div class="steps" aria-label="Пройдено кругов: ${t.step} из ${C.INTERVALS.length}">${C.INTERVALS.map((_, i) => `<i class="${i < t.step ? "on" : ""}"></i>`).join("")}</div>`;
-  let h = `<div class="card"><h2>Как это работает</h2><p class="small muted" style="margin:0">Изучила тему — добавь её сюда. Я сама поставлю повторения через ${C.INTERVALS.join(", ")} дней, и они появятся в плане. После повторения отметь, как прошло: «легко» — следующий раз нескоро, «забыла» — начнём заново.</p>
-    <form class="field" id="topicform"><span>Новые темы — можно несколько, каждую с новой строки</span><textarea id="topic-titles" placeholder="Реформы Петра I&#10;Права человека&#10;Причастные обороты"></textarea>
-    <div class="grid2"><label class="field"><span>Предмет</span><select id="topic-subj">${subjOptions(S.subjects[0]?.name)}</select></label><div class="field"><span>&nbsp;</span><button class="btn primary" type="submit">Добавить темы</button></div></div></form></div>`;
-  h += `<div class="card"><div class="cardhead"><h2>Повторить сегодня</h2><span class="small muted">${due.length}</span></div>${due.length ? `<div class="list">${due.map(t => `<div class="li"><div><div class="t">${esc(t.title)}</div><div class="meta">${esc(t.subject || "")} · ${t.step + 1}-й раз${t.next < n.today ? " · пропущено" : ""}</div>${steps(t)}
-    ${doneToday.has(t.id) ? "" : `<div class="row" style="margin-top:8px"><button class="btn sm" data-grade="easy" data-ref="${t.id}" type="button">Легко</button><button class="btn sm" data-grade="hard" data-ref="${t.id}" type="button">С трудом</button><button class="btn sm" data-grade="forgot" data-ref="${t.id}" type="button">Забыла</button></div>`}</div>
-    <button class="iconbtn" data-del-topic="${t.id}" type="button" aria-label="Удалить тему ${esc(t.title)}">✕</button></div>`).join("")}</div>` : `<p class="empty">На сегодня всё повторено 🎉</p>`}</div>`;
-  h += `<div class="card"><div class="cardhead"><h2>Все темы</h2><span class="small muted">${S.topics.length}</span></div>${later.length ? `<div class="list">${later.map(t => `<div class="li"><div><div class="t">${esc(t.title)}</div><div class="meta">${esc(t.subject || "")} · следующее повторение ${C.humanDate(t.next)}</div>${steps(t)}</div>
-    <button class="iconbtn" data-del-topic="${t.id}" type="button" aria-label="Удалить тему ${esc(t.title)}">✕</button></div>`).join("")}</div>` : `<p class="empty">${S.topics.length ? "Остальные темы — в блоке выше." : "Пока тем нет. Добавь первую выше."}</p>`}</div>`;
+  const cardsOf = id => S.cards.filter(c => c.topicId === id);
+  const cardRow = c => `<div class="kc"><b>${esc(c.q)}</b><button class="iconbtn" data-del-card="${c.id}" type="button" aria-label="Удалить карточку" style="grid-row:1/3">✕</button><span>${esc(c.a)}${c.right + c.wrong ? ` · ${Math.round(c.right)} ✓ ${Math.round(c.wrong)} ✗` : ""}</span></div>`;
+  const topicItem = t => {
+    const cs = cardsOf(t.id), due = t.next <= n.today && !doneToday.has(t.id);
+    return `<details class="topic" data-topic="${t.id}" ${openTopics.has(t.id) ? "open" : ""}><summary><div><div class="t" style="font-weight:500">${esc(t.title)}</div>
+      <div class="meta small muted">${esc(t.subject || "")} · ${due ? "<b style=\"color:var(--accent)\">повторить сегодня</b>" : "следующее повторение " + C.humanDate(t.next)} · ${cs.length} ${word(cs.length, "карточка", "карточки", "карточек")}</div>${steps(t)}</div><span class="muted">▾</span></summary>
+      ${due ? `<div class="row" style="margin-top:10px">${cs.length ? `<button class="btn soft sm" data-quiz-topic="${t.id}" type="button">Проверь меня</button>` : ""}<button class="btn sm" data-grade="easy" data-ref="${t.id}" type="button">Легко</button><button class="btn sm" data-grade="hard" data-ref="${t.id}" type="button">С трудом</button><button class="btn sm" data-grade="forgot" data-ref="${t.id}" type="button">Забыла</button></div>` : cs.length ? `<div class="row" style="margin-top:10px"><button class="btn sm" data-quiz-topic="${t.id}" type="button">Проверь меня</button></div>` : ""}
+      <div class="cardlist">${cs.map(cardRow).join("")}</div>
+      <div class="row" style="margin-top:8px"><button class="btn sm" data-add-cards="${t.id}" type="button">${icon("i-plus")}Карточки</button><button class="btn sm" data-gen-cards="${t.id}" type="button">✨ Придумай карточки</button><button class="btn sm danger" data-del-topic="${t.id}" type="button">Удалить тему</button></div></details>`;
+  };
+  const sorted = [...S.topics].sort((a, b) => a.next.localeCompare(b.next));
+  const loose = S.cards.filter(c => !c.topicId || !S.topics.some(t => t.id === c.topicId));
+  let h = `<div class="card"><div class="cardhead"><h2>База знаний</h2><span class="small muted">${S.cards.length} ${word(S.cards.length, "карточка", "карточки", "карточек")}</span></div>
+    <p class="small muted" style="margin:0">Темы повторяются через ${C.INTERVALS.join(", ")} дней. Внутри темы — карточки «вопрос → ответ»: по ним я тебя спрашиваю, когда пора повторять или когда сил нет.</p>
+    <div class="row">${S.cards.length >= 1 ? `<button class="btn primary" data-act="quiz-any" type="button">Проверь меня · 5 вопросов</button>` : ""}<button class="btn" data-act="learned" type="button">${icon("i-plus")}Тема</button><button class="btn" data-add-cards="" type="button">${icon("i-plus")}Карточки без темы</button></div></div>`;
+  h += `<div class="card"><div class="cardhead"><h2>Темы</h2><span class="small muted">${S.topics.length}</span></div>${sorted.length ? sorted.map(topicItem).join("") : `<p class="empty">Пока тем нет. Изучила тему — нажми «+ Тема».</p>`}</div>`;
+  if (loose.length) h += `<div class="card"><div class="cardhead"><h2>Карточки без темы</h2><span class="small muted">${loose.length}</span></div><div class="cardlist">${loose.map(cardRow).join("")}</div></div>`;
   return h;
+}
+
+function addCardsDialog(topicId) {
+  const t = S.topics.find(x => x.id === topicId);
+  openDialog(t ? `Карточки: ${esc(t.title)}` : "Новые карточки", `
+    <p class="small muted" style="margin:0">Каждая карточка — с новой строки: <b>вопрос или термин — ответ</b>. Например:<br>Инфляция — устойчивый рост общего уровня цен<br>Основание Санкт-Петербурга: 1703</p>
+    <label class="field"><span>Карточки</span><textarea id="f-cards" required rows="6" placeholder="Термин — определение"></textarea></label>
+    ${t ? "" : `<label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(S.subjects[0]?.name)}</select></label>`}`, {
+    submitLabel: "Добавить",
+    submit: () => {
+      const list = C.parseCardLines(val("f-cards"));
+      if (!list.length) { const ta = dlgform.querySelector("#f-cards"); ta.setCustomValidity("Не нашла карточек. Пиши так: вопрос — ответ, каждую с новой строки."); ta.reportValidity(); ta.addEventListener("input", () => ta.setCustomValidity(""), { once: true }); return false; }
+      change(() => { const k = C.addCards(S, list, { topicId: t?.id || null, subject: t?.subject || val("f-subj") }); if (t) openTopics.add(t.id); say("assistant", `Добавила ${k} ${word(k, "карточку", "карточки", "карточек")} в базу знаний 📚`); });
+    },
+  });
+}
+async function genCards(topicId) {
+  const t = S.topics.find(x => x.id === topicId); if (!t) return;
+  openDialog(`✨ Карточки: ${esc(t.title)}`, `<p class="small muted" style="margin:0">Придумываю вопросы по теме…</p>`, { submit: () => false, submitLabel: "Подождите" });
+  let cards = [];
+  try {
+    const r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, mode: "cards", topic: t.title, subject: t.subject, n: 6 }) });
+    const j = await r.json(); cards = j.cards || [];
+  } catch {}
+  if (!dlg.open) return;
+  if (!cards.length) { openDialog("Не получилось", `<p class="small muted" style="margin:0">Помощник сейчас не смог придумать карточки. Попробуй ещё раз через минуту или добавь их сама.</p>`, { submit: () => {}, submitLabel: "Понятно" }); return; }
+  openDialog(`✨ Карточки: ${esc(t.title)}`, `<p class="small muted" style="margin:0">Проверь факты и сними галочки с лишнего — помощник иногда ошибается.</p>
+    <div class="genlist">${cards.map((c, i) => `<label><input type="checkbox" data-gen="${i}" checked><span><b>${esc(c.q)}</b><br><span class="muted">${esc(c.a)}</span></span></label>`).join("")}</div>`, {
+    submitLabel: "Добавить выбранные",
+    submit: () => {
+      const pickd = [...dlgform.querySelectorAll("[data-gen]:checked")].map(x => cards[+x.dataset.gen]);
+      change(() => { const k = C.addCards(S, pickd, { topicId: t.id, subject: t.subject, source: "ai" }); openTopics.add(t.id); say("assistant", `Добавила ${k} ${word(k, "карточку", "карточки", "карточек")} к теме «${t.title}». Буду спрашивать на повторениях 📚`); });
+    },
+  });
 }
 
 function renderSetup() {
@@ -550,7 +677,11 @@ document.addEventListener("click", e => {
   if (d.editLesson) { const l = S.lessons.find(x => x.id === d.editLesson); if (l) lessonDialog(l); return; }
   if (d.editEvent) { const x = S.extraLessons.find(y => y.id === d.editEvent); if (x) eventDialog(x); return; }
   if (d.editDay) { dayDialog(d.editDay); return; }
-  if (d.delTopic) { change(() => { S.topics = S.topics.filter(x => x.id !== d.delTopic); }); return; }
+  if (d.delTopic) { change(() => { S.topics = S.topics.filter(x => x.id !== d.delTopic); S.cards = S.cards.filter(c => c.topicId !== d.delTopic); }); return; }
+  if (d.delCard) { change(() => { S.cards = S.cards.filter(c => c.id !== d.delCard); }); return; }
+  if (d.addCards !== undefined) { addCardsDialog(d.addCards || null); return; }
+  if (d.genCards) { genCards(d.genCards); return; }
+  if (d.quizTopic) { startQuiz({ topicId: d.quizTopic, n: 5, mode: "topic" }); return; }
   switch (d.act) {
     case "new-task": taskDialog(null, { at: d.at }); return;
     case "new-lesson": lessonDialog(null); return;
@@ -558,8 +689,15 @@ document.addEventListener("click", e => {
     case "learned": learnedDialog(); return;
     case "tired": change(() => { S.tired[n.today] = { micro: 0 }; say("user", "Сил нет 🪫"); say("assistant", pick(ASK)); }); return;
     case "untired": change(() => { delete S.tired[n.today]; say("assistant", "Ура, силы вернулись! Показываю обычный план 💪"); }); return;
+    case "quiz-any": startQuiz({ n: 5 }); return;
+    case "quiz-skip": { const q = quiz, c = q.cards[q.i]; q.results.push(false); C.recordAnswer(S, c.id, false, n.today); q.log.push({ role: "user", text: "Не помню" }, { role: "assistant", text: `Ничего! Правильно: ${c.a}` }); q.phase = "result"; render(); save(); return; }
+    case "quiz-self-yes": quizSelf(true); return;
+    case "quiz-self-no": quizSelf(false); return;
+    case "quiz-next": quizNext(); return;
+    case "quiz-stop": finishQuiz(); return;
     case "micro-yes": {
       const o = C.microOptions(S, n.today)[0]; if (!o) return;
+      if (o.kind === "quiz") { change(() => say("user", "Ну так и быть")); startQuiz({ n: 3, mode: "tired" }); return; }
       change(() => {
         if (o.kind === "review") C.gradeReview(S, n.today, o.ref, "hard", n.min);
         else (S.log[n.today] ||= []).push({ kind: "micro", ref: o.ref, title: o.title, subject: o.subject, start: n.hhmm, end: C.toHHMM(Math.min(n.min + 5, 1439)) });
@@ -573,6 +711,7 @@ document.addEventListener("click", e => {
     case "unlighten": change(() => { S.capFactor = 1; }); return;
   }
 });
+document.addEventListener("toggle", e => { const el = e.target; if (el.matches?.("details[data-topic]")) { if (el.open) openTopics.add(el.dataset.topic); else openTopics.delete(el.dataset.topic); } }, true);
 document.addEventListener("change", e => {
   if (!S) return;
   const el = e.target, d = el.dataset;
@@ -591,6 +730,10 @@ document.addEventListener("submit", async e => {
     change(() => { titles.forEach(t => C.addTopic(S, t, subj, n.today)); say("assistant", `Добавила ${titles.length} ${word(titles.length, "тему", "темы", "тем")} на повторение 📚 Первое — завтра.`); });
     return;
   }
+  if (e.target.matches("[data-quiz]")) {
+    const input = e.target.querySelector("input"); const text = input.value.trim(); if (!text || !quiz || quiz.phase !== "ask") return;
+    answerQuiz(text); return;
+  }
   if (e.target.matches("[data-composer]")) {
     const input = e.target.querySelector("input");
     const msg = input.value.trim(); if (!msg || thinking) return;
@@ -604,7 +747,8 @@ document.addEventListener("submit", async e => {
       const j = await r.json();
       thinking = false;
       if (!r.ok) { S.chat = S.chat.filter(m => !m.pending); S.chat.push({ role: "assistant", text: j.error || "Помощник не ответил. Попробуй ещё раз.", at: Date.now() }); input.value = msg; render(); return; }
-      S = j.state;
+      S = j.state; S.cards ||= [];
+      if (j.quiz) setTimeout(() => startQuiz({ subject: j.quiz.subject, topicTitle: j.quiz.topic, n: j.quiz.n || 5 }), 300);
       const after = planKeys(C.buildPlan(S, n.today, 7, n.min));
       highlight = new Set([...after].filter(k => !before.has(k)));
       render();
@@ -619,8 +763,8 @@ document.addEventListener("submit", async e => {
 });
 function planKeys(plan) { const k = new Set(); for (const d of plan) for (const b of d.blocks) if (b.type !== "done") k.add(`${d.date}|${b.type}|${b.ref}|${b.start}`); return k; }
 addEventListener("hashchange", () => { const v = location.hash.slice(1); if (VIEWS.some(x => x[0] === v)) { view = v; if (S) render(); } });
-setInterval(() => { if (S && !document.hidden && !dlg.open && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) render(); }, 60000);
-document.addEventListener("visibilitychange", () => { if (!document.hidden && S && !thinking && !dlg.open) load(); });
+setInterval(() => { if (S && !quiz && !document.hidden && !dlg.open && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) render(); }, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && S && !thinking && !quiz && !dlg.open) load(); });
 load();
 </script>
 </body>
