@@ -50,13 +50,40 @@ export default async function handler(req, res) {
   } catch {}
   if (!parsed) return res.status(200).json({ reply: "Не до конца поняла 🙈 Скажи чуть по-другому: что, к какому дню и по какому предмету?", changes: [], state });
 
-  const changes = applyActions(state, parsed.actions, today);
+  const notes = [];
+  const actions = prepareActions(parsed.actions, today, now, notes);
+  const changes = applyActions(state, actions, today);
   if (changes.length) {
     state.rev = (state.rev || 0) + 1;
     await saveState(b.u, state);
   }
-  const reply = String(parsed.reply || "").replace(/["«»]\s*([^\p{L}\p{N}\s]{1,4})\s*["«»]/gu, "$1").replace(/"/g, "").trim().slice(0, 500) || (changes.length ? "Готово!" : "Окей!");
+  let reply = String(parsed.reply || "").replace(/["«»]\s*([^\p{L}\p{N}\s]{1,4})\s*["«»]/gu, "$1").replace(/"/g, "").trim().slice(0, 500) || (changes.length ? "Готово!" : "Окей!");
+  if (notes.length) reply = (reply ? reply + " " : "") + notes.join(" ");
   res.status(200).json({ reply, changes, state });
+}
+
+const EXAM_RE = /(зач[её]т|контрольн|экзамен|пробник|тест|проверочн|самостоятельн)/i;
+
+// Поправки к действиям модели: зачёты и контрольные считаем по дате самого события.
+function prepareActions(actions, today, now, notes) {
+  if (!Array.isArray(actions)) return [];
+  const nowMin = now ? Number(now.split(":")[0]) * 60 + Number(now.split(":")[1]) : null;
+  const night = nowMin != null && nowMin < 5 * 60;
+  const out = [];
+  for (const a of actions) {
+    if (a && a.type === "add_task" && !a.exam_date && EXAM_RE.test(String(a.title || "")) && /подгот|повтор/i.test(String(a.title || "")) && a.due_date) {
+      a.exam_date = a.due_date; delete a.due_date; delete a.due_time;
+    }
+    if (a && a.type === "add_task" && a.exam_date === today) {
+      if (/^\d{1,2}:\d{2}$/.test(a.exam_time || "")) { a.due_date = today; a.due_time = a.exam_time; delete a.exam_date; }
+      else if (night || nowMin == null || nowMin >= 8 * 60) {
+        notes.push("Зачёт уже сегодня, поэтому большую подготовку в план не ставлю: лучше выспаться 😴 Утром перед выходом пробегись по главному минут 15.");
+        continue;
+      }
+    }
+    out.push(a);
+  }
+  return out;
 }
 
 function extractJson(text) {
@@ -122,7 +149,7 @@ ${tasks}
 Доступные действия (поле "type"):
 - add_task: {"type":"add_task","title":"...","subject":"...","kind":"ege|school|other","sessions":число 1-20,"due_date":"YYYY-MM-DD или null","due_time":"HH:MM или null"}
   Оцени объём в сессиях по ${s.sessionMin} минут: школьная домашка 1-2, ДЗ курса 2-3, подготовка к зачёту/контрольной 3-4, доклад 3-6, пробник целиком 7-8.
-  Если это зачёт/контрольная/экзамен/пробник в какой-то день — добавь поле "exam_date":"YYYY-MM-DD" (дата самого зачёта), а due_date не указывай: программа сама поставит срок накануне.
+  Если это зачёт/контрольная/экзамен/пробник в какой-то день — добавь поле "exam_date":"YYYY-MM-DD" (дата самого зачёта) и, если она сказала время, "exam_time":"HH:MM". due_date не указывай: программа сама поставит срок накануне.
 - complete_task: {"type":"complete_task","task_id":"..."}
 - delete_task: {"type":"delete_task","task_id":"..."}
 - update_task: {"type":"update_task","task_id":"...","due_date":"...","due_time":"...","sessions":число}

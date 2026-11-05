@@ -106,6 +106,13 @@ export function buildPlan(state, today, nDays = 7, nowMin = null) {
     if (!off && !tired) {
       const win = dayWindow(state, date);
       if (win.from != null && win.to != null) {
+        // отменённое занятие освобождает своё время, если оно рядом со свободным окном
+        for (const c of state.cancelled.filter(c => c.date === date)) {
+          const l = state.lessons.find(x => x.id === c.lessonId);
+          const f = toMin(l?.from), t = toMin(l?.to);
+          if (f == null || t == null) continue;
+          if (f <= win.to + 30 && t >= win.from - 30) { win.from = Math.min(win.from, f); win.to = Math.max(win.to, t); }
+        }
         if (isToday && nowMin != null) win.from = Math.max(win.from, Math.ceil(nowMin / 5) * 5);
         const busy = [...timed.map(l => ({ from: l.from - 0, to: l.to + 15 })), ...done.filter(d => d.start != null).map(d => ({ from: d.start, to: d.end }))];
         const slots = win.to > win.from ? subtract(win, busy) : [];
