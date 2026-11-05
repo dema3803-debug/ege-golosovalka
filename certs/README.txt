@@ -1,0 +1,1 @@
+Сюда положи сертификат russian_trusted_root_ca_pem.crt

@@ -1,1 +1,4 @@
-{ "cleanUrls": true }
+{
+  "cleanUrls": true,
+  "functions": { "api/*.js": { "includeFiles": "certs/**" } }
+}
