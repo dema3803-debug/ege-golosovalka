@@ -4,7 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#FBEFF3">
-<title>Мой план ЕГЭ</title>
+<title>Козя — мой план ЕГЭ</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" href="/icons/favicon-64.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Козя">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap">
 <style>
@@ -133,6 +140,10 @@ h3{font-size:14px;font-weight:600;margin:0}
 .qform input{flex:1;min-width:0;border:2px solid var(--accent-soft);border-radius:16px;padding:12px 14px;font-size:16px;background:var(--raised)}
 .qform button{width:48px;height:48px;border:0;border-radius:16px;background:var(--primary);color:var(--primary-ink);display:grid;place-items:center;flex:none}
 .backcard{background:var(--surface);border-radius:18px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700}
+.installbar{display:flex;gap:10px;align-items:center;background:var(--surface);border-radius:18px;padding:10px 12px}
+.installbar img{width:40px;height:40px;border-radius:10px;flex:none}
+.installbar .tx{flex:1;min-width:0;font-size:14px;font-weight:700;line-height:1.3}
+.installbar .tx span{display:block;font-size:12px;font-weight:600;color:var(--muted)}
 /* переписка */
 .chat{display:flex;flex-direction:column;gap:8px}
 .msg{max-width:86%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -278,6 +289,7 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
       <div id="streak"></div>
     </div>
     <nav class="toptabs" id="toptabs" aria-label="Разделы"></nav>
+    <div id="install" class="installbar" hidden></div>
     <div id="status" class="status" hidden></div>
     <div id="view"></div>
   </main>
@@ -297,7 +309,9 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 import * as C from "/core.js";
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const U = new URLSearchParams(location.search).get("u");
+// личная ссылка: запоминаем, чтобы иконка на телефоне открывала свой план
+let U = new URLSearchParams(location.search).get("u");
+try { if (U) localStorage.setItem("ege-u", U); else { U = localStorage.getItem("ege-u"); if (U) history.replaceState(null, "", "/app?u=" + U + location.hash); } } catch {}
 const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"]];
 let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
 let quiz = null; const openTopics = new Set();
@@ -329,7 +343,12 @@ async function load() {
     const j = await r.json();
     if (!r.ok) { flash(j.error || "Не удалось загрузить план."); return; }
     S = j.state; S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; flash(""); $("#dock").hidden = false; render();
-  } catch { flash("Нет связи. Проверь интернет и обнови страницу."); }
+    try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {}
+  } catch {
+    let cached = null; try { cached = JSON.parse(localStorage.getItem("ege-state-" + U) || "null"); } catch {}
+    if (cached && !S) { S = cached; $("#dock").hidden = false; render(); flash("Нет интернета — показываю последний сохранённый план. Отметки сохранятся, когда связь вернётся."); }
+    else if (!S) flash("Нет связи. Проверь интернет и обнови страницу.");
+  }
 }
 async function save() {
   if (saving) { savePending = true; return; }
@@ -339,7 +358,7 @@ async function save() {
     const j = await r.json();
     if (r.status === 409) { S = j.state; flash("План обновился с другого устройства — показываю свежую версию."); render(); }
     else if (!r.ok) flash(j.error || "Не удалось сохранить. Проверь интернет.");
-    else { S.rev = j.state.rev; if (($("#status").textContent || "").startsWith("Не удалось")) flash(""); }
+    else { S.rev = j.state.rev; try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {} if (/^(Не удалось|Нет интернета)/.test($("#status").textContent || "")) flash(""); }
   } catch { flash("Не удалось сохранить. Проверь интернет — попробую ещё раз при следующем действии."); }
   saving = false;
   if (savePending) { savePending = false; save(); }
@@ -1051,6 +1070,30 @@ function planKeys(plan) { const k = new Set(); for (const d of plan) for (const 
 addEventListener("hashchange", () => { const v = location.hash.slice(1); if (VIEWS.some(x => x[0] === v) || v === "session" || v === "day") { view = v; if (S) render(); } });
 setInterval(() => { if (S && !quiz && !document.hidden && !dlg.open && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) render(); }, 60000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && S && !thinking && !quiz && !dlg.open) load(); });
+// ---------- установка на телефон ----------
+let installEvt = null;
+const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+let installHidden = false; try { installHidden = localStorage.getItem("ege-install-hide") === "1"; } catch {}
+function showInstall() {
+  const el = $("#install");
+  if (standalone || installHidden || !U) { el.hidden = true; return; }
+  if (installEvt) el.innerHTML = `<img src="/icons/icon-192.png" alt=""><div class="tx">Поставь Козю на телефон<span>Иконка на экране, открывается как приложение</span></div><button class="btn sm primary" data-act="install" type="button">Установить</button><button class="iconbtn" data-act="install-hide" type="button" aria-label="Скрыть">✕</button>`;
+  else if (isIOS) el.innerHTML = `<img src="/icons/icon-192.png" alt=""><div class="tx">Поставь Козю на экран «Домой»<span>Нажми «Поделиться» внизу Safari → «На экран „Домой“»</span></div><button class="iconbtn" data-act="install-hide" type="button" aria-label="Скрыть">✕</button>`;
+  else { el.hidden = true; return; }
+  el.hidden = false;
+}
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; showInstall(); });
+addEventListener("appinstalled", () => { installEvt = null; $("#install").hidden = true; });
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-act=install],[data-act=install-hide]"); if (!t) return;
+  if (t.dataset.act === "install" && installEvt) { installEvt.prompt(); try { await installEvt.userChoice; } catch {} installEvt = null; }
+  else { try { localStorage.setItem("ege-install-hide", "1"); } catch {} installHidden = true; }
+  showInstall();
+});
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+addEventListener("online", () => { if (S) save(); });
+showInstall();
 load();
 </script>
 </body>
