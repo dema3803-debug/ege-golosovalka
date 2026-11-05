@@ -42,6 +42,7 @@ button{cursor:pointer}
 /* каркас */
 .shell{display:grid;grid-template-columns:minmax(0,1fr);min-height:100%}
 .main{padding-block:calc(18px + env(safe-area-inset-top,0px)) 170px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+#view{display:flex;flex-direction:column;gap:14px;min-width:0}
 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
 .date{font-size:13px;color:var(--muted);font-weight:500}
 h1{font-family:var(--display);font-weight:800;font-size:27px;line-height:1.15;margin:2px 0 0;letter-spacing:-.01em}
@@ -90,7 +91,10 @@ h3{font-size:14px;font-weight:600;margin:0}
 .b .play{grid-column:3;grid-row:1/3;width:36px;height:36px;border-radius:50%;border:0;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
 .b .play svg{width:14px;height:14px;fill:currentColor}
 /* сессия */
-.session{display:flex;flex-direction:column;gap:16px;align-items:stretch}
+.session{display:flex;flex-direction:column;gap:16px;align-items:stretch;min-height:calc(100vh - 60px)}
+.shead{display:flex;align-items:center;justify-content:space-between}
+.circbtn{width:44px;height:44px;border-radius:50%;border:0;background:var(--surface);display:grid;place-items:center}
+.sbtns{margin-top:auto}
 .session .ring{position:relative;width:min(260px,72vw);aspect-ratio:1;margin:0 auto;max-width:100%}
 .session .ring svg{position:absolute;inset:0;width:100%;height:100%}
 .session .big{font-size:56px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1;text-align:center}
@@ -98,7 +102,37 @@ h3{font-size:14px;font-weight:600;margin:0}
 .durs button{border:0;border-radius:14px;padding:11px 0;background:var(--raised);font-weight:700;font-size:15px}
 .durs button[aria-pressed="true"]{background:var(--primary);color:var(--primary-ink)}
 .sbtns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.sbtns .btn{justify-content:center;padding:15px 0;border-radius:20px;font-size:16px}
+.sbtns .btn{justify-content:center;padding:15px 0;border-radius:20px;font-size:16px;font-weight:800}
+.sbtns .btn:not(.primary){border:2px solid var(--accent-line)}
+/* главная: «Дальше сегодня» */
+.nexthead{display:flex;justify-content:space-between;align-items:baseline}
+.nexthead h2{font-size:17px}
+.linkbtn{border:0;background:none;padding:0;font-size:14px;font-weight:700;color:var(--accent)}
+.nx{background:var(--surface);border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:center}
+.nx .box{width:24px;height:24px;border-radius:8px;border:2px solid var(--c,var(--s0));flex:none;background:transparent;padding:0}
+.nx .box.review{border-style:dashed;border-color:var(--accent)}
+.nx .tx{flex:1;min-width:0;border:0;background:none;padding:0;text-align:left}
+.nx .tx b{display:block;font-weight:700;overflow-wrap:anywhere}
+.nx .tx span{font-size:13px;color:var(--muted);font-weight:600}
+.quick{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.quick .btn{background:transparent;border-color:var(--line2);font-size:13px;padding:7px 12px}
+/* «сил нет» */
+.trrow{display:flex;gap:10px;align-items:flex-end}
+.trrow svg{width:124px;height:auto;flex:none}
+.trb{background:var(--surface);border-radius:20px 20px 20px 6px;padding:12px 14px;font-size:15px;font-weight:700;line-height:1.4}
+.tru{align-self:flex-end;background:var(--primary);color:var(--primary-ink);border-radius:20px 20px 6px 20px;padding:10px 14px;font-size:15px;font-weight:700}
+.qcard{background:var(--surface);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.qtop{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;color:var(--muted)}
+.qprog{display:flex;gap:4px;align-items:center}
+.qprog i{width:18px;height:6px;border-radius:3px;background:var(--accent-soft)}
+.qprog i.ok{background:var(--ok)}.qprog i.bad{background:var(--warn)}.qprog i.cur{background:var(--pink)}
+.qfb{border-radius:14px;padding:9px 12px;font-size:14px;font-weight:700;background:var(--ok-soft);color:var(--ok)}
+.qfb.bad{background:var(--warn-soft);color:var(--warn)}
+.qq{font-size:20px;font-weight:800;line-height:1.25}
+.qform{display:flex;gap:8px}
+.qform input{flex:1;min-width:0;border:2px solid var(--accent-soft);border-radius:16px;padding:12px 14px;font-size:16px;background:var(--raised)}
+.qform button{width:48px;height:48px;border:0;border-radius:16px;background:var(--primary);color:var(--primary-ink);display:grid;place-items:center;flex:none}
+.backcard{background:var(--surface);border-radius:18px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700}
 /* переписка */
 .chat{display:flex;flex-direction:column;gap:8px}
 .msg{max-width:86%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -199,12 +233,12 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 .composer input{border-radius:999px;padding:11px 16px;background:var(--surface);border:1px solid var(--line2)}
 .send{width:44px;height:44px;flex:none;border-radius:50%;border:0;background:var(--primary);color:var(--primary-ink);display:grid;place-items:center}
 .send:disabled{opacity:.5;cursor:wait}
-.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line)}
-.dock .composer{max-width:640px;margin:0 auto;padding:10px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px))}
-.nav{display:flex;justify-content:space-around;max-width:640px;margin:0 auto;padding:2px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
-.nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:500;color:var(--muted);padding:6px 8px;border-radius:10px;min-width:58px}
-.nav button[aria-current="page"]{color:var(--accent);background:var(--accent-soft)}
-.nav .ico{width:22px;height:22px}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;background:transparent}
+.dock .composer{max-width:640px;margin:0 auto;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:var(--bg)}
+.nav{display:flex;justify-content:space-around;max-width:640px;margin:0 auto;background:var(--surface);border-radius:26px 26px 0 0;padding:10px max(14px,env(safe-area-inset-right,0px)) calc(26px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));box-shadow:0 -6px 24px rgba(27,22,32,.06)}
+.nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;font-weight:700;color:var(--muted);padding:6px 10px;border-radius:14px;min-width:64px}
+.nav button[aria-current="page"]{color:var(--accent);background:var(--accent-soft);font-weight:800}
+.nav .ico{width:22px;height:22px;stroke-width:2}
 .chatcol{display:none}
 
 @media (min-width:1000px){
@@ -267,7 +301,7 @@ const U = new URLSearchParams(location.search).get("u");
 const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"]];
 let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
 let quiz = null; const openTopics = new Set();
-if (!VIEWS.some(v => v[0] === view) && view !== "session") view = "today";
+if (!VIEWS.some(v => v[0] === view) && view !== "session" && view !== "day") view = "today";
 
 const COLORS = ["var(--s1)", "var(--s2)", "var(--s3)", "var(--s4)", "var(--s5)"];
 const color = subj => { if (!subj || subj === "Школа") return "var(--s0)"; const i = S.subjects.findIndex(x => x.name === subj); return COLORS[(i >= 0 ? i : [...subj].reduce((a, c) => a + c.charCodeAt(0), 0)) % COLORS.length]; };
@@ -405,15 +439,16 @@ function renderSession() {
   if (!session) return `<div class="card"><p class="empty">Сессии сейчас нет.</p><button class="btn" data-view="today" type="button">К плану</button></div>`;
   const work = session.phase === "work", left = leftMs(), paused = !session.endAt;
   return `<div class="session">
-    <div class="row" style="justify-content:space-between"><button class="btn sm" data-act="session-back" type="button">← К плану</button><span class="small muted" style="font-weight:700">${work ? "сессия" : "перерыв"}</span></div>
-    <div style="text-align:center;font-weight:700;color:var(--muted)">${work ? (paused ? "Пауза — Козя ждёт" : "Козя сосредоточилась вместе с тобой") : "Перерыв! Попей воды и разомнись"}</div>
+    <div class="shead"><button class="circbtn" data-act="session-back" type="button" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <b style="font-size:17px;font-weight:800">${work ? "Сессия" : "Перерыв"}</b><span style="width:44px"></span></div>
+    <div style="text-align:center;font-size:15px;font-weight:700;color:var(--muted)">${work ? (paused ? "Пауза — Козя ждёт тебя" : "Козя сосредоточилась вместе с тобой") : "Перерыв! Попей воды и разомнись"}</div>
     <div class="ring"><svg viewBox="0 0 240 240" aria-hidden="true"><circle cx="120" cy="120" r="108" fill="none" stroke="var(--accent-soft)" stroke-width="14"/>
       <circle id="sess-ring" cx="120" cy="120" r="108" fill="none" stroke="${work ? "var(--pink)" : "var(--ok)"}" stroke-width="14" stroke-linecap="round" stroke-dasharray="679" stroke-dashoffset="${Math.round(679 * (1 - left / (session.len * 60000)))}" transform="rotate(-90 120 120)"/></svg>
-      <div style="position:absolute;inset:18%;display:grid;place-items:center">${mascot(work ? "focus" : "happy", work ? "Козя читает книжку" : "Козя радуется")}</div></div>
-    <div><div class="big" id="sess-time" aria-live="off">${fmt(left)}</div>
-      <div style="text-align:center;font-size:17px;font-weight:800;margin-top:6px">${esc(work ? session.title : "Отдых")}</div>
-      <div style="text-align:center" class="small muted">${work ? `${session.len} минут · потом 5 минут отдыха` : "потом можно браться за следующее"}</div></div>
-    ${work ? `<div class="card" style="gap:10px"><b class="small">Длина сессии</b><div class="durs">${[25, 30, 45, 5].map(m => `<button type="button" data-dur="${m}" aria-pressed="${session.len === m}">${m} мин</button>`).join("")}</div></div>` : ""}
+      <div style="position:absolute;inset:16%;display:grid;place-items:center">${mascot(work ? "focus" : "happy", work ? "Козя читает книжку" : "Козя радуется")}</div></div>
+    <div style="text-align:center;display:flex;flex-direction:column;gap:4px"><div class="big" id="sess-time" aria-live="off">${fmt(left)}</div>
+      <div style="font-size:16px;font-weight:700">${esc(work ? session.title : "Отдых")}</div>
+      <div style="font-size:14px;color:var(--muted);font-weight:600">${work ? `${session.len} минут · потом 5 минут отдыха` : "потом можно браться за следующее"}</div></div>
+    ${work ? `<div class="card" style="gap:10px;border-radius:22px;padding:14px"><b style="font-size:14px;font-weight:800">Длина сессии</b><div class="durs">${[25, 30, 45, 5].map(m => `<button type="button" data-dur="${m}" aria-pressed="${session.len === m}">${m} мин</button>`).join("")}</div></div>` : ""}
     <div class="sbtns"><button class="btn" data-act="session-pause" type="button">${paused ? "Продолжить" : "Пауза"}</button>
       <button class="btn primary" data-act="session-done" type="button">${work ? "Сделала раньше" : "Пропустить перерыв"}</button></div>
     ${work ? `<button class="more" data-act="session-cancel" type="button">Отменить сессию</button>` : ""}
@@ -427,15 +462,17 @@ function render() {
   $("#date").textContent = `${C.DAYS_FULL[C.weekday(n.today)]}, ${C.humanDate(n.today)}`;
   $("#hello").textContent = S.name ? `Привет, ${S.name}!` : "Мой план";
   const sd = streakDays(n.today);
-  $("#streak").innerHTML = sd ? `<div class="streak" title="Дней подряд с занятиями"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0702B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-3.5 2-5 1 1.5 2 2 3-5z"/></svg>${sd} ${word(sd, "день", "дня", "дней")}</div>` : "";
-  const navHTML = VIEWS.map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
+  $("#streak").innerHTML = true ? `<div class="streak" title="Дней подряд с занятиями"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0702B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-3.5 2-5 1 1.5 2 2 3-5z"/></svg>${sd} ${word(sd, "день", "дня", "дней")}</div>` : "";
+  const navHTML = VIEWS.filter(v => v[0] !== "setup").map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id || (id === "today" && view === "day") ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
   $("#nav").innerHTML = navHTML;
   $("#toptabs").innerHTML = VIEWS.filter(v => v[0] !== "chat").map(([id, label]) => `<button type="button" data-view="${id}" ${view === id ? 'aria-current="page"' : ""}>${label}</button>`).join("");
-  $("#composer-m").hidden = !(view === "today" || view === "chat");
+  $("#composer-m").hidden = view !== "chat";
   $("#dock").hidden = view === "session";
+  const tiredNow = view === "today" && S.tired[n.today] && !S.tired[n.today].rest;
+  document.querySelector(".top").hidden = view === "session" || !!tiredNow;
   const plan = C.buildPlan(S, n.today, 7, n.min);
   const v = view === "chat" && matchMedia("(min-width:1000px)").matches ? "today" : view;
-  $("#view").innerHTML = v === "session" ? renderSession() : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n);
+  $("#view").innerHTML = v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n);
   $("#chat-desk").innerHTML = chatHTML(n, 60);
   const cd = $("#chat-desk"); cd.scrollTop = cd.scrollHeight;
   if (v === "chat") scrollTo(0, document.body.scrollHeight);
@@ -504,7 +541,8 @@ async function startQuiz({ topicId = null, subject = null, topicTitle = null, n 
   }
   const first = mode === "tired" ? "Тогда так: 3 быстрых вопроса, отвечай как помнишь 🙂" : mode === "topic" ? "Давай проверим тему — отвечай своими словами 🙂" : `Поехали! ${cards.length} ${word(cards.length, "вопрос", "вопроса", "вопросов")}, отвечай своими словами 🙂`;
   quiz = { cards, i: 0, phase: "ask", mode, topicId, results: [], log: [{ role: "assistant", text: first }, { role: "assistant", text: cards[0].q }] };
-  if (view !== "today" && view !== "chat" && !matchMedia("(min-width:1000px)").matches) { view = "today"; history.replaceState(null, "", "#today"); }
+  quiz.intro = mode === "tired" ? first : null;
+  if (!matchMedia("(min-width:1000px)").matches) { view = mode === "tired" ? "today" : "chat"; history.replaceState(null, "", "#" + view); }
   render(); focusQuiz();
 }
 function pickSubject() {
@@ -525,13 +563,14 @@ async function answerQuiz(text) {
     const j = await r.json(); if (r.ok) { verdict = j.verdict; comment = j.comment || ""; }
   } catch {}
   if (quiz !== q) return;
-  if (!verdict) { q.log.push({ role: "assistant", text: `Правильный ответ: ${c.a}` }); q.phase = "self"; render(); return; }
+  if (!verdict) { q.log.push({ role: "assistant", text: `Правильный ответ: ${c.a}` }); q.fb = { ok: true, text: `Правильный ответ: ${c.a}` }; q.phase = "self"; render(); return; }
   const ok = verdict === "yes" ? true : verdict === "no" ? false : "partly";
   q.results.push(ok); C.recordAnswer(S, c.id, ok, d);
+  q.fb = { ok: verdict !== "no", text: verdict === "yes" ? `Верно! ${comment}`.trim() : verdict === "partly" ? `Почти. Полностью: ${c.a}` : `Не совсем. Правильно: ${c.a}` };
   q.log.push({ role: "assistant", text: verdict === "yes" ? `Верно! ✅ ${comment}` : verdict === "partly" ? `Почти 👌 ${comment} Полностью: ${c.a}` : `Не совсем. Правильно: ${c.a}${comment ? " — " + comment : ""}` });
   q.phase = "result"; render(); save();
 }
-function quizSelf(ok) { const q = quiz, c = q.cards[q.i]; q.results.push(ok); C.recordAnswer(S, c.id, ok, now().today); q.log.push({ role: "user", text: ok ? "Знала" : "Не знала" }); q.phase = "result"; render(); save(); }
+function quizSelf(ok) { const q = quiz, c = q.cards[q.i]; q.results.push(ok); q.fb = { ok, text: ok ? `Отлично! ${c.a}` : `Запомни: ${c.a}` }; C.recordAnswer(S, c.id, ok, now().today); q.log.push({ role: "user", text: ok ? "Знала" : "Не знала" }); q.phase = "result"; render(); save(); }
 function quizNext() {
   const q = quiz;
   if (q.i + 1 < q.cards.length) { q.i++; q.phase = "ask"; q.log.push({ role: "assistant", text: q.cards[q.i].q }); render(); focusQuiz(); return; }
@@ -561,17 +600,18 @@ function renderChatView(n) {
 }
 
 function renderToday(d, n) {
+  const tiredT = S.tired[d.date];
+  if (tiredT && !tiredT.rest) return renderTired(d, n);
   let h = "";
   const live0 = C.mergeBlocks(d.blocks.filter(b => b.type !== "done"));
+  todayBlocks = live0;
   const doneN = (S.log[d.date] || []).length, totalN = live0.filter(b => b.type !== "lesson").length + doneN;
-  const tiredT = S.tired[d.date];
-  const nxt = !d.off && !tiredT ? nextUp(live0) : null;
+  const nxt = !d.off ? nextUp(live0) : null;
   const gap = S.subjects.filter(x => x.target && x.current).sort((a, b) => (b.target - b.current) - (a.target - a.current))[0];
   let mood = "happy", moodLabel = "в настроении", say1;
   if (session) { mood = "focus"; moodLabel = "занимается"; say1 = "Мы в сессии! Возвращайся к таймеру."; }
   else if (d.off) { mood = "rest"; moodLabel = "отдыхает"; say1 = "Сегодня выходной! Я тоже валяюсь. Завтра продолжим."; }
   else if (tiredT && tiredT.rest) { mood = "rest"; moodLabel = "отдыхает"; say1 = "Отдыхай. Всё несделанное я перенесла — ничего не потеряется."; }
-  else if (tiredT) { mood = "plead"; moodLabel = "очень просит"; say1 = "Ну пожааалуйста, совсем чуть-чуть? Я спрошу прямо в чате ниже."; }
   else if (nxt) say1 = doneN ? `Уже ${doneN}! Дальше — ${nxt.title}.` : `Готова? Начнём: ${nxt.title} — ${S.sessionMin} минут, потом перерыв!`;
   else if (totalN) { say1 = "Всё на сегодня сделано! Ты умница."; moodLabel = "гордится"; }
   else say1 = "Задач пока нет. Напиши мне, что нужно сделать, — разложу по времени.";
@@ -579,18 +619,62 @@ function renderToday(d, n) {
     <div class="bubble">${esc(say1)}</div><div class="mascot">${mascot(mood)}</div>
     <div class="stats"><div class="stat"><span>Сегодня</span><b>${doneN} из ${totalN}</b></div>
     ${gap ? `<div class="stat"><span>${esc(gap.name.replace(" язык", ""))} до цели</span><b>+${gap.target - gap.current} ${word(gap.target - gap.current, "балл", "балла", "баллов")}</b></div>` : `<div class="stat"><span>Сессия</span><b>${S.sessionMin} мин</b></div>`}</div></div>`;
-  if (session && view !== "session") h += `<div class="minibar"><span>${session.phase === "work" ? esc(session.title) : "Перерыв"} · <span class="tm" id="mini-time">${fmt(leftMs())}</span></span><button class="btn sm" data-view="session" type="button">Открыть</button></div>`;
+  if (session) h += `<div class="minibar"><span>${session.phase === "work" ? esc(session.title) : "Перерыв"} · <span class="tm" id="mini-time">${fmt(leftMs())}</span></span><button class="btn sm" data-view="session" type="button">Открыть</button></div>`;
   else if (nxt) h += `<button class="startbtn" data-start="${nxt.type}|${nxt.ref}" type="button"><span><span class="t1">${nxt.type === "review" ? "Проверить" : "Начать"}: ${esc(nxt.title)}</span><span class="t2">${nxt.type === "review" ? "Козя задаст 5 вопросов" : `${S.sessionMin} минут · потом 5 минут отдыха`}</span></span><span class="play"><svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span></button>`;
-  // превью переписки (на телефоне)
-  const recent = (S.chat || []).slice(-3);
-  const tired = S.tired[d.date];
-  if (recent.length || thinking || quiz || (tired && !tired.rest)) {
-    h += `<div class="card preview" style="padding:12px">${chatHTML(n, 3)}${(S.chat || []).length > 3 ? `<button class="more" data-view="chat" type="button">Вся переписка</button>` : ""}</div>`;
-  }
   if (C.tiredStreak(S, d.date) >= 3 && (S.capFactor || 1) >= 1 && !S.lightenAsked?.[d.date]) {
-    h += `<div class="warnbox row" style="justify-content:space-between"><span>Ты устаёшь уже несколько дней подряд. Это не лень — похоже, нагрузка великовата. Облегчить план?</span>
+    h += `<div class="warnbox row" style="justify-content:space-between"><span>Ты устаёшь уже несколько дней подряд. Похоже, нагрузка великовата. Облегчить план?</span>
       <span class="row"><button class="btn sm primary" data-act="lighten" type="button">Да, облегчить</button><button class="btn sm" data-act="nolighten" type="button">Нет</button></span></div>`;
   }
+  for (const u of d.unplaced) h += `<div class="warnbox">Не влезает до срока: <b>${esc(u.title)}</b>. Сдвинь срок или освободи время.</div>`;
+  const rest = live0.map((b, i) => ({ ...b, _i: i })).filter(b => b.type !== "lesson" && b !== nxt && !(nxt && b.ref === nxt.ref && b.start === nxt.start)).slice(0, 3);
+  if (!d.off) {
+    h += `<div style="display:flex;flex-direction:column;gap:8px"><div class="nexthead"><h2>Дальше сегодня</h2><button class="linkbtn" data-view="day" type="button">Весь план</button></div>`;
+    if (!rest.length) h += `<p class="empty">${nxt ? "После этого — свободно." : "Пусто. Напиши Козе, что нужно сделать."}</p>`;
+    for (const b of rest) {
+      const t = C.toHHMM(b.start), sub = b.type === "review" ? `10 мин · Козя спросит 5 вопросов` : `${t}–${C.toHHMM(b.end)} · ${b.count > 1 ? `${b.count} × ${S.sessionMin} мин` : `${S.sessionMin} мин`}`;
+      h += `<div class="nx" style="--c:${color(b.subject)}">${b.type === "review" ? `<button class="box review" data-quiz-topic="${b.ref}" type="button" aria-label="Проверить: ${esc(b.title)}"></button>` : `<button class="box" data-done="${b._i}" type="button" aria-label="Сделала: ${esc(b.title)}"></button>`}
+        <button class="tx" ${b.type === "review" ? `data-quiz-topic="${b.ref}"` : `data-start="${b.type}|${b.ref}"`} type="button"><b>${b.type === "review" ? "Повторить: " : ""}${esc(b.title)}</b><span>${sub}</span></button></div>`;
+    }
+    h += `</div>`;
+  }
+  h += `<div class="quick"><button class="btn" data-act="tired" type="button">Сил нет</button><button class="btn" data-act="learned" type="button">Изучила тему</button><button class="btn" data-act="new-task" type="button">+ Задача</button></div>`;
+  return h;
+}
+
+function renderTired(d, n) {
+  const t = S.tired[d.date];
+  const lastAsk = [...(S.chat || [])].reverse().find(m => m.role === "assistant")?.text || "Понимаю. Всё остальное я перенесла на завтра. Но может, 3 малюсеньких вопроса? Это 5 минут, честно. Ну пожааалуйста!";
+  let h = `<div><div class="date">Сегодня без подвигов</div><h1>Сил нет — и это ок</h1></div>
+    <div class="trrow">${mascot("plead", "Козя умоляюще складывает копытца")}<div class="trb">${esc(quiz ? quiz.intro || lastAsk : lastAsk)}</div></div>`;
+  if (quiz) {
+    const q = quiz, c = q.cards[q.i];
+    h += `<div class="tru">Ну так и быть</div><div class="qcard">
+      <div class="qtop"><span>Вопрос ${q.i + 1} из ${q.cards.length}${c.subject ? " · " + esc(c.subject) : ""}</span><span class="qprog">${q.cards.map((_, i) => `<i class="${i < q.results.length ? (q.results[i] === false ? "bad" : "ok") : i === q.i ? "cur" : ""}"></i>`).join("")}</span></div>
+      ${q.fb && (q.phase !== "ask" || q.i > 0) ? `<div class="qfb ${q.fb.ok ? "" : "bad"}">${esc(q.fb.text)}</div>` : ""}
+      ${q.phase === "ask" || q.phase === "checking" ? `<div class="qq">${esc(c.q)}</div>` : ""}
+      ${q.phase === "ask" ? `<label class="small muted" style="font-weight:700" for="qa-in">Твой ответ</label>
+        <form class="qform" data-quiz><input id="qa-in" type="text" autocomplete="off" maxlength="500" placeholder="Своими словами"><button type="submit" aria-label="Ответить">${icon("i-send")}</button></form>
+        <div class="row"><button class="btn sm" data-act="quiz-skip" type="button">Не помню</button><button class="btn sm" data-act="quiz-stop" type="button">Хватит на сегодня</button></div>` :
+      q.phase === "checking" ? `<div class="small muted" style="font-weight:700">Козя проверяет…</div>` :
+      q.phase === "self" ? `<div class="small muted" style="font-weight:700">Сверь сама: ты знала?</div><div class="row"><button class="btn sm primary" data-act="quiz-self-yes" type="button">Знала</button><button class="btn sm" data-act="quiz-self-no" type="button">Не знала</button></div>` :
+      `<div class="row"><button class="btn sm primary" data-act="quiz-next" type="button">${q.i + 1 < q.cards.length ? "Дальше" : "Итог"}</button><button class="btn sm" data-act="quiz-stop" type="button">Хватит на сегодня</button></div>`}
+    </div>`;
+  } else if (generating) {
+    h += `<div class="tru">Ну так и быть</div><div class="qcard"><div class="small muted" style="font-weight:700">Козя придумывает вопросы…</div></div>`;
+  } else {
+    const o = C.microOptions(S, d.date)[0];
+    if (o) h += `<div class="qcard"><div class="qtop"><span>${o.min} минут${o.subject ? " · " + esc(o.subject) : ""}</span></div><div class="qq" style="font-size:18px">${esc(o.title)}</div>
+      <div class="row"><button class="btn primary" data-act="micro-yes" type="button">${t.micro ? "Давай ещё" : "Ну так и быть"}</button><button class="btn" data-act="micro-no" type="button">${t.micro ? "Всё, отдыхаю" : "Не сегодня"}</button></div></div>`;
+  }
+  const dueToday = S.tasks.filter(x => x.done < x.sessions && x.due && x.due <= d.date);
+  if (dueToday.length) h += `<div class="warnbox">Только помни: сегодня срок у ${dueToday.map(x => "«" + esc(x.title) + "»").join(", ")}.</div>`;
+  h += `<div class="backcard"><span>Силы вернулись?</span><button class="btn sm primary" data-act="untired" type="button">Обычный план</button></div>`;
+  return h;
+}
+
+function renderDay(d, n) {
+  let h = `<div class="row" style="justify-content:space-between"><button class="btn sm" data-view="today" type="button">← Назад</button><h2>Весь план на сегодня</h2></div>`;
+  const tired = S.tired[d.date];
   const done = (S.log[d.date] || []).map((x, idx) => ({ ...x, type: "done", idx, start: C.toMin(x.start), end: C.toMin(x.end) }));
   const live = C.mergeBlocks(d.blocks.filter(b => b.type !== "done"));
   todayBlocks = live;
@@ -613,6 +697,7 @@ function renderToday(d, n) {
   h += tasksCard();
   return h;
 }
+
 
 function blockHTML(b, date) {
   const c = color(b.subject);
@@ -646,7 +731,7 @@ function tasksCard() {
 }
 
 function renderWeek(plan) {
-  return `<div class="row"><button class="btn" data-act="new-task" type="button">${icon("i-plus")}Задача</button><button class="btn" data-act="new-event" type="button">${icon("i-plus")}Разовое событие</button></div>
+  return `<div class="row"><button class="btn" data-act="new-task" type="button">${icon("i-plus")}Задача</button><button class="btn" data-act="new-event" type="button">${icon("i-plus")}Разовое событие</button><button class="btn" data-view="setup" type="button">${icon("i-set")}Расписание</button></div>
   <div class="week">${plan.map(d => {
     const items = C.mergeBlocks(d.blocks.filter(b => b.type !== "done"));
     const doneN = (S.log[d.date] || []).length;
@@ -891,7 +976,7 @@ document.addEventListener("click", e => {
     case "session-pause": if (!session) return; if (session.endAt) { session.left = leftMs(); session.endAt = null; } else session.endAt = Date.now() + session.left; keepSession(); render(); return;
     case "session-done": finishPhase(true); return;
     case "session-cancel": session = null; keepSession(); view = "today"; history.replaceState(null, "", "#today"); document.title = "Мой план ЕГЭ"; render(); return;
-    case "quiz-skip": { const q = quiz, c = q.cards[q.i]; q.results.push(false); C.recordAnswer(S, c.id, false, n.today); q.log.push({ role: "user", text: "Не помню" }, { role: "assistant", text: `Ничего! Правильно: ${c.a}` }); q.phase = "result"; render(); save(); return; }
+    case "quiz-skip": { const q = quiz, c = q.cards[q.i]; q.results.push(false); C.recordAnswer(S, c.id, false, n.today); q.log.push({ role: "user", text: "Не помню" }, { role: "assistant", text: `Ничего! Правильно: ${c.a}` }); q.fb = { ok: false, text: `Ничего! Правильно: ${c.a}` }; q.phase = "result"; render(); save(); return; }
     case "quiz-self-yes": quizSelf(true); return;
     case "quiz-self-no": quizSelf(false); return;
     case "quiz-next": quizNext(); return;
@@ -963,7 +1048,7 @@ document.addEventListener("submit", async e => {
   }
 });
 function planKeys(plan) { const k = new Set(); for (const d of plan) for (const b of d.blocks) if (b.type !== "done") k.add(`${d.date}|${b.type}|${b.ref}|${b.start}`); return k; }
-addEventListener("hashchange", () => { const v = location.hash.slice(1); if (VIEWS.some(x => x[0] === v) || v === "session") { view = v; if (S) render(); } });
+addEventListener("hashchange", () => { const v = location.hash.slice(1); if (VIEWS.some(x => x[0] === v) || v === "session" || v === "day") { view = v; if (S) render(); } });
 setInterval(() => { if (S && !quiz && !document.hidden && !dlg.open && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) render(); }, 60000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && S && !thinking && !quiz && !dlg.open) load(); });
 load();
