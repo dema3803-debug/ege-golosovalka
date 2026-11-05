@@ -296,6 +296,19 @@ export function applyActions(state, actions, today) {
         changes.push(`убрала «${l.title}» ${humanDate(a.date)}`);
         break;
       }
+      case "restore_lesson": {
+        const l = state.lessons.find(x => x.id === a.lesson_id); if (!l || !isDate(a.date)) break;
+        const before = state.cancelled.length;
+        state.cancelled = state.cancelled.filter(c => !(c.lessonId === l.id && c.date === a.date));
+        if (state.cancelled.length < before) changes.push(`вернула «${l.title}» ${humanDate(a.date)}`);
+        break;
+      }
+      case "delete_event": {
+        const i = state.extraLessons.findIndex(x => x.id === a.event_id); if (i < 0) break;
+        changes.push(`убрала «${state.extraLessons[i].title}» ${humanDate(state.extraLessons[i].date)}`);
+        state.extraLessons.splice(i, 1);
+        break;
+      }
       case "set_lesson_time": {
         const l = state.lessons.find(x => x.id === a.lesson_id); if (!l || !isTime(a.from)) break;
         l.from = a.from; l.to = isTime(a.to) ? a.to : toHHMM(Math.min(toMin(a.from) + 90, 1439));

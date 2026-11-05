@@ -59,7 +59,10 @@ export default async function handler(req, res) {
   const notes = [];
   const actions = prepareActions(parsed.actions, today, now, notes);
   const changes = applyActions(state, actions, today);
-  let reply = String(parsed.reply || "").replace(/["«»]\s*([^\p{L}\p{N}\s]{1,4})\s*["«»]/gu, "$1").replace(/"/g, "").trim().slice(0, 500) || (changes.length ? "Готово!" : "Окей!");
+  let reply = String(parsed.reply || "").replace(/\{[\s\\n]*\}/g, " ").replace(/\\n/g, " ").replace(/\s{2,}/g, " ").replace(/["«»]\s*([^\p{L}\p{N}\s]{1,4})\s*["«»]/gu, "$1").replace(/"/g, "").trim().slice(0, 500) || (changes.length ? "Готово!" : "Окей!");
+  if (!changes.length && /(вернул|убрал|добавил|постав|перенес|перенёс|отменил|восстанов|удалил|сдвинул|записал|запомнил)/i.test(reply)) {
+    reply = "Хм, кажется, я ничего не поменяла 🙈 Скажи чуть по-другому — или поправь сама: нажми на занятие или задачу, либо открой раздел «Расписание».";
+  }
   if (notes.length) reply = (reply ? reply + " " : "") + notes.join(" ");
   pushChat(state, "user", message);
   pushChat(state, "assistant", reply, changes.length ? { changes } : {});
@@ -131,8 +134,9 @@ function buildPrompt(s, today, now) {
     for (const l of s.lessons) if (l.days.includes(weekday(d)) && !s.cancelled.some(c => c.lessonId === l.id && c.date === d))
       occ.push(`- ${d} (${DAYS_FULL[weekday(d)]}${i === 0 ? ", сегодня" : ""}): «${l.title}» ${l.from && l.to ? l.from + "–" + l.to : "время не указано"} → lesson_id=${l.id}`);
   }
+  const cancelledList = s.cancelled.filter(c => c.date >= today).map(c => { const l = s.lessons.find(x => x.id === c.lessonId); return l ? `- ${c.date} (${DAYS_FULL[weekday(c.date)]}): «${l.title}» ОТМЕНЕНО → lesson_id=${l.id}` : ""; }).filter(Boolean).join("\n");
   const lessons = s.lessons.map(l => `- id=${l.id}: «${l.title}», ${l.days.map(d => DAYS_FULL[d]).join(", ")} ${l.from && l.to ? l.from + "–" + l.to : "(время не указано)"}`).join("\n") || "нет";
-  const extra = s.extraLessons.filter(l => l.date >= today).map(l => `- «${l.title}» ${l.date} ${l.from}–${l.to}`).join("\n");
+  const extra = s.extraLessons.filter(l => l.date >= today).map(l => `- event_id=${l.id}: «${l.title}» ${l.date} ${l.from}–${l.to}`).join("\n");
   const tasks = s.tasks.filter(t => t.done < t.sessions).map(t => `- id=${t.id}: «${t.title}» (${t.subject || "без предмета"}), осталось сессий ${t.sessions - t.done}, срок ${t.due ? t.due + (t.dueTime ? " " + t.dueTime : "") : "нет"}`).join("\n") || "нет";
   const subjects = s.subjects.map(x => `${x.name} (сейчас ${x.current ?? "?"}, цель ${x.target ?? "?"})`).join("; ");
   const free = s.free.map((f, i) => `${DAYS_FULL[i]}: ${f.off ? "выходной" : `${f.from}–${f.to}`}`).join("; ");
@@ -150,6 +154,7 @@ ${night ? `ВАЖНО: сейчас ночь, она ещё не спала. К�
 ${lessons}
 Занятия на ближайшие дни (для отмены бери отсюда lesson_id и дату):
 ${occ.join("\n") || "нет"}
+${cancelledList ? "Уже отменённые занятия (вернуть — restore_lesson):\n" + cancelledList : ""}
 ${extra ? "Разовые занятия:\n" + extra : ""}
 Незавершённые задачи:
 ${tasks}
@@ -162,6 +167,8 @@ ${tasks}
 - delete_task: {"type":"delete_task","task_id":"..."}
 - update_task: {"type":"update_task","task_id":"...","due_date":"...","due_time":"...","sessions":число}
 - cancel_lesson: {"type":"cancel_lesson","lesson_id":"...","date":"YYYY-MM-DD"} — занятие в этот день отменили или «не надо». Это ЕДИНСТВЕННЫЙ способ убрать занятие.
+- restore_lesson: {"type":"restore_lesson","lesson_id":"...","date":"YYYY-MM-DD"} — вернуть отменённое занятие («верни английский», «англ всё-таки будет»). Бери из списка отменённых.
+- delete_event: {"type":"delete_event","event_id":"..."} — убрать разовое занятие/событие.
 - add_lesson_once: {"type":"add_lesson_once","title":"...","subject":"...","date":"YYYY-MM-DD","from":"HH:MM","to":"HH:MM"}
 - set_availability: {"type":"set_availability","date":"YYYY-MM-DD","from":"HH:MM","to":"HH:MM"} или {"type":"set_availability","date":"...","off":true} — ТОЛЬКО когда она сама говорит, во сколько свободна («сегодня свободна после 19», «в субботу уезжаю»). Не используй для отмены занятий.
 - set_lesson_time: {"type":"set_lesson_time","lesson_id":"...","from":"HH:MM","to":"HH:MM"} — указать время регулярного занятия (если конец неизвестен — плюс 1,5 часа)
@@ -175,7 +182,9 @@ ${tasks}
 - Если она называет время занятия, у которого «время не указано» — set_lesson_time.
 - Если она устала — действие tired, ответ мягкий, без упрёков, предложи совсем маленький шаг на 5 минут.
 - Если она просто болтает или спрашивает совет — actions пустой, ответь по делу коротко.
-- reply: 1–3 коротких предложения, что ты поменяла и почему. Не перечисляй время блоков.
+- reply: 1–3 коротких предложения, что ты поменяла и почему. Не перечисляй время блоков. Без переносов строк и фигурных скобок в тексте.
+- НИКОГДА не пиши «вернула/убрала/добавила», если в actions нет соответствующего действия. Если не знаешь, каким действием это сделать, — честно скажи, что не смогла, и предложи поправить в разделе «Расписание».
+- Не создавай add_lesson_once, чтобы вернуть отменённое регулярное занятие, — для этого restore_lesson.
 
 Отвечай СТРОГО одним JSON без пояснений вокруг:
 {"reply":"...","actions":[...]}`;
