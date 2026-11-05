@@ -34,7 +34,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
 .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,5vw,38px);line-height:1.1;margin:6px 0 10px;text-wrap:balance}
 .lead{color:var(--muted);max-width:60ch;margin:0}
-.status{font-size:13px;padding:10px 14px;border:1px dashed var(--line);border-radius:6px;background:var(--sheet);color:var(--muted)}
+.status{position:sticky;top:calc(8px + env(safe-area-inset-top,0px));z-index:5;font-size:13px;padding:10px 14px;border:1px dashed var(--line);border-radius:6px;background:var(--sheet);color:var(--muted)}
 .status.warn{color:var(--warn);border-color:var(--warn)}
 .card{background:var(--sheet);border:1px solid var(--line);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:16px}
 .qhead{display:flex;gap:14px;align-items:flex-start}
@@ -65,6 +65,7 @@ h2{font-family:var(--display);font-weight:500;font-size:clamp(18px,3.4vw,22px);l
 .pc small{display:block;color:var(--muted);font-size:11px}
 .sec{font-family:var(--display);font-weight:700;font-size:15px;display:flex;gap:10px;align-items:baseline;margin-top:12px}
 .sec span{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.done{border-color:var(--accent);background:var(--accent-soft)}
 .foot{position:sticky;bottom:0;background:var(--paper);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between;font-size:13px;color:var(--muted)}
 .link{all:unset;cursor:pointer;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .link:focus-visible{outline:2px solid var(--accent)}
@@ -91,11 +92,12 @@ h2{font-family:var(--display);font-weight:500;font-size:clamp(18px,3.4vw,22px);l
   <header>
     <div class="eyebrow">Опрос · подготовка к ЕГЭ</div>
     <h1>Как ты готовишься к экзаменам?</h1>
-    <p class="lead">23 коротких вопроса, примерно 4 минуты. Для 10–11 класса. Ответы анонимные, результаты видны сразу под каждым вопросом. Ответ можно поменять в любой момент.</p>
+    <p class="lead">23 коротких вопроса, примерно 4 минуты. Для 10–11 класса. Ответы анонимные и сохраняются сами. Если передумаешь, просто нажми другой вариант.</p>
   </header>
-  <div id="status" class="status">Загружаем результаты…</div>
+  <div id="status" class="status" hidden></div>
   <div id="qs" style="display:flex;flex-direction:column;gap:20px"></div>
-  <div class="foot"><span id="total">Голосов пока нет, будьте первым</span><span style="display:flex;gap:18px"><button class="link" id="refresh" type="button">Обновить</button><button class="link" id="toScreen" type="button">Экран для проектора</button></span></div>
+  <div id="done" class="card done" hidden><h2>Готово, спасибо!</h2><p class="hint">Все ответы сохранены. Страницу можно закрыть.</p></div>
+  <div class="foot"><span id="total"></span></div>
 </div>
 <div id="screen" class="screen" hidden></div>
 
@@ -185,15 +187,15 @@ function render(){
       <div class="qhead"><span class="qnum">${qi+1}</span><div><h2 id="h-${q.id}">${esc(q.t)}</h2><p class="hint">${esc(q.h)}</p></div></div>
       <div class="opts">${q.o.map(([t,s],i)=>`<button type="button" class="opt" id="o-${q.id}-${i}" data-q="${q.id}" data-i="${i}" aria-pressed="${sel.includes(i)}" ${canVote?"":"disabled"}>
         <span class="box">${sel.includes(i)?"✓":""}</span><span><span class="ot">${esc(t)}</span>${s?`<span class="os" style="display:block">${esc(s)}</span>`:""}</span></button>`).join("")}</div>
-      <div class="res">${resultsHTML(q)}</div></section>`}).join("");
-  const voters=res.voters;
+      </section>`}).join("");
   const done=QS.filter(q=>(mine[q.id]||[]).length).length;
-  $("#total").textContent=(voters?`Ответили: ${voters}`:"Голосов пока нет, будьте первым")+(canVote?` · ты ответил(а) на ${done} из ${QS.length}`:"");
+  $("#total").textContent=`Отвечено ${done} из ${QS.length}`;
+  $("#done").hidden=done<QS.length;
   if(!$("#screen").hidden) renderScreen();
 }
 function renderScreen(){
   const q=QS[scrIdx], {n}=tally(q);
-  $("#screen").innerHTML=`<div class="nav"><button class="btn" id="back" type="button">← К опросу</button>
+  $("#screen").innerHTML=`<div class="nav"><span class="eyebrow">Результаты · всего ответили ${res.voters}</span>
     <button class="btn" id="prev" type="button" ${scrIdx?"":"disabled"}>Назад</button>
     <button class="btn" id="next" type="button" ${scrIdx<QS.length-1?"":"disabled"}>Дальше</button>
     <span class="dots">Вопрос ${scrIdx+1} из ${QS.length} · ответили ${n}</span></div>
@@ -201,7 +203,7 @@ function renderScreen(){
     <div class="res" style="border:0;padding:0;gap:18px">${resultsHTML(q)}</div>`;
 }
 function showView(){
-  const scr=location.hash==="#screen";
+  const scr=location.hash==="#results"||location.hash==="#screen";
   $("#app").hidden=scr; $("#screen").hidden=!scr;
   if(scr) renderScreen();
 }
@@ -210,13 +212,10 @@ document.addEventListener("click",e=>{
   if(b&&canVote){
     const q=QS.find(x=>x.id===b.dataset.q), i=+b.dataset.i;
     let sel=[...(mine[q.id]||[])];
-    if(q.multi){ if(sel.includes(i)) sel=sel.filter(x=>x!==i); else { if(q.max&&sel.length>=q.max){flash(`Можно выбрать не больше ${q.max}`);return} sel.push(i)} }
+    if(q.multi){ if(sel.includes(i)) sel=sel.filter(x=>x!==i); else { if(q.max&&sel.length>=q.max){flash(`Можно выбрать не больше ${q.max}. Сними один вариант, чтобы выбрать другой.`);setTimeout(()=>$("#status").hidden=true,3000);return} sel.push(i)} }
     else sel = sel[0]===i?[]:[i];
     mine={...mine,[q.id]:sel}; save(); render(); return;
   }
-  if(e.target.id==="refresh"){load();return}
-  if(e.target.id==="toScreen"){location.hash="screen";return}
-  if(e.target.id==="back"){location.hash="";return}
   if(e.target.id==="prev"&&scrIdx>0){scrIdx--;renderScreen()}
   if(e.target.id==="next"&&scrIdx<QS.length-1){scrIdx++;renderScreen()}
 });
@@ -235,7 +234,7 @@ async function flush(){
   try{
     const r=await fetch("/api/vote",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({voter,answers:mine})});
     if(!r.ok) throw 0;
-    $("#status").hidden=true; load();
+    $("#status").hidden=true;
   }catch(err){ flash("Не получилось сохранить ответ. Проверьте интернет и нажмите вариант ещё раз.") }
   writing=false;
   if(pending){pending=false;flush()}
@@ -248,8 +247,9 @@ async function load(){
     res=await r.json(); $("#status").hidden=true; render();
   }catch(e){ flash("Результаты пока не загрузились. Проверьте интернет — страница попробует снова.") }
 }
-render(); showView(); load();
-setInterval(()=>{ if(!document.hidden) load() }, 5000);
+render(); showView(); if(!$("#screen").hidden) load();
+setInterval(()=>{ if(!document.hidden && !$("#screen").hidden) load() }, 5000);
+addEventListener("hashchange",()=>{ if(!$("#screen").hidden) load() });
 </script>
 </body>
 </html>
