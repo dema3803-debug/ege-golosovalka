@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#FBEFF3">
 <title>Козя — мой план ЕГЭ</title>
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" id="manifest-link" href="/manifest.json">
 <link rel="icon" type="image/png" href="/icons/favicon-64.png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -312,6 +312,7 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "
 // личная ссылка: запоминаем, чтобы иконка на телефоне открывала свой план
 let U = new URLSearchParams(location.search).get("u");
 try { if (U) localStorage.setItem("ege-u", U); else { U = localStorage.getItem("ege-u"); if (U) history.replaceState(null, "", "/app?u=" + U + location.hash); } } catch {}
+if (U) document.getElementById("manifest-link")?.setAttribute("href", "/api/manifest?u=" + encodeURIComponent(U));
 const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"]];
 let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
 let quiz = null; const openTopics = new Set();
@@ -337,7 +338,21 @@ function flash(t) { const s = $("#status"); s.textContent = t || ""; s.hidden = 
 
 // ---------- загрузка и сохранение ----------
 async function load() {
-  if (!U) { flash("Открой свою личную ссылку на план — в ней есть код после «?u=»."); $("#date").textContent = ""; return; }
+  if (!U) {
+    $("#date").textContent = ""; $("#hello").textContent = "Привет!";
+    $("#view").innerHTML = `<div class="hero"><div class="bubble">Я Козя! Вставь ссылку на свой план — я её запомню, и больше вводить не придётся.</div><div class="mascot">${mascot("happy")}</div></div>
+      <form class="card" id="linkform"><label class="field"><span>Ссылка на план (или код после «u=»)</span><input type="text" id="link-in" autocomplete="off" placeholder="https://…/app?u=…" required></label>
+      <span class="small muted" id="link-err" hidden>Не вижу кода. Скопируй ссылку целиком — в ней есть «?u=» и буквы с цифрами.</span>
+      <button class="btn primary" type="submit" style="justify-content:center">Открыть мой план</button></form>`;
+    $("#linkform").addEventListener("submit", e => {
+      e.preventDefault();
+      const v = $("#link-in").value.trim(), m = v.match(/[?&]u=([a-z0-9]{16,40})/i) || v.match(/^([a-z0-9]{16,40})$/i);
+      if (!m) { $("#link-err").hidden = false; return; }
+      try { localStorage.setItem("ege-u", m[1].toLowerCase()); } catch {}
+      location.replace("/app?u=" + m[1].toLowerCase());
+    });
+    return;
+  }
   try {
     const r = await fetch(`/api/app?u=${encodeURIComponent(U)}`, { cache: "no-store" });
     const j = await r.json();
