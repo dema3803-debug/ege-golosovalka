@@ -42,7 +42,8 @@ export default async function handler(req, res) {
   s.habits = [{ id: uid("h"), title: "Школьные задания", subject: "Школа", days: [0, 1, 2, 3, 4], sessions: 1 }];
   s.prefs = { bestTime: f.choices?.bestTime || [], remind: f.choices?.remindWhen || [] };
 
-  const u = crypto.randomBytes(12).toString("hex");
+  // ?u=... — пересоздать план по той же ссылке (сбросить к данным анкеты)
+  const u = /^[a-z0-9]{16,40}$/.test(req.query.u || "") ? req.query.u : crypto.randomBytes(12).toString("hex");
   await saveState(u, s);
   const host = req.headers["x-forwarded-host"] || req.headers.host;
   res.status(200).json({ ok: true, name: s.name, link: `https://${host}/app?u=${u}` });
