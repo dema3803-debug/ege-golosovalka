@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>План подготовки ЕГЭ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: тетрадный лист в клетку, вопросы — карточки-«бланки», ответы как клетки бланка ЕГЭ, результаты полосами под ними */
+:root{
+  --paper:#f6f8fb; --grid:#e3e9f2; --sheet:#ffffff; --ink:#1b2333; --muted:#5d6779;
+  --line:#d3dbe7; --cell:#f1f4f9; --accent:#2348d6; --accent-soft:#e3e9ff; --bar:#c9d4f5; --warn:#b4471c;
+  --display:"Unbounded", "Arial Black", system-ui, sans-serif;
+  --body:"Golos Text", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11151d; --grid:#1a2030; --sheet:#171c27; --ink:#e7ebf3; --muted:#9aa4b8;
+  --line:#2a3245; --cell:#1e2432; --accent:#7d97ff; --accent-soft:#232d52; --bar:#33407a; --warn:#f08a5d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11151d; --grid:#1a2030; --sheet:#171c27; --ink:#e7ebf3; --muted:#9aa4b8;
+  --line:#2a3245; --cell:#1e2432; --accent:#7d97ff; --accent-soft:#232d52; --bar:#33407a; --warn:#f08a5d; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
+:root{padding-block:env(safe-area-inset-top,0px) env(safe-area-inset-bottom,0px)}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px}
+.wrap{max-width:760px;margin:0 auto;padding-block:28px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:20px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,5vw,38px);line-height:1.1;margin:6px 0 10px;text-wrap:balance}
+.lead{color:var(--muted);max-width:60ch;margin:0}
+.status{position:sticky;top:calc(8px + env(safe-area-inset-top,0px));z-index:5;font-size:13px;padding:10px 14px;border:1px dashed var(--line);border-radius:6px;background:var(--sheet);color:var(--muted)}
+.status.warn{color:var(--warn);border-color:var(--warn)}
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.qhead{display:flex;gap:14px;align-items:flex-start}
+.qnum{font-family:var(--mono);font-size:13px;color:var(--accent);border:1.5px solid var(--accent);border-radius:4px;
+  min-width:30px;height:30px;display:grid;place-items:center;flex:none}
+h2{font-family:var(--display);font-weight:500;font-size:clamp(18px,3.4vw,22px);line-height:1.25;margin:0;text-wrap:balance}
+.hint{font-size:13px;color:var(--muted);margin:4px 0 0}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:flex-start;padding:14px;
+  background:var(--cell);border:1px solid var(--line);border-radius:6px;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--accent)}
+.opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.opt[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.opt[disabled]{cursor:not-allowed;opacity:.6}
+.box{flex:none;width:22px;height:22px;border:1.5px solid var(--muted);border-radius:3px;display:grid;place-items:center;
+  font-family:var(--mono);font-size:14px;color:var(--sheet);margin-top:1px}
+.opt[aria-pressed="true"] .box{background:var(--accent);border-color:var(--accent)}
+.ot{font-weight:600;line-height:1.3}
+.os{font-size:13px;color:var(--muted);margin-top:2px}
+.res{display:flex;flex-direction:column;gap:10px;padding-top:16px;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:minmax(0,38%) 1fr auto;gap:12px;align-items:center;font-size:13px}
+.rl{color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.track{height:10px;background:var(--cell);border-radius:2px;overflow:hidden}
+.fill{height:100%;background:var(--bar);width:0;transition:width .5s ease}
+.row.top .fill{background:var(--accent)}
+.row.top .rl{color:var(--ink);font-weight:600}
+.pc{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;min-width:74px}
+.pc small{display:block;color:var(--muted);font-size:11px}
+.sec{font-family:var(--display);font-weight:700;font-size:15px;display:flex;gap:10px;align-items:baseline;margin-top:12px}
+.sec span{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.done{border-color:var(--accent);background:var(--accent-soft)}
+.foot{position:sticky;bottom:0;background:var(--paper);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between;font-size:13px;color:var(--muted)}
+.link{all:unset;cursor:pointer;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.link:focus-visible{outline:2px solid var(--accent)}
+/* проектор */
+.screen{min-height:100%;display:flex;flex-direction:column;gap:28px;padding-block:32px;
+  padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));max-width:1100px;margin:0 auto}
+.screen h2{font-family:var(--display);font-weight:700;font-size:clamp(26px,4.4vw,52px)}
+.screen .row{font-size:clamp(15px,2vw,22px);grid-template-columns:minmax(0,34%) 1fr auto}
+.screen .track{height:clamp(14px,2.4vw,28px)}
+.screen .pc{min-width:110px;font-size:clamp(18px,2.4vw,30px)}
+.screen .pc small{font-size:clamp(11px,1.2vw,14px)}
+.nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;font-family:var(--mono);font-size:13px;padding:8px 14px;border:1px solid var(--line);border-radius:4px;background:var(--sheet)}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible{outline:2px solid var(--accent)}
+.dots{font-family:var(--mono);font-size:13px;color:var(--muted);margin-left:auto}
+@media (max-width:480px){.card{padding:18px}.row{grid-template-columns:1fr auto}.row .track{grid-column:1/-1;order:3}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* анкета плана */
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>span{font-size:13px;color:var(--muted)}
+input[type=text],input[type=time],input[type=date],input[type=number],select,textarea{
+  font:inherit;color:var(--ink);background:var(--cell);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%;min-width:0}
+textarea{min-height:90px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{all:unset;cursor:pointer;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--cell);font-size:14px}
+.chip:hover{border-color:var(--accent)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
+.rowbox{display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid var(--line);border-radius:6px;background:var(--cell)}
+.rowbox .grid input,.rowbox .grid select{background:var(--sheet)}
+.rowbox textarea{background:var(--sheet)}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.rowhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.rowhead b{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.del{all:unset;cursor:pointer;font-size:13px;color:var(--warn)}
+.del:focus-visible{outline:2px solid var(--accent)}
+.add{all:unset;cursor:pointer;align-self:flex-start;font-family:var(--mono);font-size:13px;padding:9px 14px;border:1.5px dashed var(--accent);border-radius:6px;color:var(--accent)}
+.add:hover{background:var(--accent-soft)}
+.add:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.days{display:flex;gap:6px;flex-wrap:wrap}
+.day{all:unset;cursor:pointer;width:40px;height:36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:4px;background:var(--sheet);font-family:var(--mono);font-size:13px}
+.day[aria-pressed="true"]{background:var(--accent);color:var(--sheet);border-color:var(--accent)}
+.day:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.week{display:flex;flex-direction:column;gap:8px}
+.wd{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:center}
+.wd .dn{font-family:var(--mono);font-size:13px}
+.wd label{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;white-space:nowrap}
+.wd.off input[type=time]{opacity:.35}
+.submit{all:unset;cursor:pointer;text-align:center;font-family:var(--display);font-weight:700;font-size:16px;padding:16px 22px;border-radius:8px;background:var(--accent);color:var(--sheet)}
+.submit:hover{filter:brightness(1.08)}
+.submit:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.submit[disabled]{opacity:.6;cursor:wait}
+.empty{font-size:13px;color:var(--muted);margin:0}
+@media (max-width:480px){.wd{grid-template-columns:36px 1fr 1fr}.wd label{grid-column:2/-1}}
+</style>
+</head>
+<body>
+<div id="app" class="wrap">
+  <header>
+    <div class="eyebrow">Анкета · личный план подготовки</div>
+    <h1>Соберём твой план на неделю</h1>
+    <p class="lead">Заполни, что знаешь: предметы, занятия, дедлайны и свободное время. По этим ответам мы составим расписание подготовки. Займёт 10–15 минут. Черновик сохраняется сам, можно закрыть и вернуться.</p>
+  </header>
+  <div id="status" class="status" hidden></div>
+  <div id="form" style="display:flex;flex-direction:column;gap:20px"></div>
+  <div id="sent" class="card done" hidden><h2>Анкета отправлена, спасибо!</h2><p class="hint">Если что-то поменяется, исправь ответы на этой же странице и нажми «Отправить» ещё раз.</p></div>
+  <button id="send" class="submit" type="button">Отправить анкету</button>
+</div>
+
+<script>
+const SUBJECTS=["Русский язык","Математика (профиль)","Математика (база)","Физика","Химия","Биология","Информатика","Обществознание","История","Литература","География","Английский язык","Другой иностранный"];
+const KINDS=["Репетитор","Вебинар онлайн-курса","Групповое занятие","Школьный электив или консультация","Другое"];
+const DAYS=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+const CHOICE={
+  selfHours:{t:"Сколько часов в день ты готова заниматься сама, кроме занятий?",h:"Один вариант. Решать задания, повторять, писать пробники.",o:["Меньше часа","1–2 часа","2–3 часа","3–4 часа","Больше 4 часов"]},
+  session:{t:"Сколько ты можешь заниматься без перерыва?",h:"Один вариант.",o:["25–30 минут","45 минут","1 час","1,5 часа и больше"]},
+  bestTime:{t:"Когда тебе лучше всего думается?",h:"Можно несколько вариантов.",multi:true,o:["Утром","Днём","Вечером","Поздно вечером"]},
+  dayOff:{t:"Нужен ли день без подготовки?",h:"Один вариант.",o:["Да, целый день отдыха","Полдня отдыха","Нет, занимаюсь каждый день"]},
+  remindHow:{t:"Как тебе удобнее получать напоминания?",h:"Можно несколько вариантов.",multi:true,o:["Telegram","Уведомления в браузере","Почта","Не нужны"]},
+  remindWhen:{t:"Когда напоминать о занятии или дедлайне?",h:"Можно несколько вариантов.",multi:true,o:["За 15 минут","За час","Вечером накануне","Утром в тот же день"]}
+};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const blank=()=>({name:"",grade:"",subjects:[],lessons:[],deadlines:[],schoolEnds:"",clubs:"",
+  free:DAYS.map(()=>({off:false,from:"",to:""})),choices:{},sources:"",worries:"",comment:""});
+let F=blank(), sending=false;
+try{const d=JSON.parse(localStorage.getItem("ege-plan-draft")||"null"); if(d&&typeof d==="object") F={...blank(),...d}}catch(e){}
+let voter=null;
+try{voter=localStorage.getItem("ege-voter")}catch(e){}
+if(!voter){voter=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(36).padStart(2,"0")).join("").replace(/[^a-z0-9]/g,"").slice(0,24); try{localStorage.setItem("ege-voter",voter)}catch(e){}}
+
+let draftT=null;
+function draft(){clearTimeout(draftT);draftT=setTimeout(()=>{try{localStorage.setItem("ege-plan-draft",JSON.stringify(F))}catch(e){}},300); $("#sent").hidden=true}
+function get(path){return path.split(".").reduce((o,k)=>o==null?o:o[k],F)}
+function set(path,v){const ks=path.split(".");let o=F;ks.slice(0,-1).forEach(k=>o=o[k]);o[ks.at(-1)]=v;draft()}
+
+const subjOpts=sel=>{const list=F.subjects.map(s=>s.name);const all=list.length?list:SUBJECTS;
+  return `<option value="">Предмет…</option>`+[...all,"Другое"].map(n=>`<option${n===sel?" selected":""}>${esc(n)}</option>`).join("")};
+const card=(n,title,hint,inner,id)=>`<section class="card" id="${id}"><div class="qhead"><span class="qnum">${n}</span><div><h2>${title}</h2>${hint?`<p class="hint">${hint}</p>`:""}</div></div>${inner}</section>`;
+const sec=(n,t)=>`<div class="sec"><span>Шаг ${n}</span>${t}</div>`;
+const inp=(path,ph,type="text",extra="")=>`<input type="${type}" id="f-${path.replace(/\./g,"-")}" data-path="${path}" value="${esc(get(path))}" placeholder="${esc(ph)}" ${extra}>`;
+function choiceCard(n,key){const q=CHOICE[key];const sel=F.choices[key]||[];
+  return card(n,esc(q.t),esc(q.h),`<div class="opts">${q.o.map((t,i)=>`<button type="button" class="opt" id="c-${key}-${i}" data-choice="${key}" data-i="${i}" aria-pressed="${sel.includes(i)}"><span class="box">${sel.includes(i)?"✓":""}</span><span class="ot">${esc(t)}</span></button>`).join("")}</div>`,"q-"+key)}
+
+function render(){
+  const y=scrollY;
+  let h="";
+  h+=sec(1,"О тебе");
+  h+=card(1,"Как тебя зовут и в каком ты классе?","Имя нужно, чтобы подписать план.",
+    `<div class="grid"><label class="field"><span>Имя</span>${inp("name","Например, Аня")}</label>
+     <label class="field"><span>Класс</span><select id="f-grade" data-path="grade"><option value="">Выбери…</option>${["10","11","Уже окончила школу"].map(g=>`<option${F.grade===g?" selected":""}>${g}</option>`).join("")}</select></label></div>`,"q-name");
+  h+=card(2,"Какие экзамены сдаёшь?","Нажми на предметы, потом впиши цель и последний результат.",
+    `<div class="chips">${SUBJECTS.map(s=>`<button type="button" class="chip" data-subj="${esc(s)}" aria-pressed="${F.subjects.some(x=>x.name===s)}">${esc(s)}</button>`).join("")}</div>
+     ${F.subjects.length?F.subjects.map((s,i)=>`<div class="rowbox"><div class="rowhead"><b>${esc(s.name)}</b></div><div class="grid">
+       <label class="field"><span>Цель, баллов</span>${inp(`subjects.${i}.target`,"Например, 85","number",'min="0" max="100" inputmode="numeric"')}</label>
+       <label class="field"><span>Последний пробник, баллов</span>${inp(`subjects.${i}.current`,"Если писала","number",'min="0" max="100" inputmode="numeric"')}</label>
+       <label class="field"><span>Где готовишься</span>${inp(`subjects.${i}.where`,"Курс, репетитор, сама")}</label></div></div>`).join(""):`<p class="empty">Пока ничего не выбрано.</p>`}`,"q-subj");
+
+  h+=sec(2,"Занятия по расписанию");
+  h+=card(3,"Какие у тебя занятия в конкретное время?","Репетиторы, вебинары курсов, групповые занятия. Одно занятие — одна строка. Если занятие повторяется, отметь все дни.",
+    `${F.lessons.map((l,i)=>`<div class="rowbox"><div class="rowhead"><b>Занятие ${i+1}</b><button type="button" class="del" data-del="lessons" data-i="${i}">Удалить</button></div>
+      <div class="grid"><label class="field"><span>Предмет</span><select id="f-lessons-${i}-subject" data-path="lessons.${i}.subject">${subjOpts(l.subject)}</select></label>
+      <label class="field"><span>Что это</span><select id="f-lessons-${i}-kind" data-path="lessons.${i}.kind"><option value="">Выбери…</option>${KINDS.map(k=>`<option${k===l.kind?" selected":""}>${k}</option>`).join("")}</select></label></div>
+      <div class="field"><span>Дни</span><div class="days">${DAYS.map((d,di)=>`<button type="button" class="day" data-lday="${i}" data-d="${di}" aria-pressed="${l.days.includes(di)}">${d}</button>`).join("")}</div></div>
+      <div class="grid"><label class="field"><span>Начало</span>${inp(`lessons.${i}.from`,"","time")}</label><label class="field"><span>Конец</span>${inp(`lessons.${i}.to`,"","time")}</label></div>
+      <label class="field"><span>Где проходит или ссылка</span>${inp(`lessons.${i}.where`,"Адрес, Zoom, ссылка на вебинар")}</label></div>`).join("")}
+     <button type="button" class="add" data-add="lessons">+ Добавить занятие</button>`,"q-lessons");
+  h+=card(4,"Когда заканчиваются уроки в школе и что есть кроме учёбы?","Чтобы не ставить подготовку на время, когда ты ещё в школе или на секции.",
+    `<div class="grid"><label class="field"><span>Уроки обычно до</span>${inp("schoolEnds","","time")}</label></div>
+     <label class="field"><span>Секции, кружки, работа, дорога</span><textarea id="f-clubs" data-path="clubs" placeholder="Например: танцы вт и чт 18:00–19:30, дорога до школы 40 минут">${esc(F.clubs)}</textarea></label>`,"q-school");
+
+  h+=sec(3,"Дедлайны и пробники");
+  h+=card(5,"Что нужно сдать или написать в ближайшее время?","Домашки курсов, пробники, контрольные, итоговое сочинение, записи на экзамен.",
+    `${F.deadlines.map((d,i)=>`<div class="rowbox"><div class="rowhead"><b>Дедлайн ${i+1}</b><button type="button" class="del" data-del="deadlines" data-i="${i}">Удалить</button></div>
+      <label class="field"><span>Что</span>${inp(`deadlines.${i}.what`,"Например, пробник по профильной математике")}</label>
+      <div class="grid"><label class="field"><span>Предмет</span><select id="f-deadlines-${i}-subject" data-path="deadlines.${i}.subject">${subjOpts(d.subject)}</select></label>
+      <label class="field"><span>Дата</span>${inp(`deadlines.${i}.date`,"","date")}</label>
+      <label class="field"><span>Время (если есть)</span>${inp(`deadlines.${i}.time`,"","time")}</label></div></div>`).join("")}
+     <button type="button" class="add" data-add="deadlines">+ Добавить дедлайн</button>`,"q-deadlines");
+
+  h+=sec(4,"Свободное время");
+  h+=card(6,"Когда у тебя есть время заниматься самой?","Укажи окно на каждый день. Если в какой-то день времени нет совсем, поставь галочку.",
+    `<div class="week">${DAYS.map((d,i)=>`<div class="wd${F.free[i].off?" off":""}"><span class="dn">${d}</span>
+      ${inp(`free.${i}.from`,"","time",`aria-label="${d}, с"`+(F.free[i].off?" disabled":""))}${inp(`free.${i}.to`,"","time",`aria-label="${d}, до"`+(F.free[i].off?" disabled":""))}
+      <label><input type="checkbox" id="f-free-${i}-off" data-off="${i}" ${F.free[i].off?"checked":""}> нет времени</label></div>`).join("")}</div>`,"q-free");
+  h+=choiceCard(7,"selfHours");
+  h+=choiceCard(8,"session");
+  h+=choiceCard(9,"bestTime");
+  h+=choiceCard(10,"dayOff");
+
+  h+=sec(5,"Материалы и напоминания");
+  h+=card(11,"Где лежат материалы?","Курсы, сайты, личные кабинеты, Telegram-каналы. Можно ссылками, каждую с новой строки.",
+    `<textarea id="f-sources" data-path="sources" placeholder="Например:&#10;Курс по профилю — личный кабинет на сайте школы&#10;Решу ЕГЭ — для тренировки&#10;ТГ-канал репетитора по химии">${esc(F.sources)}</textarea>`,"q-sources");
+  h+=choiceCard(12,"remindHow");
+  h+=choiceCard(13,"remindWhen");
+  h+=card(14,"Что сейчас больше всего беспокоит в подготовке?","Необязательно. Любыми словами.",
+    `<textarea id="f-worries" data-path="worries" placeholder="Например: не успеваю делать домашку по курсу и одновременно решать варианты">${esc(F.worries)}</textarea>`,"q-worries");
+  h+=card(15,"Что ещё важно учесть?","Необязательно. Поездки, олимпиады, болезни, отпуск у репетитора.",
+    `<textarea id="f-comment" data-path="comment">${esc(F.comment)}</textarea>`,"q-comment");
+  $("#form").innerHTML=h;
+  scrollTo(0,y);
+}
+
+document.addEventListener("input",e=>{const p=e.target.dataset.path; if(p) set(p,e.target.value)});
+document.addEventListener("change",e=>{
+  const p=e.target.dataset.path; if(p&&e.target.tagName==="SELECT") set(p,e.target.value);
+  if(e.target.dataset.off!==undefined){F.free[+e.target.dataset.off].off=e.target.checked;draft();render();$("#f-free-"+e.target.dataset.off+"-off").focus()}
+});
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button"); if(!t) return;
+  const refocus=id=>{render(); const el=document.getElementById(id); if(el) el.focus()};
+  if(t.dataset.subj){const n=t.dataset.subj, i=F.subjects.findIndex(x=>x.name===n);
+    if(i>=0) F.subjects.splice(i,1); else F.subjects.push({name:n,target:"",current:"",where:""});
+    draft(); render(); document.querySelector(`[data-subj="${CSS.escape(n)}"]`)?.focus(); return}
+  if(t.dataset.add){F[t.dataset.add].push(t.dataset.add==="lessons"?{subject:"",kind:"",days:[],from:"",to:"",where:""}:{what:"",subject:"",date:"",time:""});
+    draft(); const k=t.dataset.add, i=F[k].length-1; refocus(k==="lessons"?`f-lessons-${i}-subject`:`f-deadlines-${i}-what`); return}
+  if(t.dataset.del){F[t.dataset.del].splice(+t.dataset.i,1); draft(); render(); return}
+  if(t.dataset.lday!==undefined){const l=F.lessons[+t.dataset.lday], d=+t.dataset.d;
+    l.days=l.days.includes(d)?l.days.filter(x=>x!==d):[...l.days,d].sort(); draft(); render();
+    document.querySelector(`[data-lday="${t.dataset.lday}"][data-d="${d}"]`)?.focus(); return}
+  if(t.dataset.choice){const k=t.dataset.choice, i=+t.dataset.i, q=CHOICE[k]; let sel=[...(F.choices[k]||[])];
+    if(q.multi) sel=sel.includes(i)?sel.filter(x=>x!==i):[...sel,i]; else sel=sel[0]===i?[]:[i];
+    F.choices={...F.choices,[k]:sel}; draft(); refocus(`c-${k}-${i}`); return}
+  if(t.id==="send") send();
+});
+function flash(t,warn=true){const s=$("#status");s.hidden=false;s.textContent=t;s.className="status"+(warn?" warn":"")}
+async function send(){
+  if(sending) return;
+  if(!F.subjects.length){flash("Выбери хотя бы один предмет в шаге 1.");$("#q-subj").scrollIntoView({behavior:"smooth",block:"center"});return}
+  sending=true; const b=$("#send"); b.disabled=true; b.textContent="Отправляем…";
+  const readable={...F, choices:Object.fromEntries(Object.entries(F.choices).map(([k,v])=>[k,v.map(i=>CHOICE[k].o[i])])),
+    lessons:F.lessons.map(l=>({...l,days:l.days.map(d=>DAYS[d])})), free:F.free.map((f,i)=>({day:DAYS[i],...f}))};
+  try{
+    const r=await fetch("/api/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({voter,form:readable})});
+    if(!r.ok) throw 0;
+    $("#status").hidden=true; $("#sent").hidden=false; $("#sent").scrollIntoView({behavior:"smooth",block:"center"});
+  }catch(e){ flash("Не получилось отправить. Проверь интернет и нажми «Отправить» ещё раз — ответы не потеряются.") }
+  sending=false; b.disabled=false; b.textContent="Отправить анкету";
+}
+render();
+</script>
+</body>
+</html>
