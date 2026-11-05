@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Голосовалка ЕГЭ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: тетрадный лист в клетку, вопросы — карточки-«бланки», ответы как клетки бланка ЕГЭ, результаты полосами под ними */
+:root{
+  --paper:#f6f8fb; --grid:#e3e9f2; --sheet:#ffffff; --ink:#1b2333; --muted:#5d6779;
+  --line:#d3dbe7; --cell:#f1f4f9; --accent:#2348d6; --accent-soft:#e3e9ff; --bar:#c9d4f5; --warn:#b4471c;
+  --display:"Unbounded", "Arial Black", system-ui, sans-serif;
+  --body:"Golos Text", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11151d; --grid:#1a2030; --sheet:#171c27; --ink:#e7ebf3; --muted:#9aa4b8;
+  --line:#2a3245; --cell:#1e2432; --accent:#7d97ff; --accent-soft:#232d52; --bar:#33407a; --warn:#f08a5d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11151d; --grid:#1a2030; --sheet:#171c27; --ink:#e7ebf3; --muted:#9aa4b8;
+  --line:#2a3245; --cell:#1e2432; --accent:#7d97ff; --accent-soft:#232d52; --bar:#33407a; --warn:#f08a5d; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
+:root{padding-block:env(safe-area-inset-top,0px) env(safe-area-inset-bottom,0px)}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px}
+.wrap{max-width:760px;margin:0 auto;padding-block:28px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:20px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,5vw,38px);line-height:1.1;margin:6px 0 10px;text-wrap:balance}
+.lead{color:var(--muted);max-width:60ch;margin:0}
+.status{font-size:13px;padding:10px 14px;border:1px dashed var(--line);border-radius:6px;background:var(--sheet);color:var(--muted)}
+.status.warn{color:var(--warn);border-color:var(--warn)}
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.qhead{display:flex;gap:14px;align-items:flex-start}
+.qnum{font-family:var(--mono);font-size:13px;color:var(--accent);border:1.5px solid var(--accent);border-radius:4px;
+  min-width:30px;height:30px;display:grid;place-items:center;flex:none}
+h2{font-family:var(--display);font-weight:500;font-size:clamp(18px,3.4vw,22px);line-height:1.25;margin:0;text-wrap:balance}
+.hint{font-size:13px;color:var(--muted);margin:4px 0 0}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:flex-start;padding:14px;
+  background:var(--cell);border:1px solid var(--line);border-radius:6px;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--accent)}
+.opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.opt[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.opt[disabled]{cursor:not-allowed;opacity:.6}
+.box{flex:none;width:22px;height:22px;border:1.5px solid var(--muted);border-radius:3px;display:grid;place-items:center;
+  font-family:var(--mono);font-size:14px;color:var(--sheet);margin-top:1px}
+.opt[aria-pressed="true"] .box{background:var(--accent);border-color:var(--accent)}
+.ot{font-weight:600;line-height:1.3}
+.os{font-size:13px;color:var(--muted);margin-top:2px}
+.res{display:flex;flex-direction:column;gap:10px;padding-top:16px;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:minmax(0,38%) 1fr auto;gap:12px;align-items:center;font-size:13px}
+.rl{color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.track{height:10px;background:var(--cell);border-radius:2px;overflow:hidden}
+.fill{height:100%;background:var(--bar);width:0;transition:width .5s ease}
+.row.top .fill{background:var(--accent)}
+.row.top .rl{color:var(--ink);font-weight:600}
+.pc{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;min-width:74px}
+.pc small{display:block;color:var(--muted);font-size:11px}
+.sec{font-family:var(--display);font-weight:700;font-size:15px;display:flex;gap:10px;align-items:baseline;margin-top:12px}
+.sec span{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.foot{position:sticky;bottom:0;background:var(--paper);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between;font-size:13px;color:var(--muted)}
+.link{all:unset;cursor:pointer;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.link:focus-visible{outline:2px solid var(--accent)}
+/* проектор */
+.screen{min-height:100%;display:flex;flex-direction:column;gap:28px;padding-block:32px;
+  padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));max-width:1100px;margin:0 auto}
+.screen h2{font-family:var(--display);font-weight:700;font-size:clamp(26px,4.4vw,52px)}
+.screen .row{font-size:clamp(15px,2vw,22px);grid-template-columns:minmax(0,34%) 1fr auto}
+.screen .track{height:clamp(14px,2.4vw,28px)}
+.screen .pc{min-width:110px;font-size:clamp(18px,2.4vw,30px)}
+.screen .pc small{font-size:clamp(11px,1.2vw,14px)}
+.nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;font-family:var(--mono);font-size:13px;padding:8px 14px;border:1px solid var(--line);border-radius:4px;background:var(--sheet)}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible{outline:2px solid var(--accent)}
+.dots{font-family:var(--mono);font-size:13px;color:var(--muted);margin-left:auto}
+@media (max-width:480px){.card{padding:18px}.row{grid-template-columns:1fr auto}.row .track{grid-column:1/-1;order:3}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="app" class="wrap">
+  <header>
+    <div class="eyebrow">Опрос · подготовка к ЕГЭ</div>
+    <h1>Как ты готовишься к экзаменам?</h1>
+    <p class="lead">23 коротких вопроса, примерно 4 минуты. Для 10–11 класса. Ответы анонимные, результаты видны сразу под каждым вопросом. Ответ можно поменять в любой момент.</p>
+  </header>
+  <div id="status" class="status">Загружаем результаты…</div>
+  <div id="qs" style="display:flex;flex-direction:column;gap:20px"></div>
+  <div class="foot"><span id="total">Голосов пока нет, будьте первым</span><span style="display:flex;gap:18px"><button class="link" id="refresh" type="button">Обновить</button><button class="link" id="toScreen" type="button">Экран для проектора</button></span></div>
+</div>
+<div id="screen" class="screen" hidden></div>
+
+<script>
+const S1="О тебе", S2="Время и график", S3="Где живёт информация", S4="Что мешает", S5="Если бы было приложение";
+const QS=[
+ {sec:S1,id:"grade",t:"Ты сейчас в каком классе?",h:"Один вариант.",multi:false,o:[
+  ["10 класс","есть время в запасе"],["11 класс","экзамены этой весной"],["Уже окончил(а) школу","пересдаю или сдаю заново"]]},
+ {sec:S1,id:"subj",t:"Сколько экзаменов ты сдаёшь?",h:"Один вариант. Считай вместе с русским и математикой.",multi:false,o:[
+  ["3","минимум для поступления"],["4","самый частый вариант"],["5 и больше","с запасом на разные вузы"],["Пока не решил(а)",""]]},
+ {sec:S1,id:"goal",t:"Какая у тебя цель?",h:"Один вариант.",multi:false,o:[
+  ["Бюджет в топовый вуз","нужны высокие баллы"],["Бюджет в любой нормальный вуз",""],["Платное, но хороший вуз",""],["Просто сдать","без конкретной планки"],["Пока не знаю",""]]},
+
+ {sec:S2,id:"hours",t:"Сколько часов в неделю уходит на подготовку?",h:"Один вариант. Без школьных уроков: только курсы, репетиторы и самостоятельная работа.",multi:false,o:[
+  ["Меньше 3 часов",""],["3–6 часов","примерно час в день"],["7–12 часов",""],["13–20 часов",""],["Больше 20 часов","почти вторая школа"]]},
+ {sec:S2,id:"when",t:"Когда ты обычно занимаешься?",h:"Можно несколько вариантов.",multi:true,o:[
+  ["Утром до школы",""],["Днём после школы",""],["Вечером",""],["Поздно ночью","после 23:00"],["На выходных",""],["В дороге","с телефона"]]},
+ {sec:S2,id:"rhythm",t:"Насколько регулярно ты занимаешься?",h:"Один вариант. Честно 🙂",multi:false,o:[
+  ["Каждый день по расписанию",""],["Почти каждый день, но без чёткого графика",""],["Урывками, когда есть время",""],["Рывками перед пробниками и дедлайнами",""]]},
+ {sec:S2,id:"lessons",t:"Сколько у тебя занятий в неделю по расписанию?",h:"Один вариант. Репетиторы, вебинары курсов, групповые занятия — всё, что в конкретное время.",multi:false,o:[
+  ["0","занимаюсь только сам(а)"],["1–2",""],["3–5",""],["6 и больше","плотный график"]]},
+ {sec:S2,id:"missed",t:"Пропускал(а) занятие или дедлайн, потому что просто забыл(а)?",h:"Один вариант. Вебинар, домашка курса, запись на пробник.",multi:false,o:[
+  ["Часто","раз в неделю или чаще"],["Иногда","пару раз в месяц"],["Редко",""],["Ни разу",""]]},
+ {sec:S2,id:"week",t:"Ты знаешь в воскресенье, что будешь делать по подготовке на неделе?",h:"Один вариант.",multi:false,o:[
+  ["Да, всё расписано",""],["Примерно, в голове",""],["Только про занятия с репетитором или курсом",""],["Нет, решаю по ходу",""]]},
+
+ {sec:S3,id:"where",t:"Где ты готовишься?",h:"Можно несколько вариантов.",multi:true,o:[
+  ["Школа","уроки и элективы"],["Репетитор","лично или онлайн"],["Онлайн-школа или курс","платная программа"],
+  ["Сайты с заданиями","банки задач, тесты"],["YouTube","бесплатные разборы"],["Telegram-каналы и чаты","материалы, советы"]]},
+ {sec:S3,id:"count",t:"Сколько разных мест у тебя в подготовке?",h:"Один вариант. Сайты, курсы, чаты, тетради, приложения.",multi:false,o:[
+  ["1–2","всё в одном месте"],["3–5","терпимо"],["6–10","уже путаюсь"],["Больше 10","сам(а) не знаю сколько"]]},
+ {sec:S3,id:"plan",t:"Где ты держишь расписание и план подготовки?",h:"Один вариант — главное место.",multi:false,o:[
+  ["В голове",""],["Календарь в телефоне",""],["Заметки в телефоне",""],["Бумажный ежедневник",""],
+  ["Таблица или Notion",""],["В приложении курса",""],["Плана нет",""]]},
+ {sec:S3,id:"dates",t:"Где хранишь даты пробников, дедлайны и ссылки на вебинары?",h:"Можно несколько вариантов.",multi:true,o:[
+  ["В голове",""],["Календарь или напоминания",""],["Закреплённые сообщения в чатах",""],["Скриншоты в галерее",""],["Заметки",""],["Нигде, ищу каждый раз",""]]},
+ {sec:S3,id:"search",t:"Сколько времени в неделю уходит на поиски?",h:"Один вариант. Найти нужное задание, видео, ссылку, сообщение в чате.",multi:false,o:[
+  ["Почти нисколько",""],["До 30 минут",""],["30–60 минут",""],["Больше часа","бесит"]]},
+
+ {sec:S4,id:"pain",t:"Что мешает больше всего?",h:"До трёх вариантов.",multi:true,max:3,o:[
+  ["Материалы разбросаны","курсы, сайты, чаты — всё отдельно"],["Не знаю, что делать сегодня","нет понятного плана"],
+  ["Не вижу, где проседаю","по каким номерам заданий"],["Полезное из чатов теряется","потом не найти"],
+  ["Забываю дедлайны и пробники","всё держу в голове"],["Не понимаю, растут ли баллы","нет динамики"],
+  ["Не хватает времени","школа, кружки, усталость"],["Не хватает мотивации","бросаю и начинаю заново"]]},
+ {sec:S4,id:"weak",t:"Как ты понимаешь, по каким номерам проседаешь?",h:"Один вариант — главный способ.",multi:false,o:[
+  ["По результатам пробников",""],["Говорит учитель или репетитор",""],["Статистика на сайте или в курсе",""],["По ощущениям",""],["Никак не понимаю",""]]},
+ {sec:S4,id:"mocks",t:"Как часто пишешь полные пробники?",h:"Один вариант. Полный вариант ЕГЭ на время.",multi:false,o:[
+  ["Раз в неделю и чаще",""],["Раз в 2–4 недели",""],["Раз в пару месяцев",""],["Ещё ни разу",""]]},
+ {sec:S4,id:"track",t:"Записываешь свои баллы за пробники?",h:"Один вариант.",multi:false,o:[
+  ["Да, веду таблицу или график",""],["Они есть на сайте курса",""],["Помню примерно",""],["Нет",""]]},
+ {sec:S4,id:"stress",t:"Насколько подготовка сейчас тебя напрягает?",h:"Один вариант.",multi:false,o:[
+  ["Спокойно, всё под контролем",""],["Немного тревожно",""],["Сильно напрягает",""],["Паника","не знаю, за что хвататься"]]},
+
+ {sec:S5,id:"feature",t:"Что было бы самым полезным в одном приложении?",h:"До двух вариантов.",multi:true,max:2,o:[
+  ["План на сегодня","что решать и сколько"],["Календарь всех занятий и дедлайнов","из всех курсов сразу"],
+  ["Статус по каждому номеру","где проседаю, где норм"],["Сохранение полезного из Telegram","переслал — и оно на месте"],
+  ["График баллов за пробники",""],["Напоминания","о вебинарах, дедлайнах, повторении"]]},
+ {sec:S5,id:"want",t:"Пользовался(ась) бы приложением, где вся подготовка собрана по номерам заданий?",h:"Материалы, статус по каждому номеру, пробники, календарь и план на неделю — в одном месте.",multi:false,o:[
+  ["Точно да",""],["Скорее да",""],["Не знаю",""],["Нет",""]]},
+ {sec:S5,id:"device",t:"Где тебе удобнее им пользоваться?",h:"Один вариант.",multi:false,o:[
+  ["Приложение на телефоне",""],["Telegram-бот",""],["Сайт на компьютере",""],["Без разницы",""]]},
+ {sec:S5,id:"pay",t:"Сколько ты или родители готовы платить за такое в месяц?",h:"Один вариант.",multi:false,o:[
+  ["Только бесплатно",""],["До 200 ₽",""],["200–500 ₽",""],["500–1000 ₽",""],["Больше 1000 ₽",""]]}
+];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let mine={}, res={voters:0,answered:{},counts:{}}, canVote=true, writing=false, pending=false, scrIdx=0;
+let voter=null;
+try{voter=localStorage.getItem("ege-voter"); mine=JSON.parse(localStorage.getItem("ege-mine")||"{}")||{}}catch(e){}
+if(!voter){voter=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(36).padStart(2,"0")).join("").replace(/[^a-z0-9]/g,"").slice(0,24); try{localStorage.setItem("ege-voter",voter)}catch(e){}}
+
+function tally(q){
+  const c=res.counts[q.id]||[];
+  return {counts:q.o.map((_,i)=>c[i]||0), n:res.answered[q.id]||0};
+}
+const word=n=>{const m=n%10,c=n%100;return (m===1&&c!==11)?"голос":(m>=2&&m<=4&&(c<10||c>=20))?"голоса":"голосов"};
+function resultsHTML(q){
+  const {counts,n}=tally(q), max=Math.max(0,...counts);
+  return q.o.map(([t],i)=>{const p=n?Math.round(counts[i]/n*100):0;
+    return `<div class="row${max>0&&counts[i]===max?" top":""}"><span class="rl">${esc(t)}</span><div class="track"><div class="fill" style="width:${p}%"></div></div><span class="pc">${p}%<small>${counts[i]} ${word(counts[i])}</small></span></div>`}).join("");
+}
+function render(){
+  $("#qs").innerHTML=QS.map((q,qi)=>{
+    const sel=mine[q.id]||[];
+    const head=(qi===0||QS[qi-1].sec!==q.sec)?`<div class="sec"><span>Блок ${[...new Set(QS.map(x=>x.sec))].indexOf(q.sec)+1}</span>${esc(q.sec)}</div>`:"";
+    return head+`<section class="card" aria-labelledby="h-${q.id}">
+      <div class="qhead"><span class="qnum">${qi+1}</span><div><h2 id="h-${q.id}">${esc(q.t)}</h2><p class="hint">${esc(q.h)}</p></div></div>
+      <div class="opts">${q.o.map(([t,s],i)=>`<button type="button" class="opt" id="o-${q.id}-${i}" data-q="${q.id}" data-i="${i}" aria-pressed="${sel.includes(i)}" ${canVote?"":"disabled"}>
+        <span class="box">${sel.includes(i)?"✓":""}</span><span><span class="ot">${esc(t)}</span>${s?`<span class="os" style="display:block">${esc(s)}</span>`:""}</span></button>`).join("")}</div>
+      <div class="res">${resultsHTML(q)}</div></section>`}).join("");
+  const voters=res.voters;
+  const done=QS.filter(q=>(mine[q.id]||[]).length).length;
+  $("#total").textContent=(voters?`Ответили: ${voters}`:"Голосов пока нет, будьте первым")+(canVote?` · ты ответил(а) на ${done} из ${QS.length}`:"");
+  if(!$("#screen").hidden) renderScreen();
+}
+function renderScreen(){
+  const q=QS[scrIdx], {n}=tally(q);
+  $("#screen").innerHTML=`<div class="nav"><button class="btn" id="back" type="button">← К опросу</button>
+    <button class="btn" id="prev" type="button" ${scrIdx?"":"disabled"}>Назад</button>
+    <button class="btn" id="next" type="button" ${scrIdx<QS.length-1?"":"disabled"}>Дальше</button>
+    <span class="dots">Вопрос ${scrIdx+1} из ${QS.length} · ответили ${n}</span></div>
+    <div class="eyebrow">${esc(q.sec)} · подготовка к ЕГЭ</div><h2>${esc(q.t)}</h2>
+    <div class="res" style="border:0;padding:0;gap:18px">${resultsHTML(q)}</div>`;
+}
+function showView(){
+  const scr=location.hash==="#screen";
+  $("#app").hidden=scr; $("#screen").hidden=!scr;
+  if(scr) renderScreen();
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest(".opt");
+  if(b&&canVote){
+    const q=QS.find(x=>x.id===b.dataset.q), i=+b.dataset.i;
+    let sel=[...(mine[q.id]||[])];
+    if(q.multi){ if(sel.includes(i)) sel=sel.filter(x=>x!==i); else { if(q.max&&sel.length>=q.max){flash(`Можно выбрать не больше ${q.max}`);return} sel.push(i)} }
+    else sel = sel[0]===i?[]:[i];
+    mine={...mine,[q.id]:sel}; save(); render(); return;
+  }
+  if(e.target.id==="refresh"){load();return}
+  if(e.target.id==="toScreen"){location.hash="screen";return}
+  if(e.target.id==="back"){location.hash="";return}
+  if(e.target.id==="prev"&&scrIdx>0){scrIdx--;renderScreen()}
+  if(e.target.id==="next"&&scrIdx<QS.length-1){scrIdx++;renderScreen()}
+});
+document.addEventListener("keydown",e=>{
+  if($("#screen").hidden)return;
+  if(e.key==="ArrowRight"&&scrIdx<QS.length-1){scrIdx++;renderScreen()}
+  if(e.key==="ArrowLeft"&&scrIdx>0){scrIdx--;renderScreen()}
+});
+addEventListener("hashchange",showView);
+function flash(t,warn=true){const s=$("#status");s.hidden=false;s.textContent=t;s.className="status"+(warn?" warn":"")}
+let saveTimer=null;
+function save(){ try{localStorage.setItem("ege-mine",JSON.stringify(mine))}catch(e){} clearTimeout(saveTimer); saveTimer=setTimeout(flush,500) }
+async function flush(){
+  if(writing){pending=true;return}
+  writing=true;
+  try{
+    const r=await fetch("/api/vote",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({voter,answers:mine})});
+    if(!r.ok) throw 0;
+    $("#status").hidden=true; load();
+  }catch(err){ flash("Не получилось сохранить ответ. Проверьте интернет и нажмите вариант ещё раз.") }
+  writing=false;
+  if(pending){pending=false;flush()}
+}
+async function load(){
+  try{
+    const r=await fetch("/api/results",{cache:"no-store"});
+    if(r.status===503){flash("Сайт ещё настраивается: база данных не подключена.");return}
+    if(!r.ok) throw 0;
+    res=await r.json(); $("#status").hidden=true; render();
+  }catch(e){ flash("Результаты пока не загрузились. Проверьте интернет — страница попробует снова.") }
+}
+render(); showView(); load();
+setInterval(()=>{ if(!document.hidden) load() }, 5000);
+</script>
+</body>
+</html>
