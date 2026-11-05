@@ -1,4 +1,4 @@
-import { hasDb } from "./_redis.js";
+import { hasDb, redis } from "./_redis.js";
 import { validU, loadState, saveState, readBody } from "./_store.js";
 import { chat } from "./_giga.js";
 import { applyActions, DAYS_FULL, weekday, addDays, humanDate } from "../core.js";
@@ -31,7 +31,23 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: "Помощник сейчас недоступен. Попробуй через минуту." });
     }
   }
-  const parsed = extractJson(raw);
+  let parsed = extractJson(raw);
+  let repaired = null;
+  if (!parsed) {
+    // просим модель переписать свой ответ в правильный JSON
+    try {
+      const r = await chat([
+        { role: "system", content: 'Перепиши текст пользователя в один валидный JSON вида {"reply":"...","actions":[...]}. Сохрани смысл и все действия. Только JSON, без пояснений и без markdown.' },
+        { role: "user", content: raw.slice(0, 4000) },
+      ], { model: "GigaChat-2", temperature: 0, maxTokens: 900 });
+      repaired = r.text;
+      parsed = extractJson(repaired);
+    } catch {}
+  }
+  try {
+    await redis("LPUSH", "giga_log", JSON.stringify({ at: new Date().toISOString(), today, now, message, raw: String(raw).slice(0, 3000), repaired: repaired && repaired.slice(0, 2000), ok: !!parsed }));
+    await redis("LTRIM", "giga_log", 0, 29);
+  } catch {}
   if (!parsed) return res.status(200).json({ reply: "Не до конца поняла 🙈 Скажи чуть по-другому: что, к какому дню и по какому предмету?", changes: [], state });
 
   const changes = applyActions(state, parsed.actions, today);
@@ -45,10 +61,28 @@ export default async function handler(req, res) {
 
 function extractJson(text) {
   if (!text) return null;
-  const t = text.replace(/```json|```/g, "");
-  const a = t.indexOf("{"), z = t.lastIndexOf("}");
-  if (a < 0 || z <= a) return null;
-  try { return JSON.parse(t.slice(a, z + 1)); } catch { return null; }
+  let t = String(text).replace(/```(?:json|JSON)?/g, "").replace(/[“”„]/g, '"').trim();
+  const tries = [t];
+  // первый сбалансированный объект {...}
+  const a = t.indexOf("{");
+  if (a >= 0) {
+    let depth = 0, inStr = false, esc = false;
+    for (let k = a; k < t.length; k++) {
+      const ch = t[k];
+      if (inStr) { if (esc) esc = false; else if (ch === "\\") esc = true; else if (ch === '"') inStr = false; continue; }
+      if (ch === '"') inStr = true;
+      else if (ch === "{") depth++;
+      else if (ch === "}") { depth--; if (depth === 0) { tries.push(t.slice(a, k + 1)); break; } }
+    }
+    const z = t.lastIndexOf("}");
+    if (z > a) tries.push(t.slice(a, z + 1));
+  }
+  for (const c of tries) {
+    for (const v of [c, c.replace(/\/\/[^\n"]*$/gm, "").replace(/,\s*([}\]])/g, "$1"), c.replace(/'/g, '"').replace(/,\s*([}\]])/g, "$1")]) {
+      try { const o = JSON.parse(v); if (o && typeof o === "object" && !Array.isArray(o)) return { reply: o.reply ?? o.answer ?? "", actions: Array.isArray(o.actions) ? o.actions : [] }; } catch {}
+    }
+  }
+  return null;
 }
 
 function buildPrompt(s, today, now) {
