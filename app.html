@@ -61,7 +61,9 @@ h3{font-size:14px;font-weight:600;margin:0}
 .cardhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .muted{color:var(--muted)}
 .small{font-size:13px}
-.status{font-size:13px;padding:10px 12px;border-radius:10px;background:var(--warn-soft);color:var(--ink)}
+.status{font-size:13px;padding:10px 8px 10px 12px;border-radius:10px;background:var(--warn-soft);color:var(--ink);display:flex;align-items:center;gap:8px}
+.status span{flex:1;min-width:0}
+.stx{all:unset;cursor:pointer;flex:0 0 28px;height:28px;display:grid;place-items:center;border-radius:50%;color:var(--muted);font-size:14px}
 
 /* кнопки */
 .btn{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line2);background:var(--surface);border-radius:999px;padding:9px 15px;font-size:14px;font-weight:700;line-height:1.2}
@@ -475,10 +477,10 @@ const gx = t => String(t ?? "").replace(/\{([^{}|<>`$]{1,40})\|([^{}|<>`$]{1,40}
 let flashTimer = 0, flashSticky = false;
 function flash(t, sticky = false) {
   const s = $("#status"); clearTimeout(flashTimer);
-  s.textContent = gx(t || ""); s.hidden = !t; flashSticky = !!t && sticky;
+  s.innerHTML = t ? `<span>${esc(gx(t))}</span><button class="stx" type="button" aria-label="Закрыть">✕</button>` : ""; s.hidden = !t; flashSticky = !!t && sticky;
   if (t && !sticky) flashTimer = setTimeout(() => { s.hidden = true; }, 4000);
 }
-document.getElementById("status").addEventListener("click", () => { if (!flashSticky) flash(""); });
+document.getElementById("status").addEventListener("click", e => { if (e.target.closest(".stx") || !flashSticky) { e.stopPropagation(); flash(""); } });
 
 // ---------- загрузка и сохранение ----------
 async function load() {
