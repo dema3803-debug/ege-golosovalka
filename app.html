@@ -305,7 +305,8 @@ i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
 #streak{display:flex;gap:8px;align-items:center}
 .gearbtn{all:unset;cursor:pointer;width:40px;height:40px;border-radius:50%;background:var(--surface);display:grid;place-items:center;color:var(--ink);flex:none}
 .gearbtn:focus-visible{outline:2px solid var(--accent)}
-.sethead{display:flex;align-items:center;gap:12px}.sethead h2{font-size:24px;margin:0}
+.subpage #install{display:none!important}
+.sethead{display:flex;align-items:center;gap:12px;padding-top:6px}.sethead h2{font-size:24px;margin:0}
 .iconbtn.back{width:40px;height:40px;border-radius:50%;background:var(--surface);font-size:22px}
 .setcap{margin:6px 4px -6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .setcard{gap:0;padding:6px 16px}
@@ -388,6 +389,8 @@ if (/[?&]new=1/.test(location.search)) history.replaceState(null, "", "/app?u=" 
 try { if (U) localStorage.setItem("ege-u", U); else if (location.hash !== "#login") { U = localStorage.getItem("ege-u"); if (U) history.replaceState(null, "", "/app?u=" + U + location.hash); } } catch {}
 if (U) document.getElementById("manifest-link")?.setAttribute("href", "/api/manifest?u=" + encodeURIComponent(U));
 const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"], ["calendar", "Важные даты", "i-week"], ["settings", "Настройки", "i-set"], ["buddy", "Помощник", "i-set"]];
+const SUB = { day: "Весь план на сегодня", setup: "Расписание", calendar: "Важные даты", settings: "Настройки", buddy: "Помощник и награды" };
+let backStack = [];
 let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
 let quiz = null; const openTopics = new Set();
 if (!VIEWS.some(v => v[0] === view) && view !== "session" && view !== "day") view = "today";
@@ -600,10 +603,11 @@ function render() {
   $("#composer-m").hidden = view !== "chat";
   $("#dock").hidden = view === "session";
   const tiredNow = view === "today" && S.tired[n.today] && !S.tired[n.today].rest;
-  document.querySelector(".top").hidden = view === "session" || !!tiredNow;
+  document.querySelector(".top").hidden = view === "session" || !!tiredNow || !!SUB[view];
+  document.body.classList.toggle("subpage", !!SUB[view]);
   const plan = C.buildPlan(S, n.today, 7, n.min);
   const v = view === "chat" && matchMedia("(min-width:1000px)").matches ? "today" : view;
-  $("#view").innerHTML = v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n);
+  $("#view").innerHTML = (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n));
   $("#chat-desk").innerHTML = chatHTML(n, 60);
   const cd = $("#chat-desk"); cd.scrollTop = cd.scrollHeight;
   if (v === "chat") scrollTo(0, document.body.scrollHeight);
@@ -810,7 +814,7 @@ function renderTired(d, n) {
 }
 
 function renderDay(d, n) {
-  let h = `<div class="row" style="justify-content:space-between"><button class="btn sm" data-view="today" type="button">← Назад</button><h2>Весь план на сегодня</h2></div>`;
+  let h = "";
   const tired = S.tired[d.date];
   const done = (S.log[d.date] || []).map((x, idx) => ({ ...x, type: "done", idx, start: C.toMin(x.start), end: C.toMin(x.end) }));
   const live = C.mergeBlocks(d.blocks.filter(b => b.type !== "done"));
@@ -1235,7 +1239,7 @@ function renderCalendar(n) {
   }
   const up = upcomingExams(n.today), past = (S.exams || []).filter(e => e.date < n.today).sort((a, b) => b.date.localeCompare(a.date));
   const row = e => `<button class="li exli" data-edit-exam="${e.id}" type="button"><span class="em">${examEmoji(e)}</span><span><span class="t">${esc(e.title)}</span><span class="meta">${C.humanDate(e.date)}${e.from ? " · " + e.from : ""}${e.subject ? " · " + esc(e.subject) : ""}${e.score != null && e.score !== "" ? ` · <b>${esc(e.score)} ${word(+e.score, "балл", "балла", "баллов")}</b>` : ""}</span></span><span class="left">${e.date >= n.today ? leftText(daysLeft(n.today, e.date)) : e.score != null && e.score !== "" ? "" : "внести балл"}</span></button>`;
-  return `<div class="card"><div class="cardhead"><h2>Важные даты</h2><button class="btn sm primary" data-act="new-exam" type="button">${icon("i-plus")}Добавить</button></div>
+  return `<div class="card"><div class="cardhead"><h2>Календарь</h2><button class="btn sm primary" data-act="new-exam" type="button">${icon("i-plus")}Добавить</button></div>
     <p class="small muted" style="margin:0">Пробники, олимпиады, сочинение, ЕГЭ. Козя заранее добавит подготовку в план, а в сам день освободит время.</p>
     <div class="calhead"><button class="iconbtn" data-cal-move="-1" type="button" aria-label="Прошлый месяц">‹</button><b>${MONTHS[m - 1]} ${y}</b><button class="iconbtn" data-cal-move="1" type="button" aria-label="Следующий месяц">›</button></div>
     <div class="calgrid">${C.DAYS.map(d => `<span class="wdn">${d}</span>`).join("")}${cells}</div>
@@ -1426,8 +1430,7 @@ function renderSettings(n) {
   const l = look(), best = bestStreak(n.today), cur = streakDays(n.today);
   const row = (ic, title, sub, attrs) => `<button class="setrow" type="button" ${attrs}><span class="setic">${ic}</span><span class="rt"><b>${title}</b>${sub ? `<span>${sub}</span>` : ""}</span><span class="chev">›</span></button>`;
   const got = OUTFITS.filter(o => o[3] <= best).length;
-  return `<div class="sethead"><button class="iconbtn back" data-view="today" type="button" aria-label="Назад">‹</button><h2>Настройки</h2></div>
-  <h3 class="setcap">Аккаунт</h3>
+  return `<h3 class="setcap">Аккаунт</h3>
   <div class="card setcard">
     ${row("👤", esc(S.name || "Без имени"), S.email ? esc(S.email) : "почта не привязана", 'data-act="set-name"')}
     ${S.email ? row("🔑", "Сменить пароль", "", 'data-act="set-pass"') : row("✉️", "Привязать почту и пароль", "чтобы входить с любого телефона", 'data-act="set-pass"')}
@@ -1453,8 +1456,7 @@ function renderBuddy(n) {
     const open = best >= c.need, on = (l.char || "kozya") === k;
     return `<button type="button" class="chbox${on ? " on" : ""}" ${open ? `data-char-set="${k}"` : "disabled"} aria-pressed="${on}">${open ? charPic(k) : `<span class="lock">🔒</span>`}<b>${c.name}</b><small>${on ? "выбрана" : open ? c.about || "" : `серия ${c.need} дней`}</small></button>`;
   }).join("") + `<div class="chbox soon"><span class="lock">✨</span><b>Свой персонаж</b><small>скоро</small></div>`;
-  return `<div class="sethead"><button class="iconbtn back" data-view="settings" type="button" aria-label="Назад">‹</button><h2>Помощник и награды</h2></div>
-  <div class="card"><h2>Кто тебе помогает</h2><div class="chars">${chars}</div>
+  return `<div class="card"><h2>Кто тебе помогает</h2><div class="chars">${chars}</div>
     <label class="field"><span>Как зовут помощника</span><input type="text" id="buddy-name" maxlength="20" value="${esc(l.name || "")}" placeholder="${esc(CHARS[l.char || "kozya"].name)}"></label></div>
   <div class="card"><div class="cardhead"><h2>Награды за серию</h2><span class="small muted">${cur ? `сейчас ${cur} ${word(cur, "день", "дня", "дней")} подряд` : "серии пока нет"}</span></div>
     <div class="rewards">${OUTFITS.map(([k, t, em, d]) => { const open = best >= d, on = l.outfit === k; return `<button type="button" class="rw${open ? "" : " off"}${on ? " on" : ""}" ${open ? `data-outfit-set="${k}"` : "disabled"} aria-pressed="${on}" aria-label="${t}, ${d} ${word(d, "день", "дня", "дней")}${open ? "" : " — пока закрыто"}"><span>${em}</span><small>${d} ${word(d, "день", "дня", "дней")}</small></button>`; }).join("")}</div>
@@ -1528,7 +1530,7 @@ function learnedDialog() {
 document.addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t || !S || t.closest("dialog")) return;
   const n = now(), d = t.dataset;
-  if (d.view) { view = d.view; history.replaceState(null, "", "#" + view); render(); scrollTo(0, view === "chat" ? document.body.scrollHeight : 0); return; }
+  if (d.view) { if (SUB[d.view] && d.view !== view) backStack.push(view); else if (!SUB[d.view]) backStack = []; view = d.view; history.replaceState(null, "", "#" + view); render(); scrollTo(0, view === "chat" ? document.body.scrollHeight : 0); return; }
   if (d.start) { const [type, ref] = d.start.split("|"); const b = todayBlocks.find(x => x.type === type && String(x.ref) === ref) || { type, ref, title: (S.tasks.find(t => t.id === ref) || S.habits.find(h => h.id === ref) || S.topics.find(t => t.id === ref) || {}).title || "Задача", subject: "" }; if (session && session.phase === "work") { view = "session"; render(); return; } startSession(b); return; }
   if (d.dur) { const m = +d.dur; session = { ...session, len: m, left: m * 60000, endAt: session.endAt ? Date.now() + m * 60000 : null }; keepSession(); render(); return; }
   if (d.done !== undefined) { const b = todayBlocks[+d.done]; if (b) change(() => C.markDone(S, n.today, b)); return; }
@@ -1539,6 +1541,7 @@ document.addEventListener("click", e => {
   if (d.editExam) { const x = (S.exams || []).find(y => y.id === d.editExam); if (x) examDialog(x); return; }
   if (d.calDay) { const x = (S.exams || []).find(y => y.date === d.calDay); x ? examDialog(x) : examDialog(null, { date: d.calDay }); return; }
   if (d.calMove) { const [y, m] = (calMonth || n.today.slice(0, 7)).split("-").map(Number), k = y * 12 + m - 1 + +d.calMove; calMonth = `${Math.floor(k / 12)}-${String(k % 12 + 1).padStart(2, "0")}`; render(); return; }
+  if ("back" in d) { view = backStack.pop() || (view === "buddy" ? "settings" : "today"); history.replaceState(null, "", "#" + view); render(); scrollTo(0, 0); return; }
   if (d.delMat) { deleteMaterial(d.delMat); return; }
   if ("themeSet" in d) { change(() => { look().theme = d.themeSet; }); applyLook(); return; }
   if (d.accentSet) { change(() => { look().accent = d.accentSet; }); applyLook(); return; }
