@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#FBEFF3">
+<script>try{const l=JSON.parse(localStorage.getItem("ege-look")||"{}");if(l.theme)document.documentElement.dataset.theme=l.theme;if(l.accent&&l.accent!=="pink")document.documentElement.dataset.accent=l.accent}catch(e){}</script>
 <title>Козя — мой план ЕГЭ</title>
 <link rel="manifest" id="manifest-link" href="/manifest.json">
 <link rel="icon" type="image/png" href="/icons/favicon-64.png">
@@ -89,7 +90,7 @@ h3{font-size:14px;font-weight:600;margin:0}
 .stat b{font-size:21px;font-weight:800}
 .statbtn{border:0;text-align:left;cursor:pointer;color:#1B1620;font-family:inherit}
 .statbtn:hover{background:#FDF2F6}
-.statbtn i{display:block;font-style:normal;font-size:12px;font-weight:700;color:#B8325E;margin-top:2px}
+.statbtn i{display:block;font-style:normal;font-size:12px;font-weight:700;color:var(--hero-ink,#B8325E);margin-top:2px}
 .streak{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:999px;padding:8px 12px;font-weight:800;font-size:15px;white-space:nowrap}
 .startbtn{border:0;background:var(--primary);color:var(--primary-ink);border-radius:22px;padding:14px 16px 14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%}
 .startbtn .t1{display:block;font-size:18px;font-weight:800;line-height:1.25}
@@ -289,6 +290,56 @@ i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
 .matlink{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:center;color:inherit;text-decoration:none;min-width:0}
 .matlink .t{display:block;font-weight:700;overflow-wrap:anywhere;color:var(--accent)}.matlink .meta{display:block;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
 .dlgfoot .row{flex-wrap:wrap}
+:root[data-accent="lav"]{--accent:#7B4FCF;--accent-soft:#EEE7FB;--accent-line:#CDB9F0;--pink:#8A6BE0;--bg:#F4F0FB;--surface:#FFFFFF;--raised:#F9F6FD;--line:#E6DEF4;--line2:#D3C6EA}
+@media (prefers-color-scheme: dark){:root[data-accent="lav"]:not([data-theme="light"]){--accent:#B9A2F5;--accent-soft:#2C2540;--accent-line:#54457A;--pink:#B9A2F5;--bg:#17121A;--surface:#221A25;--raised:#2B2230;--line:#3A2E40;--line2:#4A3B52}}
+:root[data-theme="dark"][data-accent="lav"]{--accent:#B9A2F5;--accent-soft:#2C2540;--accent-line:#54457A;--pink:#B9A2F5;--bg:#17121A;--surface:#221A25;--raised:#2B2230;--line:#3A2E40;--line2:#4A3B52}
+:root[data-accent="mint"]{--accent:#1E8A63;--accent-soft:#DFF3EA;--accent-line:#A9DCC6;--pink:#2FA37C;--bg:#EEF7F2;--surface:#FFFFFF;--raised:#F6FBF8;--line:#D7EBE1;--line2:#BFDCCF}
+@media (prefers-color-scheme: dark){:root[data-accent="mint"]:not([data-theme="light"]){--accent:#5FD3A8;--accent-soft:#17302A;--accent-line:#2F6A55;--pink:#5FD3A8;--bg:#17121A;--surface:#221A25;--raised:#2B2230;--line:#3A2E40;--line2:#4A3B52}}
+:root[data-theme="dark"][data-accent="mint"]{--accent:#5FD3A8;--accent-soft:#17302A;--accent-line:#2F6A55;--pink:#5FD3A8;--bg:#17121A;--surface:#221A25;--raised:#2B2230;--line:#3A2E40;--line2:#4A3B52}
+:root[data-accent="peach"]{--accent:#BF561D;--accent-soft:#FCE8DA;--accent-line:#F1C3A3;--pink:#E8894A;--bg:#FBF1EA;--surface:#FFFFFF;--raised:#FDF8F3;--line:#F1DFD1;--line2:#E6CAB5}
+@media (prefers-color-scheme: dark){:root[data-accent="peach"]:not([data-theme="light"]){--accent:#F2A877;--accent-soft:#382619;--accent-line:#77482C;--pink:#F2A877;--bg:#17121A;--surface:#221A25;--raised:#2B2230;--line:#3A2E40;--line2:#4A3B52}}
+:root[data-theme="dark"][data-accent="peach"]{--accent:#F2A877;--accent-soft:#382619;--accent-line:#77482C;--pink:#F2A877;--bg:#17121A;--surface:#221A25;--raised:#2B2230;--line:#3A2E40;--line2:#4A3B52}
+:root[data-accent="blue"]{--accent:#2D62C4;--accent-soft:#E1EBFA;--accent-line:#AFC6EE;--pink:#3A7BD5;--bg:#EEF3FB;--surface:#FFFFFF;--raised:#F6F9FD;--line:#DAE3F2;--line2:#C3D2EA}
+@media (prefers-color-scheme: dark){:root[data-accent="blue"]:not([data-theme="light"]){--accent:#8AB0F5;--accent-soft:#1C2740;--accent-line:#3A5280;--pink:#8AB0F5;--bg:#17121A;--surface:#221A25;--raised:#2B2230;--line:#3A2E40;--line2:#4A3B52}}
+:root[data-theme="dark"][data-accent="blue"]{--accent:#8AB0F5;--accent-soft:#1C2740;--accent-line:#3A5280;--pink:#8AB0F5;--bg:#17121A;--surface:#221A25;--raised:#2B2230;--line:#3A2E40;--line2:#4A3B52}
+#streak{display:flex;gap:8px;align-items:center}
+.gearbtn{all:unset;cursor:pointer;width:40px;height:40px;border-radius:50%;background:var(--surface);display:grid;place-items:center;color:var(--ink);flex:none}
+.gearbtn:focus-visible{outline:2px solid var(--accent)}
+.sethead{display:flex;align-items:center;gap:12px}.sethead h2{font-size:24px;margin:0}
+.iconbtn.back{width:40px;height:40px;border-radius:50%;background:var(--surface);font-size:22px}
+.setcap{margin:6px 4px -6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.setcard{gap:0;padding:6px 16px}
+.setrow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 0;width:100%}
+.setrow+.setrow{border-top:1px solid var(--line)}.setrow.off{cursor:default;opacity:.6}
+.setrow:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+.setic{width:34px;height:34px;border-radius:11px;background:var(--accent-soft);display:grid;place-items:center;font-size:17px;flex:none}
+.setrow .rt{flex:1;min-width:0}.setrow .rt b{display:block;font-size:16px}.setrow .rt span{display:block;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.chev{color:var(--faint);font-size:22px}
+.setcard>b{margin-top:10px}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--raised);border-radius:14px;padding:4px;gap:4px}
+.seg button{all:unset;cursor:pointer;text-align:center;padding:9px 4px;border-radius:11px;font-weight:700;font-size:14px;color:var(--muted);line-height:1.2}
+.seg button[aria-checked="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.seg button:focus-visible{outline:2px solid var(--accent)}
+.swatches{display:flex;gap:12px;flex-wrap:wrap;padding:4px 2px 12px}
+.swatches button{all:unset;cursor:pointer;width:40px;height:40px;border-radius:50%}
+.swatches button[aria-checked="true"]{outline:3px solid var(--ink);outline-offset:3px}
+.swatches button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.ghostdanger{justify-content:center;color:#C0392B;background:transparent;border-color:transparent}
+.chars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.chbox{all:unset;box-sizing:border-box;cursor:pointer;background:var(--raised);border-radius:18px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;min-width:0}
+.chbox b{font-size:14px}.chbox small{font-size:11px;color:var(--muted);font-weight:600}
+.chbox.on{outline:2px solid var(--accent);outline-offset:-2px}.chbox[disabled],.chbox.soon{cursor:default}
+.chbox .lock{width:64px;height:64px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-size:24px}
+.rewards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.rw{all:unset;box-sizing:border-box;cursor:pointer;background:var(--raised);border-radius:14px;padding:10px 4px;text-align:center;font-size:24px;line-height:1.1}
+.rw small{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-top:4px}
+.rw.off{opacity:.4;cursor:default;filter:grayscale(.6)}.rw.on{outline:2px solid var(--accent);outline-offset:-2px;background:var(--accent-soft)}
+.rw:focus-visible{outline:2px solid var(--ink)}
+.subjrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:end;gap:6px 8px;padding-top:6px;border-top:1px solid var(--line)}.subjrow>b{grid-column:1/-1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) svg.kz{filter:drop-shadow(0 0 1.2px rgba(255,255,255,.75)) drop-shadow(0 0 6px rgba(255,255,255,.12))}:root:not([data-theme="light"]) .kzshadow{fill:#000;opacity:.35}}
+:root[data-theme="dark"] svg.kz{filter:drop-shadow(0 0 1.2px rgba(255,255,255,.75)) drop-shadow(0 0 6px rgba(255,255,255,.12))}:root[data-theme="dark"] .kzshadow{fill:#000;opacity:.35}
+:root[data-accent="lav"]{--hero-ink:#6A3FC0}:root[data-accent="mint"]{--hero-ink:#17795A}:root[data-accent="peach"]{--hero-ink:#A84A16}:root[data-accent="blue"]{--hero-ink:#2557B3}
+:root[data-accent="lav"] .hero{background:#E6DDF7}:root[data-accent="mint"] .hero{background:#D6EEE3}:root[data-accent="peach"] .hero{background:#F8E0CE}:root[data-accent="blue"] .hero{background:#DAE5F7}
 </style>
 </head>
 <body>
@@ -336,7 +387,7 @@ let U = new URLSearchParams(location.search).get("u");
 if (/[?&]new=1/.test(location.search)) history.replaceState(null, "", "/app?u=" + U + location.hash);
 try { if (U) localStorage.setItem("ege-u", U); else if (location.hash !== "#login") { U = localStorage.getItem("ege-u"); if (U) history.replaceState(null, "", "/app?u=" + U + location.hash); } } catch {}
 if (U) document.getElementById("manifest-link")?.setAttribute("href", "/api/manifest?u=" + encodeURIComponent(U));
-const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"], ["calendar", "Важные даты", "i-week"]];
+const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"], ["calendar", "Важные даты", "i-week"], ["settings", "Настройки", "i-set"], ["buddy", "Помощник", "i-set"]];
 let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
 let quiz = null; const openTopics = new Set();
 if (!VIEWS.some(v => v[0] === view) && view !== "session" && view !== "day") view = "today";
@@ -400,7 +451,7 @@ async function load() {
     const j = await r.json();
     if (r.status === 410 && j.movedTo) { showMoved(j.movedTo); return; }
     if (!r.ok) { flash(j.error || "Не удалось загрузить план."); return; }
-    S = j.state; S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; S.exams ||= []; S.materials ||= []; flash(""); $("#dock").hidden = false; render();
+    S = j.state; S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; S.exams ||= []; S.materials ||= []; applyLook(S.look); flash(""); $("#dock").hidden = false; render();
     try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {}
   } catch {
     let cached = null; try { cached = JSON.parse(localStorage.getItem("ege-state-" + U) || "null"); } catch {}
@@ -459,7 +510,7 @@ function mascot(mood = "happy", label = "Козя") {
     face = closedEyes + `<path d="M94 133 Q100 137 106 133" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`;
     extra = `<text x="150" y="58" font-family="Nunito, sans-serif" font-size="22" font-weight="800" fill="#B8325E">z</text><text x="164" y="40" font-family="Nunito, sans-serif" font-size="16" font-weight="800" fill="#B8325E">z</text>`;
   }
-  return `<svg viewBox="0 0 200 196" role="img" aria-label="${esc(label)}"><ellipse cx="100" cy="190" rx="52" ry="6" fill="#E9C3D1"/>${body}${extra}${goatBase(ears)}${face}${front}</svg>`;
+  return dressUp(`<svg class="kz" viewBox="0 0 200 196" role="img" aria-label="${esc(label)}"><ellipse cx="100" cy="190" rx="52" ry="6" fill="#E9C3D1" class="kzshadow"/>${body}${extra}${goatBase(ears)}${face}${front}</svg>`, mood);
 }
 function streakDays(today) {
   let n = 0;
@@ -541,16 +592,18 @@ function render() {
   $("#hello").textContent = S.name ? `Привет, ${S.name}!` : "Мой план";
   const sd = streakDays(n.today);
   $("#streak").innerHTML = true ? `<div class="streak" title="Дней подряд с занятиями"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0702B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-3.5 2-5 1 1.5 2 2 3-5z"/></svg>${sd} ${word(sd, "день", "дня", "дней")}</div>` : "";
-  const navHTML = VIEWS.filter(v => v[0] !== "setup" && v[0] !== "calendar").map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id || (id === "today" && view === "day") ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
+  $("#streak").insertAdjacentHTML("beforeend", `<button class="gearbtn" type="button" data-view="settings" aria-label="Настройки"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>`);
+  { const nm = helperName(); const h = document.querySelector(".chatcol .head h2"); if (h) h.textContent = nm; }
+  const navHTML = VIEWS.map(v => v[0] === "chat" ? [v[0], helperName(), v[2]] : v).filter(v => !["setup", "calendar", "settings", "buddy"].includes(v[0])).map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id || (id === "today" && view === "day") ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
   $("#nav").innerHTML = navHTML;
-  $("#toptabs").innerHTML = VIEWS.filter(v => v[0] !== "chat").map(([id, label]) => `<button type="button" data-view="${id}" ${view === id ? 'aria-current="page"' : ""}>${label}</button>`).join("");
+  $("#toptabs").innerHTML = VIEWS.filter(v => !["chat", "settings", "buddy"].includes(v[0])).map(([id, label]) => `<button type="button" data-view="${id}" ${view === id ? 'aria-current="page"' : ""}>${label}</button>`).join("");
   $("#composer-m").hidden = view !== "chat";
   $("#dock").hidden = view === "session";
   const tiredNow = view === "today" && S.tired[n.today] && !S.tired[n.today].rest;
   document.querySelector(".top").hidden = view === "session" || !!tiredNow;
   const plan = C.buildPlan(S, n.today, 7, n.min);
   const v = view === "chat" && matchMedia("(min-width:1000px)").matches ? "today" : view;
-  $("#view").innerHTML = v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n);
+  $("#view").innerHTML = v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n);
   $("#chat-desk").innerHTML = chatHTML(n, 60);
   const cd = $("#chat-desk"); cd.scrollTop = cd.scrollHeight;
   if (v === "chat") scrollTo(0, document.body.scrollHeight);
@@ -911,8 +964,7 @@ function renderSetup() {
     <label class="field"><span>Максимум в день на самоподготовку</span><select id="set-cap" data-set="dailyCapMin">${[60, 120, 180, 240, 300].map(m => `<option value="${m}" ${S.dailyCapMin === m ? "selected" : ""}>${m / 60} ${word(m / 60, "час", "часа", "часов")}</option>`).join("")}</select></label></div>
     <label class="row small"><input type="checkbox" id="set-habit" ${habit ? "checked" : ""}> Каждый будний день ставить блок «Школьные задания»</label>
     ${(S.capFactor || 1) < 1 ? `<div class="row small"><span class="muted">Сейчас нагрузка облегчена на четверть.</span><button class="btn sm" data-act="unlighten" type="button">Вернуть обычную</button></div>` : ""}</div>
-  <div class="card"><h2>Цели по предметам</h2><div class="list">${S.subjects.map(s => `<div class="li"><div><div class="t">${esc(s.name)}</div><div class="meta">сейчас ${s.current ?? "—"} → цель ${s.target ?? "—"}</div><div class="progress" style="margin-top:6px"><i style="width:${s.current || 0}%;background:${color(s.name)}"></i></div></div></div>`).join("")}</div></div>
-  <div class="card"><div class="cardhead"><h2>Аккаунт</h2></div>${S.email ? `<p class="small muted" style="margin:0">Вход по почте ${esc(S.email)}</p>` : ""}<button class="btn" data-act="logout" type="button" style="justify-content:center">Выйти из плана на этом телефоне</button></div>`;
+  <div class="card"><h2>Цели по предметам</h2><div class="list">${S.subjects.map(s => `<div class="li"><div><div class="t">${esc(s.name)}</div><div class="meta">сейчас ${s.current ?? "—"} → цель ${s.target ?? "—"}</div><div class="progress" style="margin-top:6px"><i style="width:${s.current || 0}%;background:${color(s.name)}"></i></div></div></div>`).join("")}</div></div>`;
 }
 
 // ---------- формы ----------
@@ -1319,6 +1371,136 @@ async function deleteMaterial(id) {
   });
 }
 
+// ---------- внешний вид, помощник и награды ----------
+const ACCENTS = [["pink", "Розовый", "#E2557A"], ["lav", "Лавандовый", "#8A6BE0"], ["mint", "Мятный", "#2FA37C"], ["peach", "Персиковый", "#E8894A"], ["blue", "Синий", "#3A7BD5"]];
+const CHARS = { kozya: { name: "Козя", ink: "#1B1620", face: "#F8D3DC", need: 0 }, choco: { name: "Шоколадка", ink: "#5A3825", face: "#F6DCC8", need: 14, about: "сестрёнка Кози" } };
+const OUTFITS = [
+  ["bow", "Бантик", "🎀", 3], ["flower", "Цветок", "🌸", 5], ["glasses", "Очки", "👓", 7], ["phones", "Наушники", "🎧", 10],
+  ["crown", "Корона", "👑", 14], ["scarf", "Шарфик", "🧣", 21], ["stars", "Блёстки", "✨", 30], ["cap", "Шапочка выпускника", "🎓", 45],
+];
+const look = () => (S.look ||= {});
+const helperName = () => (S.look?.name || "").trim() || CHARS[S.look?.char || "kozya"]?.name || "Козя";
+function applyLook(l = S?.look || {}) {
+  const r = document.documentElement;
+  l.theme === "light" || l.theme === "dark" ? r.setAttribute("data-theme", l.theme) : r.removeAttribute("data-theme");
+  l.accent && l.accent !== "pink" ? r.setAttribute("data-accent", l.accent) : r.removeAttribute("data-accent");
+  try { localStorage.setItem("ege-look", JSON.stringify({ theme: l.theme || "", accent: l.accent || "" })); } catch {}
+}
+function outfitSVG(id) {
+  const P = "#E2557A";
+  switch (id) {
+    case "bow": return `<g transform="translate(100 47)"><path d="M0 0 L-17 -10 L-17 10 Z M0 0 L17 -10 L17 10 Z" fill="${P}" stroke="#B8325E" stroke-width="2" stroke-linejoin="round"/><circle r="5" fill="#B8325E"/></g>`;
+    case "flower": return `<g transform="translate(140 62)">${[0, 72, 144, 216, 288].map(a => `<circle cx="${(8 * Math.cos(a * Math.PI / 180)).toFixed(1)}" cy="${(8 * Math.sin(a * Math.PI / 180)).toFixed(1)}" r="7" fill="#F7A8C4"/>`).join("")}<circle r="5" fill="#F6C343"/></g>`;
+    case "glasses": return `<g fill="none" stroke="#B8325E" stroke-width="3"><circle cx="84" cy="114" r="15"/><circle cx="116" cy="114" r="15"/><path d="M99 112 Q100 109 101 112 M69 110 L58 104 M131 110 L142 104"/></g>`;
+    case "phones": return `<path d="M50 100 C50 34 150 34 150 100" fill="none" stroke="#3A3440" stroke-width="7" stroke-linecap="round"/><rect x="38" y="88" width="20" height="30" rx="9" fill="${P}" stroke="#3A3440" stroke-width="3"/><rect x="142" y="88" width="20" height="30" rx="9" fill="${P}" stroke="#3A3440" stroke-width="3"/>`;
+    case "crown": return `<path d="M78 52 L78 30 L89 41 L100 24 L111 41 L122 30 L122 52 Z" fill="#F6C343" stroke="#C9921B" stroke-width="2.5" stroke-linejoin="round"/><circle cx="100" cy="44" r="3.5" fill="${P}"/>`;
+    case "scarf": return `<path d="M62 140 Q100 158 138 140 L138 152 Q100 170 62 152 Z" fill="${P}"/><path d="M118 154 L128 184 L114 186 L108 158 Z" fill="#C3326F"/><path d="M72 147 L76 157 M90 151 L92 162 M110 151 L108 162" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>`;
+    case "stars": { const st = (x, y, s) => `<path transform="translate(${x} ${y}) scale(${s})" d="M0 -10 L2.5 -2.5 L10 0 L2.5 2.5 L0 10 L-2.5 2.5 L-10 0 L-2.5 -2.5 Z" fill="#F6C343"/>`; return st(28, 52, 1.1) + st(172, 40, 1.3) + st(180, 132, .9) + st(22, 150, .8); }
+    case "cap": return `<path d="M60 40 L100 26 L140 40 L100 54 Z" fill="#1B1620" stroke="#FFFFFF" stroke-width="1.5"/><path d="M80 46 L80 56 Q100 64 120 56 L120 46" fill="#1B1620"/><path d="M136 41 L138 66" stroke="#F6C343" stroke-width="3" stroke-linecap="round"/><circle cx="138" cy="68" r="4" fill="#F6C343"/>`;
+  }
+  return "";
+}
+function dressUp(svg, mood) {
+  const l = S?.look || {}, ch = CHARS[l.char] || CHARS.kozya;
+  if (ch !== CHARS.kozya) svg = svg.replaceAll(INK, ch.ink).replaceAll(FACE, ch.face);
+  const o = l.outfit && OUTFITS.find(x => x[0] === l.outfit);
+  if (o && !(o[0] === "glasses" && mood === "plead")) svg = svg.replace("</svg>", outfitSVG(o[0]) + "</svg>");
+  return svg;
+}
+function bestStreak(today) {
+  const cur = streakDays(today), l = look();
+  if (cur > (l.best || 0)) {
+    const before = OUTFITS.filter(o => o[3] <= (l.best || 0)).length;
+    l.best = cur;
+    const got = OUTFITS.filter(o => o[3] <= cur);
+    if (got.length > before) {
+      const o = got.at(-1);
+      if (!l.outfitPicked) l.outfit = o[0];
+      setTimeout(() => { flash(`${o[2]} Новая награда за ${o[3]} ${word(o[3], "день", "дня", "дней")} подряд — ${o[1].toLowerCase()}!`); setTimeout(() => flash(""), 4000); }, 300);
+    }
+    save();
+  }
+  return l.best || 0;
+}
+function renderSettings(n) {
+  const l = look(), best = bestStreak(n.today), cur = streakDays(n.today);
+  const row = (ic, title, sub, attrs) => `<button class="setrow" type="button" ${attrs}><span class="setic">${ic}</span><span class="rt"><b>${title}</b>${sub ? `<span>${sub}</span>` : ""}</span><span class="chev">›</span></button>`;
+  const got = OUTFITS.filter(o => o[3] <= best).length;
+  return `<div class="sethead"><button class="iconbtn back" data-view="today" type="button" aria-label="Назад">‹</button><h2>Настройки</h2></div>
+  <h3 class="setcap">Аккаунт</h3>
+  <div class="card setcard">
+    ${row("👤", esc(S.name || "Без имени"), S.email ? esc(S.email) : "почта не привязана", 'data-act="set-name"')}
+    ${S.email ? row("🔑", "Сменить пароль", "", 'data-act="set-pass"') : row("✉️", "Привязать почту и пароль", "чтобы входить с любого телефона", 'data-act="set-pass"')}
+    ${row("🎓", "Предметы и цели", esc(S.subjects.map(s => s.name).join(" · ") || "не выбраны"), 'data-act="set-subj"')}
+    ${row("🗓️", "Расписание и свободное время", "занятия, импорт из школы, сколько заниматься", 'data-view="setup"')}
+  </div>
+  <h3 class="setcap">Внешний вид</h3>
+  <div class="card setcard" style="gap:12px">
+    <b>Тема</b><div class="seg" role="radiogroup" aria-label="Тема">${[["light", "Светлая"], ["dark", "Тёмная"], ["", "Как в телефоне"]].map(([k, t]) => `<button type="button" role="radio" aria-checked="${(l.theme || "") === k}" data-theme-set="${k}">${t}</button>`).join("")}</div>
+    <b>Цвет</b><div class="swatches" role="radiogroup" aria-label="Цвет">${ACCENTS.map(([k, t, c]) => `<button type="button" role="radio" aria-checked="${(l.accent || "pink") === k}" aria-label="${t}" data-accent-set="${k}" style="background:${c}"></button>`).join("")}</div>
+  </div>
+  <h3 class="setcap">Персонализация</h3>
+  <div class="card setcard">
+    ${row("🐐", "Помощник и награды", `${esc(helperName())} · ${got} из ${OUTFITS.length} наград${cur ? ` · серия ${cur} ${word(cur, "день", "дня", "дней")}` : ""}`, 'data-view="buddy"')}
+    <div class="setrow off"><span class="setic">🔔</span><span class="rt"><b>Напоминания</b><span>скоро</span></span></div>
+  </div>
+  <button class="btn ghostdanger" data-act="logout" type="button">${S.email ? "Выйти из аккаунта" : "Выйти из плана на этом телефоне"}</button>`;
+}
+function renderBuddy(n) {
+  const l = look(), best = bestStreak(n.today), cur = streakDays(n.today);
+  const next = OUTFITS.find(o => o[3] > best);
+  const chars = Object.entries(CHARS).map(([k, c]) => {
+    const open = best >= c.need, on = (l.char || "kozya") === k;
+    return `<button type="button" class="chbox${on ? " on" : ""}" ${open ? `data-char-set="${k}"` : "disabled"} aria-pressed="${on}">${open ? charPic(k) : `<span class="lock">🔒</span>`}<b>${c.name}</b><small>${on ? "выбрана" : open ? c.about || "" : `серия ${c.need} дней`}</small></button>`;
+  }).join("") + `<div class="chbox soon"><span class="lock">✨</span><b>Свой персонаж</b><small>скоро</small></div>`;
+  return `<div class="sethead"><button class="iconbtn back" data-view="settings" type="button" aria-label="Назад">‹</button><h2>Помощник и награды</h2></div>
+  <div class="card"><h2>Кто тебе помогает</h2><div class="chars">${chars}</div>
+    <label class="field"><span>Как зовут помощника</span><input type="text" id="buddy-name" maxlength="20" value="${esc(l.name || "")}" placeholder="${esc(CHARS[l.char || "kozya"].name)}"></label></div>
+  <div class="card"><div class="cardhead"><h2>Награды за серию</h2><span class="small muted">${cur ? `сейчас ${cur} ${word(cur, "день", "дня", "дней")} подряд` : "серии пока нет"}</span></div>
+    <div class="rewards">${OUTFITS.map(([k, t, em, d]) => { const open = best >= d, on = l.outfit === k; return `<button type="button" class="rw${open ? "" : " off"}${on ? " on" : ""}" ${open ? `data-outfit-set="${k}"` : "disabled"} aria-pressed="${on}" aria-label="${t}, ${d} ${word(d, "день", "дня", "дней")}${open ? "" : " — пока закрыто"}"><span>${em}</span><small>${d} ${word(d, "день", "дня", "дней")}</small></button>`; }).join("")}</div>
+    ${next ? `<div class="progress"><i style="width:${Math.round(Math.min(1, best / next[3]) * 100)}%;background:var(--accent)"></i></div><p class="small muted" style="margin:0">Ещё ${next[3] - best} ${word(next[3] - best, "день", "дня", "дней")} до ${next[2]} — ${esc(helperName())} получит ${next[1].toLowerCase()}. Награды — это наряды: нажми на открытую, чтобы надеть.</p>` : `<p class="small muted" style="margin:0">Все награды открыты 🏆</p>`}
+    ${l.outfit ? `<button class="btn sm" data-outfit-set="" type="button" style="align-self:flex-start">Снять наряд</button>` : ""}
+    <p class="small muted" style="margin:0">Серия — дни подряд, когда сделан хотя бы один блок. Выходные её не рвут. Награды остаются навсегда.</p></div>`;
+}
+function charPic(k) { const save0 = look().char; look().char = k; const s = dressUp(mascot("happy", CHARS[k].name).replace("<svg ", '<svg width="64" height="64" '), "happy"); look().char = save0; return s; }
+function nameDialog() {
+  openDialog("Как тебя зовут", `<label class="field"><span>Имя</span><input type="text" id="f-name" maxlength="40" value="${esc(S.name || "")}"></label>`, {
+    submit: () => { const v = val("f-name"); change(() => { S.name = v; }); },
+  });
+}
+function subjDialog() {
+  const rows = S.subjects.map((s, i) => `<div class="grid3 subjrow"><b>${esc(s.name)}</b><label class="field"><span>Сейчас</span><input type="number" min="0" max="100" id="f-cur-${i}" value="${esc(s.current ?? "")}"></label><label class="field"><span>Цель</span><input type="number" min="0" max="100" id="f-tgt-${i}" value="${esc(s.target ?? "")}"></label><label class="small" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="f-del-${i}"> убрать</label></div>`).join("");
+  openDialog("Предметы и цели", `<p class="small muted" style="margin:0">Баллы — из пробника или примерно, как чувствуешь.</p>${rows}
+    <label class="field"><span>Добавить предмет</span><input type="text" id="f-new" maxlength="40" placeholder="Например, Биология"></label>`, {
+    submit: () => change(() => {
+      const num = v => v === "" ? null : Math.max(0, Math.min(100, Number(v)));
+      S.subjects = S.subjects.map((s, i) => ({ ...s, current: num(val(`f-cur-${i}`)), target: num(val(`f-tgt-${i}`)), _del: dlgform.querySelector(`#f-del-${i}`).checked })).filter(s => !s._del).map(({ _del, ...s }) => s);
+      const nn = val("f-new"); if (nn && !S.subjects.some(s => s.name.toLowerCase() === nn.toLowerCase())) S.subjects.push({ name: nn, current: null, target: null });
+    }),
+  });
+}
+function passDialog() {
+  const has = !!S.email;
+  openDialog(has ? "Сменить пароль" : "Почта и пароль", `
+    ${has ? `<label class="field"><span>Старый пароль</span><input type="password" id="f-old" autocomplete="current-password"></label>` : `<p class="small muted" style="margin:0">Тогда план можно открыть с любого телефона по почте и паролю — ссылка больше не понадобится.</p><label class="field"><span>Почта</span><input type="email" id="f-email" autocomplete="email" inputmode="email"></label>`}
+    <label class="field"><span>${has ? "Новый пароль" : "Пароль"} — минимум 8 символов</span><input type="password" id="f-pass" autocomplete="new-password"></label>
+    <span class="small" id="f-pass-status" style="color:var(--warn)" hidden></span>`, {
+    submitLabel: has ? "Сменить" : "Привязать",
+    submit: () => { (async () => {
+      const st = dlgform.querySelector("#f-pass-status"), btn = dlgform.querySelector("button[value=ok]");
+      btn.disabled = true;
+      try {
+        const r = await fetch("/api/password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, old: has ? dlgform.querySelector("#f-old").value : undefined, email: has ? undefined : val("f-email"), password: dlgform.querySelector("#f-pass").value }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || "Не получилось.");
+        dlg.close();
+        if (j.email) change(() => { S.email = j.email; });
+        flash(has ? "Пароль сменён 🔑" : "Готово! Теперь можно входить по почте и паролю ✉️"); setTimeout(() => flash(""), 3000);
+      } catch (e) { st.hidden = false; st.textContent = e.message || "Нет связи."; btn.disabled = false; }
+    })(); return false; },
+  });
+}
+
 function dayDialog(date) {
   const ov = S.avail[date] || {}, base = S.free[C.weekday(date)];
   openDialog(`${C.DAYS_FULL[C.weekday(date)]}, ${C.humanDate(date)}`, `
@@ -1358,6 +1540,10 @@ document.addEventListener("click", e => {
   if (d.calDay) { const x = (S.exams || []).find(y => y.date === d.calDay); x ? examDialog(x) : examDialog(null, { date: d.calDay }); return; }
   if (d.calMove) { const [y, m] = (calMonth || n.today.slice(0, 7)).split("-").map(Number), k = y * 12 + m - 1 + +d.calMove; calMonth = `${Math.floor(k / 12)}-${String(k % 12 + 1).padStart(2, "0")}`; render(); return; }
   if (d.delMat) { deleteMaterial(d.delMat); return; }
+  if ("themeSet" in d) { change(() => { look().theme = d.themeSet; }); applyLook(); return; }
+  if (d.accentSet) { change(() => { look().accent = d.accentSet; }); applyLook(); return; }
+  if (d.charSet) { change(() => { look().char = d.charSet; }); return; }
+  if ("outfitSet" in d) { change(() => { look().outfit = d.outfitSet; look().outfitPicked = true; }); return; }
   if (d.editEvent) { const x = S.extraLessons.find(y => y.id === d.editEvent); if (x) eventDialog(x); return; }
   if (d.editDay) { dayDialog(d.editDay); return; }
   if (d.delTopic) { change(() => { S.topics = S.topics.filter(x => x.id !== d.delTopic); S.cards = S.cards.filter(c => c.topicId !== d.delTopic); }); return; }
@@ -1368,6 +1554,9 @@ document.addEventListener("click", e => {
   switch (d.act) {
     case "new-task": taskDialog(null, { at: d.at }); return;
     case "import": importDialog(); return;
+    case "set-name": nameDialog(); return;
+    case "set-pass": passDialog(); return;
+    case "set-subj": subjDialog(); return;
     case "new-exam": examDialog(null); return;
     case "new-mat": materialDialog(); return;
     case "new-lesson": lessonDialog(null); return;
@@ -1438,7 +1627,7 @@ document.addEventListener("submit", async e => {
       thinking = false;
       if (r.status === 410 && j.movedTo) { showMoved(j.movedTo); return; }
       if (!r.ok) { S.chat = S.chat.filter(m => !m.pending); S.chat.push({ role: "assistant", text: j.error || "Помощник не ответил. Попробуй ещё раз.", at: Date.now() }); input.value = msg; render(); return; }
-      S = j.state; S.cards ||= []; S.exams ||= []; S.materials ||= [];
+      S = j.state; S.cards ||= []; S.exams ||= []; S.materials ||= []; applyLook(S.look);
       if (j.quiz) setTimeout(() => startQuiz({ subject: j.quiz.subject, topicTitle: j.quiz.topic, n: j.quiz.n || 5 }), 300);
       const after = planKeys(C.buildPlan(S, n.today, 7, n.min));
       highlight = new Set([...after].filter(k => !before.has(k)));
@@ -1480,6 +1669,10 @@ function showInstall() {
   else { el.hidden = true; return; }
   el.hidden = false;
 }
+document.addEventListener("change", e => {
+  if (e.target.id !== "buddy-name") return;
+  const v = e.target.value.trim().slice(0, 20); change(() => { look().name = v; });
+});
 document.addEventListener("click", e => {
   if (!e.target.closest("[data-act=logout]")) return;
   try { localStorage.removeItem("ege-u"); if (U) localStorage.removeItem("ege-state-" + U); } catch {}
