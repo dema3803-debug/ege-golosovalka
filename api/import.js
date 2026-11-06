@@ -95,17 +95,22 @@ async function runImport(state, text, images) {
 Правила: даты пиши как ГГГГ-ММ-ДД; если год не указан — бери ближайшую будущую дату. Время по Москве в формате ЧЧ:ММ; если указан другой часовой пояс — переведи в московский. Если конец занятия не указан — оставь to пустым. Прошедшие даты пропускай. subject — предмет из её списка, если подходит. title — коротко, как в расписании («Вебинар: Право», «ДЗ №5»). where — ссылка или платформа, если есть. Не выдумывай ничего, чего нет в расписании.
 Ответь строго JSON без пояснений: {"lessons":[{"title":"","subject":"","days":[1],"from":"18:00","to":"","where":""}],"events":[{"title":"","subject":"","date":"2026-11-12","from":"18:00","to":"","where":""}],"deadlines":[{"title":"","subject":"","date":"2026-11-15","time":"23:59"}]}`;
   try {
-    let base = null, attachments = [];
-    for (const m of images) {
+    // Шаг 1: каждую картинку — в текст (модель с картинкой и без системной инструкции читает надёжнее)
+    let all = text ? `Расписание:\n${text}` : "";
+    for (const [k, m] of images.entries()) {
       const up = await uploadImage(Buffer.from(m[2], "base64"), m[1]);
-      if (base && up.base !== base) continue;
-      base = up.base; attachments.push(up.id);
+      const tr = await chat([{ role: "user", content: "Перепиши дословно весь текст с этой картинки — это расписание занятий или дедлайнов. Сохраняй даты, время, дни недели, названия предметов и строки. Ничего не добавляй и не объясняй.", attachments: [up.id] }],
+        { model: "GigaChat-2-Pro", temperature: 0, maxTokens: 2500, timeout: 60000, base: up.base });
+      const t = String(tr.text || "").trim();
+      console.log(`import: скриншот ${k + 1} → текст (${t.length} симв.): ${t.replace(/\s+/g, " ").slice(0, 300)}`);
+      if (t.length > 15) all += `\n\nСкриншот ${k + 1}:\n${t.slice(0, 6000)}`;
     }
-    const user = { role: "user", content: (text ? `Расписание:\n${text}` : "Расписание на скриншотах.") + (attachments.length && text ? "\nЕщё часть — на скриншотах." : "") };
-    if (attachments.length) user.attachments = attachments;
+    if (!all.trim()) throw new Error("пустая расшифровка");
+    // Шаг 2: текст — в занятия, вебинары и дедлайны
+    const user = { role: "user", content: all };
     let r;
-    try { r = await chat([{ role: "system", content: sys }, user], { model: "GigaChat-2-Pro", temperature: 0, maxTokens: 3000, timeout: 60000, base }); }
-    catch (e) { if (attachments.length) throw e; r = await chat([{ role: "system", content: sys }, user], { model: "GigaChat-2", temperature: 0, maxTokens: 3000, timeout: 60000 }); }
+    try { r = await chat([{ role: "system", content: sys }, user], { model: "GigaChat-2-Pro", temperature: 0, maxTokens: 3000, timeout: 60000 }); }
+    catch { r = await chat([{ role: "system", content: sys }, user], { model: "GigaChat-2", temperature: 0, maxTokens: 3000, timeout: 60000 }); }
     const found = normalize(parse(r.text), subjects, today);
     console.log(`import: ${Date.now() - t0} мс, скриншотов ${images.length}, найдено ${found.lessons.length}/${found.events.length}/${found.deadlines.length}`);
     if (!found.lessons.length && !found.events.length && !found.deadlines.length) console.log(`import: ответ модели (${r.base}): ${String(r.text).replace(/\s+/g, " ").slice(0, 400)}`);
