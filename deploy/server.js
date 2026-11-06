@@ -74,7 +74,7 @@ const server = http.createServer(async (req, res) => {
     if (PAGES[p]) return sendFile(res, PAGES[p]);
     if (p.endsWith(".html") && PAGES["/" + p.slice(1, -5)]) { res.statusCode = 301; res.setHeader("Location", "/" + p.slice(1, -5) + url.search); return res.end(); }
     const rel = p.slice(1);
-    if (PUBLIC.has(rel) || /^icons\/[a-z0-9-]+\.png$/.test(rel)) return sendFile(res, rel);
+    if (PUBLIC.has(rel) || /^icons\/[a-z0-9-]+\.png$/.test(rel) || /^data\/ege\/[a-z0-9-]+\.json$/.test(rel)) return sendFile(res, rel);
     res.status(404).setHeader("Content-Type", "text/plain; charset=utf-8"); res.end("Не найдено");
   } catch (e) {
     if (!e.logged) console.error(e);

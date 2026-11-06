@@ -341,6 +341,28 @@ i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
 :root[data-theme="dark"] svg.kz{filter:drop-shadow(0 0 1.2px rgba(255,255,255,.75)) drop-shadow(0 0 6px rgba(255,255,255,.12))}:root[data-theme="dark"] .kzshadow{fill:#000;opacity:.35}
 :root[data-accent="lav"]{--hero-ink:#6A3FC0}:root[data-accent="mint"]{--hero-ink:#17795A}:root[data-accent="peach"]{--hero-ink:#A84A16}:root[data-accent="blue"]{--hero-ink:#2557B3}
 :root[data-accent="lav"] .hero{background:#E6DDF7}:root[data-accent="mint"] .hero{background:#D6EEE3}:root[data-accent="peach"] .hero{background:#F8E0CE}:root[data-accent="blue"] .hero{background:#DAE5F7}
+.egehead{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--muted)}
+.egebar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}.egebar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.egecard{gap:12px}.egetag{font-size:12px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+.egeq{margin:0;font-size:18px;font-weight:800;line-height:1.3}
+.egeopts{display:flex;flex-direction:column;gap:8px}
+.egeopt{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;padding:10px 12px;border-radius:14px;background:var(--raised);border:2px solid transparent;line-height:1.35}
+.egeopt b{width:28px;height:28px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-size:14px}
+.egeopt.on{border-color:var(--accent);background:var(--accent-soft)}.egeopt.on b{background:var(--accent);color:var(--accent-ink)}
+.egeopt:focus-visible{outline:2px solid var(--accent)}.egeopt[disabled]{cursor:default}
+.egematch{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:12px;font-size:15px;line-height:1.35}
+.egematch ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}.egematch li{background:var(--raised);border-radius:12px;padding:8px 10px}
+.egematch .eger b{color:var(--accent);margin-right:4px}
+.egeform{display:flex;flex-direction:column;gap:10px}.egeform input{font-size:20px;letter-spacing:.08em;font-weight:700}
+.egeans{border-radius:14px;padding:12px 14px;background:var(--raised);display:flex;flex-direction:column;gap:6px;line-height:1.4}
+.egeans.ok{background:var(--ok-soft)}.egeans.ok b{color:var(--ok)}.egeans.bad{background:var(--warn-soft)}.egeans.bad b{color:var(--warn)}
+.egeans span{font-size:14px;color:var(--ink)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.egedots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}.egedots i{width:14px;height:14px;border-radius:50%}.egedots .ok{background:var(--ok)}.egedots .bad{background:var(--warn)}
+.egedone{align-items:stretch;gap:12px}
+.egesub{display:flex;flex-direction:column;gap:10px;padding-top:6px}
+.egeblocks{display:flex;flex-direction:column;gap:6px}
+.egeblk{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 38px;gap:8px;align-items:center;font-size:14px}.egeblk small{text-align:right;font-weight:700;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -388,8 +410,8 @@ let U = new URLSearchParams(location.search).get("u");
 if (/[?&]new=1/.test(location.search)) history.replaceState(null, "", "/app?u=" + U + location.hash);
 try { if (U) localStorage.setItem("ege-u", U); else if (location.hash !== "#login") { U = localStorage.getItem("ege-u"); if (U) history.replaceState(null, "", "/app?u=" + U + location.hash); } } catch {}
 if (U) document.getElementById("manifest-link")?.setAttribute("href", "/api/manifest?u=" + encodeURIComponent(U));
-const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"], ["calendar", "Важные даты", "i-week"], ["settings", "Настройки", "i-set"], ["buddy", "Помощник", "i-set"]];
-const SUB = { day: "Весь план на сегодня", setup: "Расписание", calendar: "Важные даты", settings: "Настройки", buddy: "Помощник и награды" };
+const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"], ["calendar", "Важные даты", "i-week"], ["settings", "Настройки", "i-set"], ["buddy", "Помощник", "i-set"], ["ege", "Тренажёр ЕГЭ", "i-topics"]];
+const SUB = { ege: "Тренажёр ЕГЭ", day: "Весь план на сегодня", setup: "Расписание", calendar: "Важные даты", settings: "Настройки", buddy: "Помощник и награды" };
 let backStack = [];
 let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
 let quiz = null; const openTopics = new Set();
@@ -454,7 +476,7 @@ async function load() {
     const j = await r.json();
     if (r.status === 410 && j.movedTo) { showMoved(j.movedTo); return; }
     if (!r.ok) { flash(j.error || "Не удалось загрузить план."); return; }
-    S = j.state; S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; S.exams ||= []; S.materials ||= []; applyLook(S.look); flash(""); $("#dock").hidden = false; render();
+    S = j.state; S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; S.exams ||= []; S.materials ||= []; applyLook(S.look); if (!egeIndex) egeLoadIndex().then(() => { if (egeSubjects().length && S) render(); }); flash(""); $("#dock").hidden = false; render();
     try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {}
   } catch {
     let cached = null; try { cached = JSON.parse(localStorage.getItem("ege-state-" + U) || "null"); } catch {}
@@ -597,9 +619,9 @@ function render() {
   $("#streak").innerHTML = true ? `<div class="streak" title="Дней подряд с занятиями"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0702B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-3.5 2-5 1 1.5 2 2 3-5z"/></svg>${sd} ${word(sd, "день", "дня", "дней")}</div>` : "";
   $("#streak").insertAdjacentHTML("beforeend", `<button class="gearbtn" type="button" data-view="settings" aria-label="Настройки"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>`);
   { const nm = helperName(); const h = document.querySelector(".chatcol .head h2"); if (h) h.textContent = nm; }
-  const navHTML = VIEWS.map(v => v[0] === "chat" ? [v[0], helperName(), v[2]] : v).filter(v => !["setup", "calendar", "settings", "buddy"].includes(v[0])).map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id || (id === "today" && view === "day") ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
+  const navHTML = VIEWS.map(v => v[0] === "chat" ? [v[0], helperName(), v[2]] : v).filter(v => !["setup", "calendar", "settings", "buddy", "ege"].includes(v[0])).map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id || (id === "today" && view === "day") ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
   $("#nav").innerHTML = navHTML;
-  $("#toptabs").innerHTML = VIEWS.filter(v => !["chat", "settings", "buddy"].includes(v[0])).map(([id, label]) => `<button type="button" data-view="${id}" ${view === id ? 'aria-current="page"' : ""}>${label}</button>`).join("");
+  $("#toptabs").innerHTML = VIEWS.filter(v => !["chat", "settings", "buddy", "ege"].includes(v[0])).map(([id, label]) => `<button type="button" data-view="${id}" ${view === id ? 'aria-current="page"' : ""}>${label}</button>`).join("");
   $("#composer-m").hidden = view !== "chat";
   $("#dock").hidden = view === "session";
   const tiredNow = view === "today" && S.tired[n.today] && !S.tired[n.today].rest;
@@ -607,7 +629,7 @@ function render() {
   document.body.classList.toggle("subpage", !!SUB[view]);
   const plan = C.buildPlan(S, n.today, 7, n.min);
   const v = view === "chat" && matchMedia("(min-width:1000px)").matches ? "today" : view;
-  $("#view").innerHTML = (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n));
+  $("#view").innerHTML = (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "ege" ? renderEge() : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n));
   $("#chat-desk").innerHTML = chatHTML(n, 60);
   const cd = $("#chat-desk"); cd.scrollTop = cd.scrollHeight;
   if (v === "chat") scrollTo(0, document.body.scrollHeight);
@@ -758,7 +780,7 @@ function renderToday(d, n) {
   h += `<div class="hero"><div class="herohead"><b>Козя</b><span class="mood">${moodLabel}</span></div>
     <div class="bubble">${esc(say1)}</div><div class="mascot">${mascot(mood)}</div>
     <div class="stats"><div class="stat"><span>Сегодня</span><b>${doneN} из ${totalN}</b></div>
-    <button class="stat statbtn" data-act="quiz-any" type="button"><span>Закрепить</span><b>${dueTopics ? `${dueTopics} ${word(dueTopics, "тема", "темы", "тем")}` : "5 вопросов"}</b><i>Проверь меня →</i></button></div></div>`;
+    ${egeIndex && egeSubjects().length ? `<button class="stat statbtn" data-act="ege-any" type="button"><span>Тренажёр ЕГЭ</span><b>10 карточек</b><i>Проверь меня →</i></button>` : `<button class="stat statbtn" data-act="quiz-any" type="button"><span>Закрепить</span><b>${dueTopics ? `${dueTopics} ${word(dueTopics, "тема", "темы", "тем")}` : "5 вопросов"}</b><i>Проверь меня →</i></button>`}</div></div>`;
   if (session) h += `<div class="minibar"><span>${session.phase === "work" ? esc(session.title) : "Перерыв"} · <span class="tm" id="mini-time">${fmt(leftMs())}</span></span><button class="btn sm" data-view="session" type="button">Открыть</button></div>`;
   else if (nxt) h += `<button class="startbtn" data-start="${nxt.type}|${nxt.ref}" type="button"><span><span class="t1">${nxt.type === "review" ? "Проверить" : "Начать"}: ${esc(nxt.title)}</span><span class="t2">${nxt.type === "review" ? "Козя задаст 5 вопросов" : `${S.sessionMin} минут · потом 5 минут отдыха`}</span></span><span class="play"><svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span></button>`;
   if (C.tiredStreak(S, d.date) >= 3 && (S.capFactor || 1) >= 1 && !S.lightenAsked?.[d.date]) {
@@ -910,7 +932,7 @@ function renderTopics(n) {
   };
   const sorted = [...S.topics].sort((a, b) => a.next.localeCompare(b.next));
   const loose = S.cards.filter(c => !c.topicId || !S.topics.some(t => t.id === c.topicId));
-  let h = `<div class="card"><div class="cardhead"><h2>База знаний</h2><span class="small muted">${S.cards.length} ${word(S.cards.length, "карточка", "карточки", "карточек")}</span></div>
+  let h = egeCardHTML(n) + `<div class="card"><div class="cardhead"><h2>База знаний</h2><span class="small muted">${S.cards.length} ${word(S.cards.length, "карточка", "карточки", "карточек")}</span></div>
     <p class="small muted" style="margin:0">Темы повторяются через ${C.INTERVALS.join(", ")} дней. Внутри темы — карточки «вопрос → ответ»: по ним я тебя спрашиваю, когда пора повторять или когда сил нет.</p>
     <div class="row"><button class="btn primary" data-act="quiz-any" type="button">Проверь меня · 5 вопросов</button><button class="btn" data-act="learned" type="button">${icon("i-plus")}Тема</button><button class="btn" data-add-cards="" type="button">${icon("i-plus")}Карточки без темы</button></div></div>`;
   h += materialsCard();
@@ -1503,6 +1525,135 @@ function passDialog() {
   });
 }
 
+// ---------- тренажёр ЕГЭ: база карточек по кодификатору ----------
+const EGE_KINDS = { term: "Понятие", judg: "Выбери верные", odd: "Найди лишние", match: "Соответствие", open: "Часть 2" };
+let egeIndex = null, egeBases = {}, ege = null;
+async function egeLoadIndex() {
+  if (egeIndex) return egeIndex;
+  try { egeIndex = await fetch("/data/ege/index.json").then(r => r.json()); } catch { egeIndex = {}; }
+  return egeIndex;
+}
+async function egeLoad(subject) {
+  if (egeBases[subject]) return egeBases[subject];
+  const file = (await egeLoadIndex())[subject]; if (!file) return null;
+  try { egeBases[subject] = await fetch(`/data/ege/${file}.json`).then(r => r.json()); } catch { return null; }
+  return egeBases[subject];
+}
+const egeSubjects = () => (S.subjects || []).map(s => s.name).filter(n => egeIndex && egeIndex[n]);
+const egeSt = () => (S.ege ||= {});
+function egeStats(base, today) {
+  const st = egeSt(), by = {};
+  for (const b of base.blocks) by[b] = { total: 0, seen: 0, right: 0, tries: 0 };
+  let due = 0;
+  for (const c of base.cards) {
+    const x = by[c.block] ||= { total: 0, seen: 0, right: 0, tries: 0 }, s = st[c.id];
+    x.total++;
+    if (s) { x.seen++; x.right += s.r || 0; x.tries += (s.r || 0) + (s.w || 0); if (s.due <= today) due++; }
+  }
+  const seen = Object.values(by).reduce((a, x) => a + x.seen, 0);
+  return { by, due, seen, total: base.cards.length };
+}
+function egePick(base, today, n = 10) {
+  const st = egeSt();
+  const due = base.cards.filter(c => st[c.id] && st[c.id].due <= today).sort((a, b) => st[a.id].due.localeCompare(st[b.id].due));
+  const fresh = []; const pools = base.blocks.map(b => base.cards.filter(c => c.block === b && !st[c.id]));
+  for (let k = 0; fresh.length < n && pools.some(p => p.length); k++) { const p = pools[k % pools.length]; if (p.length) fresh.push(p.shift()); }
+  const pick = [...due.slice(0, Math.max(n - 3, Math.ceil(n / 2))), ...fresh].slice(0, n);
+  for (const c of due) { if (pick.length >= n) break; if (!pick.includes(c)) pick.push(c); }
+  return pick.sort(() => Math.random() - 0.5);
+}
+async function egeStart(subject) {
+  await egeLoadIndex();
+  const subj = subject || egeSubjects()[0];
+  const base = subj && await egeLoad(subj);
+  if (!base) { flash("Для этого предмета база карточек пока готовится."); setTimeout(() => flash(""), 2500); return; }
+  const cards = egePick(base, now().today, 10);
+  if (!cards.length) { flash("На сегодня всё повторено 🎉"); setTimeout(() => flash(""), 2500); return; }
+  ege = { subject: subj, cards, i: 0, phase: "ask", right: 0, results: [] };
+  if (view !== "ege") backStack.push(view);
+  view = "ege"; history.replaceState(null, "", "#ege"); render(); scrollTo(0, 0);
+}
+const egeNorm = s => String(s || "").toLowerCase().replace(/ё/g, "е").replace(/[«»"'.,;:!?()\-–—]/g, " ").replace(/\s+/g, " ").trim();
+function egeCheck(c, input) {
+  const v = String(input || "").trim();
+  if (c.kind === "judg" || c.kind === "odd") { const d = [...new Set(v.replace(/\D/g, ""))].sort().join(""); return d === [...c.answer].sort().join(""); }
+  if (c.kind === "match") return v.replace(/\D/g, "") === c.answer;
+  if (c.kind === "term") { const x = egeNorm(v); return (c.accept || [c.answer]).some(a => { const y = egeNorm(a); return x === y || (y.length > 3 && x.includes(y)); }); }
+  return null; // open — сверяет сама
+}
+function egeAnswer(input) {
+  const q = ege, c = q.cards[q.i];
+  const ok = egeCheck(c, input);
+  q.given = input;
+  if (ok === null || (ok === false && c.kind === "term")) { q.phase = "self"; render(); return; }
+  egeGrade(ok);
+}
+function egeGrade(ok) {
+  const q = ege, c = q.cards[q.i], today = now().today, st = egeSt();
+  const s = st[c.id] ||= { step: -1, r: 0, w: 0 };
+  if (ok) { s.r++; s.step = Math.min(C.INTERVALS.length - 1, s.step + 1); s.due = C.addDays(today, C.INTERVALS[s.step]); q.right++; }
+  else { s.w++; s.step = 0; s.due = C.addDays(today, 1); }
+  s.last = today;
+  q.results.push(ok); q.ok = ok; q.phase = "result";
+  render(); save();
+}
+function egeNext() {
+  const q = ege;
+  if (q.i + 1 < q.cards.length) { q.i++; q.phase = "ask"; q.given = ""; q.ok = null; render(); scrollTo(0, 0); }
+  else { q.phase = "done"; render(); scrollTo(0, 0); }
+}
+function renderEge() {
+  const q = ege;
+  if (!q) return `<p class="empty">Тренировка не начата.</p><button class="btn primary" data-act="ege-any" type="button">Начать</button>`;
+  if (q.phase === "done") {
+    const n = q.results.length, r = q.right, mood = "happy";
+    return `<div class="card egedone"><div class="mascot" style="width:140px;align-self:center">${mascot(mood)}</div>
+      <h2 style="text-align:center">${r} из ${n} верно</h2>
+      <p class="small muted" style="margin:0;text-align:center">${r === n ? "Идеально! Эти карточки вернутся позже, чтобы не забылись." : "Ошибки — не страшно: эти карточки вернутся завтра, а верные — через несколько дней."}</p>
+      <div class="egedots">${q.results.map(x => `<i class="${x ? "ok" : "bad"}"></i>`).join("")}</div>
+      <button class="btn primary" data-act="ege-again" type="button" style="justify-content:center">Ещё 10 карточек</button>
+      <button class="btn" data-back="" type="button" style="justify-content:center">Готово</button></div>`;
+  }
+  const c = q.cards[q.i];
+  const opts = c.kind === "match"
+    ? `<div class="egematch"><ol class="egel">${c.left.map(x => `<li>${esc(x)}</li>`).join("")}</ol><ol class="eger">${c.options.map((x, i) => `<li><b>${i + 1}</b> ${esc(x)}</li>`).join("")}</ol></div>`
+    : c.options ? `<div class="egeopts">${c.options.map((x, i) => `<button type="button" class="egeopt${String(q.given || "").includes(String(i + 1)) ? " on" : ""}" data-ege-opt="${i + 1}" ${q.phase !== "ask" ? "disabled" : ""}><b>${i + 1}</b><span>${esc(x)}</span></button>`).join("")}</div>` : "";
+  const digits = c.kind === "judg" || c.kind === "odd" || c.kind === "match";
+  let foot = "";
+  if (q.phase === "ask") {
+    foot = `<form class="egeform" data-ege-form>
+      <label class="field"><span>${c.kind === "match" ? "Ответ — цифры по порядку букв А, Б, В…" : digits ? "Ответ — цифры (можно нажимать на варианты)" : c.kind === "open" ? "Твой ответ (можно кратко)" : "Твой ответ"}</span>
+      ${c.kind === "open" ? `<textarea id="ege-in" rows="3" maxlength="600"></textarea>` : `<input id="ege-in" type="text" autocomplete="off" ${digits ? 'inputmode="numeric"' : ""} maxlength="200" value="${esc(q.given || "")}">`}</label>
+      <div class="row"><button class="btn primary" type="submit">${c.kind === "open" ? "Показать ответ" : "Проверить"}</button><button class="btn" data-act="ege-dunno" type="button">Не знаю</button></div></form>`;
+  } else if (q.phase === "self") {
+    foot = `<div class="egeans"><b>Правильный ответ:</b> ${esc(c.answer)}${c.explain ? `<span>${esc(c.explain)}</span>` : ""}</div>
+      ${q.given ? `<p class="small muted" style="margin:0">Твой ответ: ${esc(q.given)}</p>` : ""}
+      <div class="small" style="font-weight:700">Сверь сама: ты ответила верно?</div>
+      <div class="row"><button class="btn primary" data-act="ege-self-yes" type="button">Да, верно</button><button class="btn" data-act="ege-self-no" type="button">Нет</button></div>`;
+  } else {
+    foot = `<div class="egeans ${q.ok ? "ok" : "bad"}"><b>${q.ok ? "Верно! " : "Неверно. "}Ответ: ${esc(c.answer)}</b>${q.given && !q.ok ? `<span>Ты написала: ${esc(q.given)}</span>` : ""}${c.explain ? `<span>${esc(c.explain)}</span>` : ""}</div>
+      <button class="btn primary" data-act="ege-next" type="button" style="justify-content:center">${q.i + 1 < q.cards.length ? "Дальше" : "Итог"}</button>`;
+  }
+  return `<div class="egehead"><span>${esc(q.subject)} · ${esc(c.block)}</span><span>${q.i + 1} из ${q.cards.length}</span></div>
+    <div class="egebar"><i style="width:${Math.round(q.i / q.cards.length * 100)}%"></i></div>
+    <div class="card egecard"><div class="egetag">${EGE_KINDS[c.kind] || ""} · ${esc(c.topic)}</div><p class="egeq">${esc(c.q)}</p>${opts}${foot}</div>
+    ${q.phase === "ask" ? `<button class="btn ghost" data-act="ege-stop" type="button" style="align-self:center">Хватит на сегодня</button>` : ""}`;
+}
+function egeCardHTML(n) {
+  if (!egeIndex) { egeLoadIndex().then(() => { if (egeSubjects().length && view === "topics") render(); }); return ""; }
+  const subs = egeSubjects();
+  if (!subs.length) return "";
+  const parts = subs.map(sub => {
+    const base = egeBases[sub];
+    if (!base) { egeLoad(sub).then(() => { if (view === "topics") render(); }); return `<div class="egesub"><b>${esc(sub)}</b><span class="small muted">загружаю…</span></div>`; }
+    const s = egeStats(base, n.today);
+    return `<div class="egesub"><div class="cardhead"><b>${esc(sub)}</b><span class="small muted">изучено ${s.seen} из ${s.total}${s.due ? ` · повторить ${s.due}` : ""}</span></div>
+      <div class="egeblocks">${base.blocks.map(b => { const x = s.by[b] || { total: 0, seen: 0, right: 0, tries: 0 }; const pct = x.tries ? Math.round(x.right / x.tries * 100) : null; return `<div class="egeblk"><span>${esc(b)}</span><div class="progress"><i style="width:${x.total ? Math.round(x.seen / x.total * 100) : 0}%;background:${pct == null ? "var(--line2)" : pct >= 75 ? "var(--ok)" : pct >= 50 ? "var(--warn)" : "var(--accent)"}"></i></div><small>${pct == null ? "—" : pct + "%"}</small></div>`; }).join("")}</div>
+      <button class="btn primary" data-ege-start="${esc(sub)}" type="button" style="justify-content:center">${s.due ? `Повторить и выучить новое · 10` : "Тренировка · 10 карточек"}</button></div>`;
+  }).join("");
+  return `<div class="card"><div class="cardhead"><h2>Тренажёр ЕГЭ</h2></div><p class="small muted" style="margin:0">Карточки по всем темам кодификатора, в формате заданий экзамена. Полоска — сколько изучено, процент — сколько верных.</p>${parts}</div>`;
+}
+
 function dayDialog(date) {
   const ov = S.avail[date] || {}, base = S.free[C.weekday(date)];
   openDialog(`${C.DAYS_FULL[C.weekday(date)]}, ${C.humanDate(date)}`, `
@@ -1541,7 +1692,11 @@ document.addEventListener("click", e => {
   if (d.editExam) { const x = (S.exams || []).find(y => y.id === d.editExam); if (x) examDialog(x); return; }
   if (d.calDay) { const x = (S.exams || []).find(y => y.date === d.calDay); x ? examDialog(x) : examDialog(null, { date: d.calDay }); return; }
   if (d.calMove) { const [y, m] = (calMonth || n.today.slice(0, 7)).split("-").map(Number), k = y * 12 + m - 1 + +d.calMove; calMonth = `${Math.floor(k / 12)}-${String(k % 12 + 1).padStart(2, "0")}`; render(); return; }
-  if ("back" in d) { view = backStack.pop() || (view === "buddy" ? "settings" : "today"); history.replaceState(null, "", "#" + view); render(); scrollTo(0, 0); return; }
+  if (d.egeStart) { egeStart(d.egeStart); return; }
+  if (d.egeOpt && ege && ege.phase === "ask") { const inp = document.getElementById("ege-in"); let v = (inp ? inp.value : ege.given || "").replace(/\D/g, ""); const c = ege.cards[ege.i];
+    if (c.kind === "match") v += d.egeOpt; else v = v.includes(d.egeOpt) ? v.replace(d.egeOpt, "") : [...v + d.egeOpt].sort().join("");
+    ege.given = v; render(); return; }
+  if ("back" in d) { if (view === "ege") ege = null; view = backStack.pop() || (view === "buddy" ? "settings" : "today"); history.replaceState(null, "", "#" + view); render(); scrollTo(0, 0); return; }
   if (d.delMat) { deleteMaterial(d.delMat); return; }
   if ("themeSet" in d) { change(() => { look().theme = d.themeSet; }); applyLook(); return; }
   if (d.accentSet) { change(() => { look().accent = d.accentSet; }); applyLook(); return; }
@@ -1557,6 +1712,13 @@ document.addEventListener("click", e => {
   switch (d.act) {
     case "new-task": taskDialog(null, { at: d.at }); return;
     case "import": importDialog(); return;
+    case "ege-any": egeStart(); return;
+    case "ege-again": egeStart(ege?.subject); return;
+    case "ege-next": egeNext(); return;
+    case "ege-dunno": ege.given = ""; egeGrade(false); return;
+    case "ege-self-yes": egeGrade(true); return;
+    case "ege-self-no": egeGrade(false); return;
+    case "ege-stop": if (ege.results.length) { ege.phase = "done"; render(); } else { ege = null; view = backStack.pop() || "today"; history.replaceState(null, "", "#" + view); render(); } return;
     case "set-name": nameDialog(); return;
     case "set-pass": passDialog(); return;
     case "set-subj": subjDialog(); return;
@@ -1612,6 +1774,7 @@ document.addEventListener("submit", async e => {
     change(() => { titles.forEach(t => C.addTopic(S, t, subj, n.today)); say("assistant", `Добавила ${titles.length} ${word(titles.length, "тему", "темы", "тем")} на повторение 📚 Первое — завтра.`); });
     return;
   }
+  if (e.target.matches("[data-ege-form]")) { e.preventDefault(); const v = (document.getElementById("ege-in")?.value || "").trim(); const c = ege.cards[ege.i]; if (!v && c.kind !== "open") return; egeAnswer(v); return; }
   if (e.target.matches("[data-quiz]")) {
     const input = e.target.querySelector("input"); const text = input.value.trim(); if (!text || !quiz || quiz.phase !== "ask") return;
     answerQuiz(text); return;
@@ -1646,7 +1809,7 @@ document.addEventListener("submit", async e => {
 });
 function planKeys(plan) { const k = new Set(); for (const d of plan) for (const b of d.blocks) if (b.type !== "done") k.add(`${d.date}|${b.type}|${b.ref}|${b.start}`); return k; }
 addEventListener("hashchange", () => { const v = location.hash.slice(1); if (VIEWS.some(x => x[0] === v) || v === "session" || v === "day") { view = v; if (S) render(); } });
-setInterval(() => { if (S && !quiz && !document.hidden && !dlg.open && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) render(); }, 60000);
+setInterval(() => { if (S && !quiz && view !== "ege" && !document.hidden && !dlg.open && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) render(); }, 60000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && S && !thinking && !quiz && !dlg.open) load(); });
 // ---------- переезд на новый адрес ----------
 function showMoved(to) {
