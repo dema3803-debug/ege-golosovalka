@@ -34,6 +34,14 @@ export default async function handler(req, res) {
   const ok = await redis("HSETNX", "users", email, JSON.stringify({ u, salt, hash, created: mskToday(), consentAt: new Date().toISOString() }));
   if (Number(ok) !== 1) return res.status(409).json({ error: "Эта почта уже зарегистрирована - нажми «Войти»." });
   try { await redis("HSET", "plans", "signup-" + u, JSON.stringify({ ...b.form, sentAt: Date.now(), via: "signup" })); } catch {}
+  // пришёл по приглашению друга: обоим наряд «Сердечко дружбы»
+  try {
+    const code = String(b.ref || "").toLowerCase();
+    if (/^[a-z0-9]{6}$/.test(code)) {
+      const inviter = await redis("GET", "ref:" + code);
+      if (inviter && inviter !== u) { await redis("HSET", "invited", u, inviter); await redis("HINCRBY", "refs", inviter, 1); }
+    }
+  } catch {}
   await markSeen(u);
   res.status(200).json({ ok: true, u });
 }

@@ -359,7 +359,7 @@ async function signup(){
   const readable={...F, choices:Object.fromEntries(Object.entries(F.choices).map(([k,v])=>[k,v.map(i=>CHOICE[k].o[i])])),
     lessons:F.lessons.map(l=>({...l,days:l.days.map(d=>DAYS[d])})), free:F.free.map((f,i)=>({day:DAYS[i],...f}))};
   try{
-    const r=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({form:readable,email,password,consent,gender})});
+    const r=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({form:readable,email,password,consent,gender,ref:(()=>{try{const r=new URLSearchParams(location.search).get("ref");if(r)localStorage.setItem("kozya-ref",r);return r||localStorage.getItem("kozya-ref")||""}catch{return ""}})()})});
     const j=await r.json().catch(()=>({}));
     if(!r.ok||!j.u){flash(j.error||"Не получилось. Попробуй ещё раз - ответы не потеряются.")}
     else{try{localStorage.setItem("ege-u",j.u);localStorage.removeItem("ege-plan-draft")}catch(e){} location.replace("/app?u="+j.u+"&new=1"); return}
