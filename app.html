@@ -85,7 +85,7 @@ h3{font-size:14px;font-weight:600;margin:0}
 .herohead{display:flex;justify-content:space-between;align-items:center}
 .herohead b{font-size:17px;font-weight:800}
 .mood{font-size:13px;font-weight:700;color:#5A2A3D;background:#FFFFFF;border-radius:999px;padding:4px 10px}
-.bubble{align-self:center;background:#FFFFFF;border-radius:18px;padding:10px 14px;font-size:15px;font-weight:700;text-align:center;max-width:290px;line-height:1.35}
+.bubble{transition:opacity .2s,transform .2s;align-self:center;background:#FFFFFF;border-radius:18px;padding:10px 14px;font-size:15px;font-weight:700;text-align:center;max-width:290px;line-height:1.35}
 .mascot{display:flex;justify-content:center}
 /* Козя живая: дышит, моргает, шевелит ушами, машет лапкой */
 .kz *{transform-box:view-box}
@@ -97,6 +97,14 @@ h3{font-size:14px;font-weight:600;margin:0}
 .kz .kzpaw{transform-origin:140px 142px;animation:kzwave 6s ease-in-out infinite var(--kd,0s)}
 .kz .kzz{animation:kzz 3s ease-in-out infinite}
 .kz-focus .kzb{animation-duration:4.2s}
+.kzpoke{cursor:pointer}
+.bubble.kzswap{opacity:0;transform:translateY(4px) scale(.97)}
+.kz.kzhop{animation:kzhop .6s cubic-bezier(.3,1.6,.5,1)}
+.kz.kzspin{animation:kzspin .9s ease-in-out}
+.kz.kzsquish{animation:kzsquish .45s ease}
+@keyframes kzhop{0%,100%{transform:translateY(0)}40%{transform:translateY(-18px) rotate(-4deg)}70%{transform:translateY(0) scale(1.06,.94)}}
+@keyframes kzspin{0%{transform:rotate(0)}60%{transform:rotate(380deg) scale(1.05)}100%{transform:rotate(360deg)}}
+@keyframes kzsquish{0%,100%{transform:scale(1)}40%{transform:scale(1.12,.86)}70%{transform:scale(.95,1.06)}}
 @keyframes kzbreath{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-2.5px) scale(1.015,.985)}}
 @keyframes kzshadow{0%,100%{transform:scaleX(1);opacity:1}50%{transform:scaleX(.94);opacity:.8}}
 @keyframes kzblink{0%,90%,96%,100%{transform:scaleY(1)}93%{transform:scaleY(.08)}}
@@ -862,7 +870,7 @@ function renderToday(d, n) {
   else if (totalN) { say1 = "Всё на сегодня сделано! Ты {умница|молодец}."; moodLabel = "гордится"; }
   else say1 = "Задач пока нет. Напиши мне, что нужно сделать, - разложу по времени.";
   h += `<div class="hero"><div class="herohead"><b>Козя</b><span class="mood">${moodLabel}</span></div>
-    <div class="bubble">${esc(say1)}</div><div class="mascot">${mascot(mood)}</div>
+    <div class="bubble" id="kzsay">${esc(say1)}</div><div class="mascot kzpoke" data-mood="${mood}" role="button" tabindex="0" aria-label="Погладить ${esc(helperName())}">${mascot(mood)}</div>
     <div class="stats"><div class="stat"><span>Сегодня</span><b>${doneN} из ${totalN}</b></div>
     ${egeIndex && egeSubjects().length ? `<button class="stat statbtn" data-act="ege-any" type="button"><span>Тренажёр ЕГЭ</span><b>10 карточек</b><i>Проверь меня →</i></button>` : `<button class="stat statbtn" data-act="quiz-any" type="button"><span>Закрепить</span><b>${dueTopics ? `${dueTopics} ${word(dueTopics, "тема", "темы", "тем")}` : "5 вопросов"}</b><i>Проверь меня →</i></button>`}</div></div>`;
   if (session) h += `<div class="minibar"><span>${session.phase === "work" ? esc(session.title) : "Перерыв"} · <span class="tm" id="mini-time">${fmt(leftMs())}</span></span><button class="btn sm" data-view="session" type="button">Открыть</button></div>`;
@@ -1651,6 +1659,55 @@ function warnHTML(d, full) {
   return [...groups.values()].map(g => `<div class="warnbox warnrow"><span>Не влезает до срока: <b>${esc(g.title)}</b>${full ? ` (${g.count} × ${S.sessionMin} мин)` : ""}${g.refs.length > 1 ? ` - таких задач ${g.refs.length}` : ""}. Сдвинь срок или освободи время.</span>
     <span class="row"><button class="btn sm" data-edit-task="${g.refs[0]}" type="button">Изменить</button><button class="stx" data-warn-hide="${d.date}|${g.refs.join(",")}" type="button" aria-label="Скрыть">✕</button></span></div>`).join("");
 }
+
+// ---------- Козя болтает: фразы иногда сама и реакция на нажатие ----------
+const KZ_IDLE = [
+  "Я в тебя верю! 💪", "Маленький шаг каждый день лучше большого рывка раз в неделю.", "Попей воды, мозгу это нужно 💧",
+  "Повторение через 1, 3 и 7 дней - и тема остаётся в голове надолго.", "Ошибки в тренажёре - это хорошо: так я понимаю, что повторить.",
+  "Ме-е-е! Это я так здороваюсь 🐐", "Если сил нет - нажми «Сил нет», я не обижусь.", "Козы лазают по скалам. А ты справишься с ЕГЭ 😎",
+  "После 25 минут - перерыв. Так мозг лучше запоминает.", "Напиши мне, что задали, а я раскидаю по дням.", "Рада тебя видеть! 🌸",
+  "Хочешь проверить себя? Жми «Проверь меня» в тренажёре.", "Сон тоже часть подготовки. Не засиживайся допоздна 😴",
+  "Разомни шею и плечи, пока читаешь это 🙆", "Сначала самое неприятное, потом всё пойдёт легче.", "Ты уже {сделала|сделал} больше, чем думаешь ✨"];
+const KZ_POKE = ["Ой, щекотно! 😆", "Ме-е!", "Хи-хи 🙈", "Эй, я тут работаю 😤", "Ещё разок - и я чихну 🤧", "Мур... ой, я же коза 🐐", "Обнимашки! 🤗", "Ты меня {погладила|погладил}? Приятно 💗", "Бодаться не буду, честно 🙃"];
+let kzTaps = [], kzLast = "", kzBusy = 0;
+function kzContext() {
+  const n = now(), out = [], h = Math.floor(n.min / 60);
+  const cur = streakDays(n.today);
+  if (cur >= 2) out.push(`Серия ${cur} ${word(cur, "день", "дня", "дней")} подряд! Не отпускай 🔥`);
+  if (h < 11) out.push("Доброе утро! Начнём с самого лёгкого?");
+  else if (h >= 22) out.push("Уже поздно. Отдохни, завтра продолжим 🌙");
+  const left = todayBlocks.filter(b => b.type === "task" || b.type === "habit").length;
+  if (left) out.push(`Осталось ${left} ${word(left, "дело", "дела", "дел")} на сегодня. По одному - и {свободна|свободен}!`);
+  return out;
+}
+function kzSay(text) {
+  const b = document.getElementById("kzsay"); if (!b) return;
+  b.classList.add("kzswap");
+  setTimeout(() => { b.textContent = gx(text); b.classList.remove("kzswap"); }, 200);
+}
+function kzPick(list) { let t; for (let i = 0; i < 5; i++) { t = list[Math.floor(Math.random() * list.length)]; if (t !== kzLast) break; } kzLast = t; return t; }
+function kzAnim(svg, cls) { if (!svg) return; svg.classList.remove("kzhop", "kzspin", "kzsquish"); void svg.getBoundingClientRect(); svg.classList.add(cls); setTimeout(() => svg.classList.remove(cls), 1000); }
+function kzPoke(el) {
+  const t = Date.now(); kzTaps = kzTaps.filter(x => t - x < 2500); kzTaps.push(t);
+  const svg = el.querySelector("svg");
+  if (el.dataset.mood === "rest") { kzAnim(svg, "kzsquish"); kzSay(kzPick(["Хр-р... ой, я сплю 😴", "Ещё пять минуточек...", "Тс-с, у нас отдых 🌙"])); return; }
+  if (el.dataset.mood === "focus") { kzAnim(svg, "kzsquish"); kzSay(kzPick(["Тс-с, мы занимаемся 📖", "Не отвлекай, я читаю 🤓"])); return; }
+  if (t < kzBusy) return;
+  if (kzTaps.length >= 5) { kzTaps = []; kzBusy = t + 1600; kzAnim(svg, "kzspin"); kzSay("Всё, закружили меня 😵‍💫"); return; }
+  kzAnim(svg, Math.random() < 0.7 ? "kzhop" : "kzsquish");
+  kzSay(kzPick(Math.random() < 0.6 ? KZ_POKE : [...KZ_IDLE, ...kzContext()]));
+}
+document.addEventListener("click", e => { const m = e.target.closest(".kzpoke"); if (m) kzPoke(m); });
+document.addEventListener("keydown", e => { const m = e.target.closest?.(".kzpoke"); if (m && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); kzPoke(m); } });
+// сама иногда что-то говорит, пока открыт главный экран
+setInterval(() => {
+  if (!S || view !== "today" || document.hidden || tourI >= 0 || dlg.open || session) return;
+  const m = document.querySelector(".kzpoke"); if (!m || m.dataset.mood !== "happy" || Math.random() < 0.4) return;
+  const ctx = kzContext();
+  kzSay(kzPick(ctx.length && Math.random() < 0.4 ? ctx : KZ_IDLE));
+  kzAnim(m.querySelector("svg"), "kzhop");
+}, 25000);
+
 function genderAsk() {
   return `<div class="card genderask"><b>Как к тебе обращаться?</b><span class="small muted">Чтобы я писала «ты сделала» или «ты сделал».</span>
     <div class="row"><button class="btn" data-gender-set="f" type="button">В женском роде</button><button class="btn" data-gender-set="m" type="button">В мужском роде</button></div></div>`;
