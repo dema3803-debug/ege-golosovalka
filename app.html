@@ -1038,8 +1038,9 @@ async function runImport() {
     if (images.length || text) {
       show(images.length ? "Читаю скриншоты — это до минуты…" : "Разбираю расписание…");
       let r;
-      try { r = await fetch("/api/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, text, images }) }); }
-      catch { throw new Error("Не получилось отправить расписание — проверь интернет. Если скриншотов много, попробуй по одному."); }
+      const send = () => fetch("/api/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, text, images }) });
+      try { r = await send(); } catch { try { await new Promise(res => setTimeout(res, 1500)); r = await send(); } catch { r = null; } }
+      if (!r) throw new Error("Не получилось отправить расписание — проверь интернет и не сворачивай приложение, пока идёт отправка. Если скриншотов много, попробуй по одному.");
       const s0 = await r.json().catch(() => ({}));
       if (!r.ok || !s0.job) throw new Error(s0.error || "Не получилось разобрать расписание.");
       show("Козя читает расписание — это до минуты. Можно не ждать на этом экране.");
@@ -1063,10 +1064,10 @@ function shrinkImage(file) {
   return new Promise((resolve, reject) => {
     const img = new Image(), url = URL.createObjectURL(file);
     img.onload = () => {
-      const k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      const k = Math.min(1, 1400 / Math.max(img.width, img.height)), c = document.createElement("canvas");
       c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
       c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
-      resolve(c.toDataURL("image/jpeg", 0.85));
+      resolve(c.toDataURL("image/jpeg", 0.8));
     };
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Не открылась картинка " + file.name)); };
     img.src = url;

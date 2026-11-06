@@ -31,7 +31,7 @@ function readBody(req, limit = 1_000_000) {
     let size = 0; const chunks = [];
     req.on("data", c => { size += c.length; if (size > limit) { reject(new Error("too big")); req.destroy(); } else chunks.push(c); });
     req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
-    req.on("error", reject);
+    req.on("error", e => { console.error(`${req.url.split("?")[0]}: загрузка оборвалась на ${size} байтах (${e.message})`); reject(Object.assign(e, { logged: true })); });
   });
 }
 
@@ -77,7 +77,7 @@ const server = http.createServer(async (req, res) => {
     if (PUBLIC.has(rel) || /^icons\/[a-z0-9-]+\.png$/.test(rel)) return sendFile(res, rel);
     res.status(404).setHeader("Content-Type", "text/plain; charset=utf-8"); res.end("Не найдено");
   } catch (e) {
-    console.error(e);
+    if (!e.logged) console.error(e);
     if (!res.headersSent) res.status(500).json({ error: "Ошибка сервера" }); else res.end();
   }
 });
