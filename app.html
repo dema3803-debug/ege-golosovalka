@@ -1852,7 +1852,7 @@ async function shareImportAsk() {
   try { const r = await fetch("/api/share?id=" + encodeURIComponent(id)); set = await r.json(); if (!r.ok) throw new Error(set.error); }
   catch (e) { flash(e.message || "Не получилось открыть набор карточек."); return; }
   const n = set.cards.length;
-  openDialog(ki("books") + " Набор карточек", `<p style="margin:0">«<b>${esc(set.title)}</b>»${set.subject ? ` · ${esc(set.subject)}` : ""} · ${n} ${word(n, "карточка", "карточки", "карточек")}${set.by ? `<br><span class="small muted">Поделился(ась): ${esc(set.by)}</span>` : ""}</p>
+  openDialog(ki("books") + " Набор карточек", `<p style="margin:0">«<b>${esc(set.title)}</b>»${set.subject ? ` · ${esc(set.subject)}` : ""} · ${n} ${word(n, "карточка", "карточки", "карточек")}${set.by ? `<br><span class="small muted">${set.byG === "m" ? "Поделился" : set.byG === "f" ? "Поделилась" : "Поделился(ась)"}: ${esc(set.by)}</span>` : ""}</p>
     <div class="cardlist">${set.cards.slice(0, 5).map(c => `<div class="kc"><b>${esc(c.q)}</b><span>${esc(c.a)}</span></div>`).join("")}${n > 5 ? `<p class="small muted" style="margin:0">и ещё ${n - 5}</p>` : ""}</div>`, {
     submitLabel: "Добавить себе",
     submit: () => {

@@ -34,7 +34,7 @@ export default async function handler(req, res) {
   if (!cards.length) return res.status(400).json({ error: "В теме нет карточек - сначала добавь хотя бы одну." });
   if (await overLimit(`lim:share:${b.u}`, 30, 86400)) return res.status(429).json({ error: "Слишком много ссылок за день, попробуй завтра." });
   const id = crypto.randomBytes(8).toString("base64").replace(/[^a-z0-9]/gi, "").toLowerCase().padEnd(8, "x").slice(0, 8);
-  const set = { title: clip(t.title, 80), subject: clip(t.subject, 40), by: clip(s.name, 40), cards, created: new Date().toISOString() };
+  const set = { title: clip(t.title, 80), subject: clip(t.subject, 40), by: clip(s.name, 40), byG: s.gender === "m" || s.gender === "f" ? s.gender : undefined, cards, created: new Date().toISOString() };
   await redis("SET", "share:" + id, JSON.stringify(set), "EX", YEAR);
   await redis("HINCRBY", "share:made", b.u, 1);
   await redis("SADD", "shares:" + b.u, id); // чтобы удалить при удалении аккаунта
