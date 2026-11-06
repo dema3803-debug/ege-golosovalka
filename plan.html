@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>План подготовки ЕГЭ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap">
@@ -163,6 +163,13 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;bor
 .submit{font-family:var(--body);font-weight:800;font-size:17px;border-radius:20px;background:var(--btn);color:var(--btn-ink)}
 .done{background:var(--accent-soft)}
 a{color:var(--accent)}
+
+/* как приложение: без увеличения при вводе и двойном тапе, без серой подсветки нажатий и выделения кнопок */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior-y:none}
+body{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+input,select,textarea{font-size:max(16px,1em)!important}
+button,.nav,.toptabs,.setrow,.tglrow,summary,label{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+img,svg{-webkit-user-drag:none;-webkit-touch-callout:none}
 </style>
 </head>
 <body>

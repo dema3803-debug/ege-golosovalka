@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#FBEFF3">
 <script>try{const l=JSON.parse(localStorage.getItem("ege-look")||"{}");if(l.theme)document.documentElement.dataset.theme=l.theme;if(l.accent&&l.accent!=="pink")document.documentElement.dataset.accent=l.accent}catch(e){}</script>
 <title>Козя - мой план ЕГЭ</title>
@@ -401,6 +401,13 @@ i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
 .genderask{gap:8px;border:2px solid var(--accent-line)}
 .movedays{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.movedays .btn{justify-content:center}
 .egerep{align-self:center;font-size:13px}
+
+/* как приложение: без увеличения при вводе и двойном тапе, без серой подсветки нажатий и выделения кнопок */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior-y:none}
+body{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+input,select,textarea{font-size:max(16px,1em)!important}
+button,.nav,.toptabs,.setrow,.tglrow,summary,label{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+img,svg{-webkit-user-drag:none;-webkit-touch-callout:none}
 </style>
 </head>
 <body>
