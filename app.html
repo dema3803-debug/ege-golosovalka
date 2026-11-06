@@ -106,10 +106,11 @@ h3{font-size:14px;font-weight:600;margin:0}
 @keyframes kzhop{0%,100%{transform:translateY(0)}40%{transform:translateY(-18px) rotate(-4deg)}70%{transform:translateY(0) scale(1.06,.94)}}
 @keyframes kzspin{0%{transform:rotate(0)}60%{transform:rotate(380deg) scale(1.05)}100%{transform:rotate(360deg)}}
 @keyframes kzsquish{0%,100%{transform:scale(1)}40%{transform:scale(1.12,.86)}70%{transform:scale(.95,1.06)}}
-#walker{position:absolute;bottom:calc(100% - 9px);left:0;width:46px;height:46px;z-index:2;transition:left var(--wt,0s) linear;-webkit-tap-highlight-color:transparent;cursor:pointer}
+#walker{position:absolute;top:0;left:0;width:40px;height:40px;z-index:2;transition:left var(--wt,0s) linear;-webkit-tap-highlight-color:transparent;cursor:pointer}
 #walker .wflip{width:100%;height:100%;transition:transform .15s}
 #walker.left .wflip{transform:scaleX(-1)}
-#walker svg{width:46px;height:46px;display:block;overflow:visible}
+#walker svg{width:40px;height:40px;display:block;overflow:visible}
+body.walkon .nav{padding-top:24px}
 #walker.walking .wflip>svg{animation:wstep .32s ease-in-out infinite}
 #walker.walking .kzb,#walker.walking .kzshadow{animation:none}
 #walker .wsay{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:var(--surface);color:var(--ink);font-size:12px;font-weight:700;white-space:nowrap;padding:5px 9px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.15);opacity:0;pointer-events:none;transition:opacity .2s}
@@ -1025,7 +1026,7 @@ function renderWeek(plan) {
     else {
       body = d.notes.map(nt => `<button class="wb lesson" style="--c:${color(nt.subject)}" data-edit-lesson="${nt.id}" type="button"><span class="tm">время?</span><span>${esc(nt.title)}</span></button>`).join("");
       body += items.map(b => {
-        const attr = b.type === "task" ? `data-edit-task="${b.ref}"` : b.type === "lesson" && !String(b.ref).startsWith("x") ? `data-edit-lesson="${b.ref}"` : b.type === "lesson" ? `data-edit-event="${b.ref}"` : b.type === "review" ? `data-view="topics"` : "";
+        const attr = b.type === "task" ? `data-edit-task="${b.ref}"` : b.type === "habit" ? `data-edit-habit="${b.ref}"` : b.type === "lesson" && !String(b.ref).startsWith("x") ? `data-edit-lesson="${b.ref}"` : b.type === "lesson" ? `data-edit-event="${b.ref}"` : b.type === "review" ? `data-view="topics"` : "";
         return `<button class="wb ${b.type}" style="--c:${color(b.subject)}" ${attr} type="button"><span class="tm">${C.toHHMM(b.start)}–${C.toHHMM(b.end)}</span><span class="dot"></span><span>${esc(b.title)}${b.count > 1 ? ` <span class="muted">· ${b.count}×${S.sessionMin}</span>` : ""}${b.type === "review" ? ' <span class="muted">· повторение</span>' : ""}</span></button>`;
       }).join("");
       if (!items.length && !d.notes.length) body += `<p class="empty">Свободный день</p>`;
@@ -1099,9 +1100,10 @@ function renderSetup() {
   const lessons = S.lessons.map(l => `<div class="li"><div><button class="t" data-edit-lesson="${l.id}" type="button">${esc(l.title)}</button><div class="meta">${l.days.map(d => C.DAYS[d]).join(", ") || "дни не выбраны"} · ${l.from && l.to ? `${l.from}–${l.to}` : "время не указано"}</div></div><button class="iconbtn" data-edit-lesson="${l.id}" type="button" aria-label="Изменить">${icon("i-edit")}</button></div>`).join("");
   const n = now();
   const events = S.extraLessons.filter(e => e.date >= n.today).sort((a, b) => (a.date + a.from).localeCompare(b.date + b.from)).map(e => `<div class="li"><div><button class="t" data-edit-event="${e.id}" type="button">${esc(e.title)}</button><div class="meta">${C.humanDate(e.date)} · ${e.from}–${e.to}</div></div><button class="iconbtn" data-edit-event="${e.id}" type="button" aria-label="Изменить">${icon("i-edit")}</button></div>`).join("");
-  const habit = S.habits[0];
+  const habit = S.habits.find(h => h.title === "Школьные задания" && h.subject === "Школа");
   return `<div class="card"><div class="cardhead"><h2>Расписание онлайн-школы</h2></div><p class="small muted" style="margin:0">Умскул, Вебиум, 100балльный, репетитор - скинь скриншот или текст расписания, и Козя сама разложит вебинары и дедлайны по плану.</p><button class="btn primary" data-act="import" type="button" style="justify-content:center">${icon("i-plus")}Загрузить расписание</button></div>
   <div class="card"><div class="cardhead"><h2>Занятия по расписанию</h2><button class="btn sm" data-act="new-lesson" type="button">${icon("i-plus")}Добавить</button></div>${lessons ? `<div class="list">${lessons}</div>` : `<p class="empty">Нет регулярных занятий.</p>`}</div>
+  <div class="card"><div class="cardhead"><h2>Повторяющиеся дела</h2><button class="btn sm" data-act="new-habit" type="button">${icon("i-plus")}Добавить</button></div><p class="small muted" style="margin:0">Домашка или привычка, которая бывает каждую неделю в одни и те же дни.</p>${S.habits.length ? `<div class="list">${S.habits.map(h => `<div class="li"><div><button class="t" data-edit-habit="${h.id}" type="button">🔁 ${esc(h.title)}</button><div class="meta">${esc([h.subject, h.days.map(d => C.DAYS[d]).join(", ") || "дни не выбраны", `${h.sessions || 1} × ${S.sessionMin} мин`].filter(Boolean).join(" · "))}</div></div><button class="iconbtn" data-edit-habit="${h.id}" type="button" aria-label="Изменить">${icon("i-edit")}</button></div>`).join("")}</div>` : ""}</div>
   <div class="card"><div class="cardhead"><h2>Разовые события</h2><button class="btn sm" data-act="new-event" type="button">${icon("i-plus")}Добавить</button></div><p class="small muted" style="margin:0">Зачёт, пробник, кружок, поездка - то, что бывает один раз.</p>${events ? `<div class="list">${events}</div>` : ""}</div>
   <div class="card"><h2>Свободное время по дням</h2><p class="small muted" style="margin:0">Когда можно заниматься самой. Занятия вычитаются автоматически.</p>
     <div style="display:flex;flex-direction:column;gap:8px">${S.free.map((f, i) => `<div class="week-free"><b class="small">${C.DAYS[i]}</b><input type="time" id="free-from-${i}" data-free="${i}" data-k="from" value="${esc(f.from)}" aria-label="${C.DAYS[i]}, с" ${f.off ? "disabled" : ""}><input type="time" id="free-to-${i}" data-free="${i}" data-k="to" value="${esc(f.to)}" aria-label="${C.DAYS[i]}, до" ${f.off ? "disabled" : ""}><label><input type="checkbox" id="free-off-${i}" data-free="${i}" data-k="off" ${f.off ? "checked" : ""}> выходной</label></div>`).join("")}</div></div>
@@ -1129,6 +1131,7 @@ dlgform.addEventListener("submit", e => {
   if (v === "ok" && dlgSubmit) { if (dlgSubmit() === false) { e.preventDefault(); return; } }
 });
 dlgform.addEventListener("click", e => {
+  if (e.target.id === "f-to-habit") { const title = val("f-title"), subject = val("f-subj"); dlg.close(); setTimeout(() => habitDialog(null, { title, subject }), 0); return; }
   const b = e.target.closest("[data-dlg]"); if (b) { dlgAct[b.dataset.dlg].run(); dlg.close(); return; }
   const d = e.target.closest(".daybtn"); if (d) d.setAttribute("aria-pressed", d.getAttribute("aria-pressed") !== "true");
 });
@@ -1161,7 +1164,7 @@ function taskDialog(t, preset = {}) {
     <div class="grid2"><label class="field"><span>Срок (необязательно)</span><input type="date" id="f-due" value="${esc(t.due || "")}"></label>
       <label class="field"><span>До скольки</span><input type="time" id="f-duetime" value="${esc(t.dueTime || "")}"></label></div>
     <div class="field"><span>Когда делать (необязательно) - день, время можно не указывать</span><div class="grid2"><input type="date" id="f-pindate" aria-label="День" value="${esc(t.pin?.date || t.on || "")}"><input type="time" id="f-pinfrom" aria-label="Начало" value="${esc(t.pin?.from || "")}"></div></div>
-    ${!isNew ? `<div class="small muted">Сделано ${t.done} из ${t.sessions}</div>` : ""}${isNew ? "" : matsHTML({ t: "task", id: t.id })}`, {
+    ${!isNew ? `<div class="small muted">Сделано ${t.done} из ${t.sessions}</div>` : `<button class="btn sm" type="button" id="f-to-habit" style="align-self:flex-start">🔁 Это повторяется каждую неделю</button>`}${isNew ? "" : matsHTML({ t: "task", id: t.id })}`, {
     submit: () => {
       const title = val("f-title"); if (!title) return false;
       const sessions = Math.max(1, Math.min(20, parseInt(val("f-sess")) || 1));
@@ -1652,8 +1655,8 @@ addEventListener("resize", () => { if (tourI >= 0) tourShow(); });
 let tourRaf = 0;
 addEventListener("scroll", () => { if (tourI < 0 || tourRaf) return; tourRaf = requestAnimationFrame(() => { tourRaf = 0; tourPlace(); }); }, { passive: true });
 function afterRender(v) {
-  document.documentElement.style.setProperty("--dockh", ($("#dock").hidden ? 0 : $("#dock").offsetHeight) + "px");
   wkUpdate();
+  document.documentElement.style.setProperty("--dockh", ($("#dock").hidden ? 0 : $("#dock").offsetHeight) + "px");
   const tips = S.tips || {}, busy = tourI >= 0 || dlg.open || !S.gender;
   if (v === "today" && !tips.tour && !session && !busy && !(S.tired[now().today] && !S.tired[now().today].rest)) { setTimeout(() => { if (view === "today" && tourI < 0 && !dlg.open) tourStart(); }, 500); }
   const tip = $("#tip"), txt = tips.tour && !tips.off && !busy && TIPS[v] && !tips[v] ? TIPS[v] : "";
@@ -1747,7 +1750,7 @@ function wkTargetX() {
   const dock = $("#dock"), a = document.querySelector('#nav [aria-current="page"]') || document.querySelector("#nav button");
   if (!a) return 20;
   const dr = dock.getBoundingClientRect(), r = a.getBoundingClientRect();
-  return Math.round(r.left - dr.left + r.width / 2 - 23);
+  return Math.round(r.left - dr.left + r.width / 2 - 20);
 }
 function wkMove(x) {
   const w = wkEl(); if (!w) return;
@@ -1763,8 +1766,10 @@ function wkUpdate() {
   const w = wkEl(); if (!w || !S) return;
   const on = S.look?.walker !== false && !$("#dock").hidden && innerWidth < 1000;
   w.hidden = !on;
-  document.documentElement.style.setProperty("--walkh", on ? "30px" : "0px");
+  document.documentElement.style.setProperty("--walkh", on ? "16px" : "0px");
+  document.body.classList.toggle("walkon", on);
   if (!on) return;
+  w.style.top = ($("#nav").offsetTop - 16) + "px";
   const rest = S.tired?.[now().today]?.rest;
   const key = [S.look?.char, S.look?.outfit, rest ? "r" : "h"].join("|");
   if (key !== WK.key) { WK.key = key; w.querySelector(".wflip").innerHTML = mascot(rest ? "rest" : "happy", helperName()); }
@@ -1773,8 +1778,8 @@ function wkUpdate() {
 function wkSay(t) {
   const b = wkEl()?.querySelector(".wsay"); if (!b) return;
   b.textContent = gx(t);
-  const W = $("#dock").getBoundingClientRect().width, bw = b.offsetWidth, cx = (WK.x || 0) + 23;
-  b.style.left = Math.max(8 - (WK.x || 0), Math.min(W - 8 - bw - (WK.x || 0), 23 - bw / 2)) + "px"; b.style.transform = "none";
+  const W = $("#dock").getBoundingClientRect().width, bw = b.offsetWidth;
+  b.style.left = Math.max(8 - (WK.x || 0), Math.min(W - 8 - bw - (WK.x || 0), 20 - bw / 2)) + "px"; b.style.transform = "none";
   b.classList.add("on");
   clearTimeout(WK.sayT); WK.sayT = setTimeout(() => b.classList.remove("on"), 2200);
 }
@@ -1932,6 +1937,33 @@ function renderGame() {
     <div class="egebar"><i id="game-bar" style="width:${left / g.len * 100}%"></i></div>
     <div class="card egecard"><p class="egeq">${esc(g.cur.c.q)}</p>
     <div class="speedopts">${g.cur.opts.map((o, k) => `<button type="button" class="sopt${g.last ? (k === g.last.right ? " ok" : k === g.last.k ? " bad" : "") : ""}" data-speed-opt="${k}">${esc(clipTxt(o, 90))}</button>`).join("")}</div></div>`;
+}
+
+
+// ---------- повторяющиеся дела (каждую неделю в одни и те же дни) ----------
+function habitDialog(h, preset = {}) {
+  const isNew = !h;
+  h ||= { title: preset.title || "", subject: preset.subject || S.subjects[0]?.name || "", days: [], sessions: 1 };
+  openDialog(isNew ? "🔁 Повторяющееся дело" : "🔁 " + esc(h.title), `
+    <label class="field"><span>Что делать</span><input type="text" id="f-title" required maxlength="100" value="${esc(h.title)}" placeholder="ДЗ по русскому, словарные слова"></label>
+    <div class="field"><span>В какие дни недели</span><div class="days">${C.DAYS.map((d, i) => `<button type="button" class="daybtn" data-d="${i}" aria-pressed="${h.days.includes(i)}">${d}</button>`).join("")}</div></div>
+    <div class="grid2"><label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(h.subject)}</select></label>
+      <label class="field"><span>Сколько сессий по ${S.sessionMin} мин</span><input type="number" id="f-sess" min="1" max="6" value="${h.sessions || 1}"></label></div>
+    <p class="small muted" style="margin:0">Козя будет ставить это в план каждую неделю в выбранные дни, в свободное время.</p>`, {
+    submit: () => {
+      const title = val("f-title"); if (!title) return false;
+      const days = [...dlgform.querySelectorAll(".daybtn[aria-pressed=true]")].map(b => +b.dataset.d);
+      if (!days.length) { const dd = dlgform.querySelector(".days"); dd.style.outline = "2px solid var(--warn)"; dd.style.borderRadius = "10px"; dd.previousElementSibling.textContent = "Выбери хотя бы один день недели"; return false; }
+      const sessions = Math.max(1, Math.min(6, parseInt(val("f-sess")) || 1));
+      change(() => {
+        const target = isNew ? { id: C.uid("h") } : S.habits.find(x => x.id === h.id);
+        Object.assign(target, { title, subject: val("f-subj"), days, sessions });
+        if (isNew) S.habits.push(target);
+      });
+      flash(`Готово: «${title}» каждую неделю - ${days.map(d => C.DAYS[d]).join(", ")}`);
+    },
+    actions: isNew ? {} : { del: { label: "Удалить", cls: "danger", run: () => change(() => { S.habits = S.habits.filter(x => x.id !== h.id); }) } },
+  });
 }
 
 function genderAsk() {
@@ -2233,11 +2265,13 @@ document.addEventListener("click", e => {
   if (d.addCards !== undefined) { addCardsDialog(d.addCards || null); return; }
   if (d.genCards) { genCards(d.genCards); return; }
   if (d.shareTopic) { shareTopic(d.shareTopic); return; }
+  if (d.editHabit) { const h = S.habits.find(x => x.id === d.editHabit); if (h) habitDialog(h); return; }
   if ("playTopic" in d) { gameChoose(d.playTopic); return; }
   if (d.pairTile !== undefined) { pairsTap(+d.pairTile); return; }
   if (d.speedOpt !== undefined) { speedAnswer(+d.speedOpt); return; }
   if (d.quizTopic) { startQuiz({ topicId: d.quizTopic, n: 5, mode: "topic" }); return; }
   switch (d.act) {
+    case "new-habit": habitDialog(null); return;
     case "game-again": gameStart(game?.topicId ?? "", game?.mode || "pairs"); return;
     case "game-other": gameStart(game?.topicId ?? "", game?.mode === "pairs" ? "speed" : "pairs"); return;
     case "walker-toggle": change(() => { look().walker = look().walker === false; }); return;
@@ -2295,7 +2329,7 @@ document.addEventListener("change", e => {
   const el = e.target, d = el.dataset;
   if (d.free !== undefined) { change(() => { const f = S.free[+d.free]; if (d.k === "off") f.off = el.checked; else f[d.k] = el.value; }); return; }
   if (d.set) { change(() => { S[d.set] = +el.value; }); return; }
-  if (el.id === "set-habit") { change(() => { S.habits = el.checked ? [{ id: C.uid("h"), title: "Школьные задания", subject: "Школа", days: [0, 1, 2, 3, 4], sessions: 1 }] : []; }); }
+  if (el.id === "set-habit") { change(() => { S.habits = S.habits.filter(h => !(h.title === "Школьные задания" && h.subject === "Школа")); if (el.checked) S.habits.unshift({ id: C.uid("h"), title: "Школьные задания", subject: "Школа", days: [0, 1, 2, 3, 4], sessions: 1 }); }); }
 });
 document.addEventListener("submit", async e => {
   if (!S || e.target.closest("dialog")) return;
