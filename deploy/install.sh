@@ -52,7 +52,7 @@ Wants=network-online.target
 User=kozya
 WorkingDirectory=$DIR
 EnvironmentFile=/etc/kozya.env
-ExecStart=/usr/bin/node server.js
+ExecStart=/usr/bin/node deploy/server.js
 Restart=always
 RestartSec=3
 [Install]

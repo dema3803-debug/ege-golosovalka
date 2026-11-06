@@ -1,12 +1,12 @@
 // Сервер приложения для своего (российского) сервера.
 // Отдаёт страницы и файлы сайта и запускает обработчики из папки api — те же, что на Vercel.
-// Запуск: node server.js   (порт — переменная PORT, по умолчанию 3000)
+// Запуск из корня проекта: node deploy/server.js   (порт — переменная PORT, по умолчанию 3000)
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const ROOT = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."); // корень проекта
 const PORT = Number(process.env.PORT) || 3000;
 const TYPES = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json; charset=utf-8",
