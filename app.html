@@ -98,6 +98,11 @@ html.tourlock,html.tourlock body{overflow:hidden;overscroll-behavior:none}
 .tipbox .tb{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1;font-size:14px}
 .tipbox .tb b{font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
 @keyframes tipin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.tglrow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:var(--surface);border-radius:var(--r)}
+.tglrow .rt{display:flex;flex-direction:column;flex:1;min-width:0}.tglrow .rt span{font-size:13px;color:var(--muted)}
+.tgl{flex:0 0 50px;height:30px;border-radius:99px;background:var(--line2);position:relative;transition:background .2s}
+.tgl::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.tglrow[aria-checked="true"] .tgl{background:var(--accent)}.tglrow[aria-checked="true"] .tgl::after{transform:translateX(20px)}
 .helpsec{background:var(--surface);border-radius:var(--r);padding:0 16px}
 .helpsec summary{cursor:pointer;list-style:none;padding:14px 0;font-weight:800;display:flex;justify-content:space-between;gap:10px}
 .helpsec summary::-webkit-details-marker{display:none}
@@ -1566,7 +1571,7 @@ function afterRender(v) {
   document.documentElement.style.setProperty("--dockh", ($("#dock").hidden ? 0 : $("#dock").offsetHeight) + "px");
   const tips = S.tips || {}, busy = tourI >= 0 || dlg.open || !S.gender;
   if (v === "today" && !tips.tour && !session && !busy && !(S.tired[now().today] && !S.tired[now().today].rest)) { setTimeout(() => { if (view === "today" && tourI < 0 && !dlg.open) tourStart(); }, 500); }
-  const tip = $("#tip"), txt = tips.tour && !busy && TIPS[v] && !tips[v] ? TIPS[v] : "";
+  const tip = $("#tip"), txt = tips.tour && !tips.off && !busy && TIPS[v] && !tips[v] ? TIPS[v] : "";
   if (!txt) { tip.hidden = true; return; }
   if (tip.dataset.k !== v || tip.hidden) {
     tip.dataset.k = v;
@@ -1576,7 +1581,8 @@ function afterRender(v) {
 }
 function renderHelp() {
   const sec = (title, body, open) => `<details class="helpsec"${open ? " open" : ""}><summary>${title}</summary><div class="hb">${body}</div></details>`;
-  return `<div class="card" style="flex-direction:row;align-items:center;gap:12px"><div class="mascot" style="flex:0 0 72px">${mascot("happy", helperName())}</div><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><span>Покажу всё по шагам прямо на экране.</span><div class="row"><button class="btn primary sm" data-act="tour-again" type="button">▶ Пройти тур заново</button><button class="btn sm" data-act="tips-reset" type="button">Вернуть подсказки</button></div></div></div>
+  return `<div class="card" style="flex-direction:row;align-items:center;gap:12px"><div class="mascot" style="flex:0 0 72px">${mascot("happy", helperName())}</div><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><span>Покажу всё по шагам прямо на экране.</span><div class="row"><button class="btn primary sm" data-act="tour-again" type="button">▶ Пройти тур заново</button></div></div></div>
+  <button class="tglrow" type="button" role="switch" aria-checked="${!S.tips?.off}" data-act="tips-toggle"><span class="rt"><b>Подсказки на экранах</b><span>${S.tips?.off ? "выключены" : "Козя подскажет на каждом экране один раз"}</span></span><span class="tgl"></span></button>
   ${sec("📱 Поставить на телефон", `<b>iPhone (Safari):</b><ol><li>Нажми <b>«Поделиться»</b> внизу экрана.</li><li><b>«На экран Домой»</b> → <b>«Добавить»</b>.</li></ol><b>Android (Chrome):</b><ol><li>Нажми <b>⋮</b> справа вверху.</li><li><b>«Добавить на главный экран»</b>.</li></ol>`)}
   ${sec("✅ Задачи и план", `<ol><li>Открой <b>«Неделя»</b> → <b>«+ Задача»</b>.</li><li>Напиши, что сделать, срок и сколько сессий по ${S.sessionMin || 25} минут.</li><li><b>«Готово»</b> - я сама разложу её по свободному времени.</li></ol>Нажми на задачу в плане: <b>«📅 На другой день»</b>, <b>«Не сегодня»</b>, <b>📎</b> - прикрепить материал.`)}
   ${sec("⏱ Таймер", `Нажми <b>«Начать»</b> или <b>▶</b> у задачи. ${S.sessionMin || 25} минут занимаешься, потом 5 минут отдыха. Можно <b>«Пауза»</b> или <b>«{Сделала|Сделал} раньше»</b>.`)}
@@ -1889,7 +1895,7 @@ document.addEventListener("click", e => {
   if (d.quizTopic) { startQuiz({ topicId: d.quizTopic, n: 5, mode: "topic" }); return; }
   switch (d.act) {
     case "tour-again": change(() => { (S.tips ||= {}).tour = 0; }); backStack = []; view = "today"; history.replaceState(null, "", "#today"); render(); scrollTo(0, 0); return;
-    case "tips-reset": change(() => { S.tips = { tour: 1 }; }); flash("Подсказки на экранах снова будут появляться"); return;
+    case "tips-toggle": change(() => { const on = !!S.tips?.off; S.tips = on ? { tour: S.tips?.tour ?? 1 } : { ...(S.tips || {}), off: 1 }; }); return;
     case "new-task": taskDialog(null, { at: d.at }); return;
     case "import": importDialog(); return;
     case "ege-any": egeStart(); return;
