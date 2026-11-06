@@ -363,6 +363,7 @@ i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
 .egesub{display:flex;flex-direction:column;gap:10px;padding-top:6px}
 .egeblocks{display:flex;flex-direction:column;gap:6px}
 .egeblk{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 38px;gap:8px;align-items:center;font-size:14px}.egeblk small{text-align:right;font-weight:700;color:var(--muted)}
+.genderask{gap:8px;border:2px solid var(--accent-line)}
 </style>
 </head>
 <body>
@@ -427,13 +428,15 @@ const subjOptions = sel => [...S.subjects.map(x => x.name), "Школа", "Др�
 const word = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c; };
 
 const ASK = ["Окей, сегодня без подвигов 🫶 Остальное я тихо перенесла на другие дни. Но может, одну малюсенькую штуку? Это 5 минут, честно. Ну пожалуйста",
-  "Понимаю, бывает 💛 Давай так: одно крошечное дело на 5 минут — и свободна. Ну пожааалуйста?",
+  "Понимаю, бывает 💛 Давай так: одно крошечное дело на 5 минут — и {свободна|свободен}. Ну пожааалуйста?",
   "Отдых — тоже часть подготовки. Но одну мааленькую штучку, а? 5 минут, я засеку 🥺"];
-const PRAISE = ["Ты молодец!! 🎉 А может, ещё одну? Тоже 5 минут. Но если нет — ты сегодня уже красавица, отдыхай.",
-  "Вот это да, сделала! 💪 Ещё одну крошечную? Если нет — всё, ты заслужила отдых.",
-  "Умница! ✨ Может, на волне ещё 5 минут? А если нет — ты и так сегодня молодец."];
+const PRAISE = ["Ты молодец!! 🎉 А может, ещё одну? Тоже 5 минут. Но если нет — ты сегодня уже {красавица|молодец}, отдыхай.",
+  "Вот это да, {сделала|сделал}! 💪 Ещё одну крошечную? Если нет — всё, ты {заслужила|заслужил} отдых.",
+  "{Умница|Молодец}! ✨ Может, на волне ещё 5 минут? А если нет — ты и так сегодня молодец."];
 
-function flash(t) { const s = $("#status"); s.textContent = t || ""; s.hidden = !t; }
+// {женский|мужской} — подставляется по выбранному обращению
+const gx = t => String(t ?? "").replace(/\{([^{}|<>`$]{1,40})\|([^{}|<>`$]{1,40})\}/g, (_, f, m) => S?.gender === "m" ? m : f);
+function flash(t) { const s = $("#status"); s.textContent = gx(t || ""); s.hidden = !t; }
 
 // ---------- загрузка и сохранение ----------
 async function load() {
@@ -604,7 +607,7 @@ function renderSession() {
       <div style="font-size:14px;color:var(--muted);font-weight:600">${work ? `${session.len} минут · потом 5 минут отдыха` : "потом можно браться за следующее"}</div></div>
     ${work ? `<div class="card" style="gap:10px;border-radius:22px;padding:14px"><b style="font-size:14px;font-weight:800">Длина сессии</b><div class="durs">${[25, 30, 45, 5].map(m => `<button type="button" data-dur="${m}" aria-pressed="${session.len === m}">${m} мин</button>`).join("")}</div></div>` : ""}
     <div class="sbtns"><button class="btn" data-act="session-pause" type="button">${paused ? "Продолжить" : "Пауза"}</button>
-      <button class="btn primary" data-act="session-done" type="button">${work ? "Сделала раньше" : "Пропустить перерыв"}</button></div>
+      <button class="btn primary" data-act="session-done" type="button">${work ? "{Сделала|Сделал} раньше" : "Пропустить перерыв"}</button></div>
     ${work ? `<button class="more" data-act="session-cancel" type="button">Отменить сессию</button>` : ""}
   </div>`;
 }
@@ -629,8 +632,8 @@ function render() {
   document.body.classList.toggle("subpage", !!SUB[view]);
   const plan = C.buildPlan(S, n.today, 7, n.min);
   const v = view === "chat" && matchMedia("(min-width:1000px)").matches ? "today" : view;
-  $("#view").innerHTML = (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "ege" ? renderEge() : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n));
-  $("#chat-desk").innerHTML = chatHTML(n, 60);
+  $("#view").innerHTML = gx((v === "today" && !S.gender ? genderAsk() : "") + (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "ege" ? renderEge() : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n)));
+  $("#chat-desk").innerHTML = gx(chatHTML(n, 60));
   const cd = $("#chat-desk"); cd.scrollTop = cd.scrollHeight;
   if (v === "chat") scrollTo(0, document.body.scrollHeight);
 }
@@ -660,7 +663,7 @@ function quizWidget() {
   if (q.phase === "ask") h += `<div class="qn">Вопрос ${q.i + 1} из ${q.cards.length}${c.subject ? " · " + esc(c.subject) : ""}</div>
     <form data-quiz><input type="text" autocomplete="off" maxlength="500" placeholder="Твой ответ" aria-label="Твой ответ"><button class="send" type="submit" aria-label="Ответить">${icon("i-send")}</button></form>
     <div class="chips"><button class="btn sm" data-act="quiz-skip" type="button">Не помню</button><button class="btn sm" data-act="quiz-stop" type="button">Хватит</button></div>`;
-  else if (q.phase === "self") h += `<div class="qn">Сверь сама: ты знала?</div><div class="chips"><button class="btn soft sm" data-act="quiz-self-yes" type="button">Знала</button><button class="btn sm" data-act="quiz-self-no" type="button">Не знала</button></div>`;
+  else if (q.phase === "self") h += `<div class="qn">Сверь {сама|сам}: ты {знала|знал}?</div><div class="chips"><button class="btn soft sm" data-act="quiz-self-yes" type="button">Знала</button><button class="btn sm" data-act="quiz-self-no" type="button">Не {знала|знал}</button></div>`;
   else if (q.phase === "result") h += `<div class="chips">${q.i + 1 < q.cards.length ? `<button class="btn soft sm" data-act="quiz-next" type="button">Дальше</button>` : `<button class="btn soft sm" data-act="quiz-next" type="button">Итог</button>`}<button class="btn sm" data-act="quiz-stop" type="button">Хватит</button></div>`;
   else h += `<div class="qn">Проверяю ответ…</div>`;
   return h + `</div>`;
@@ -727,7 +730,7 @@ async function answerQuiz(text) {
   q.log.push({ role: "assistant", text: verdict === "yes" ? `Верно! ✅ ${comment}` : verdict === "partly" ? `Почти 👌 ${comment} Полностью: ${c.a}` : `Не совсем. Правильно: ${c.a}${comment ? " — " + comment : ""}` });
   q.phase = "result"; render(); save();
 }
-function quizSelf(ok) { const q = quiz, c = q.cards[q.i]; q.results.push(ok); q.fb = { ok, text: ok ? `Отлично! ${c.a}` : `Запомни: ${c.a}` }; C.recordAnswer(S, c.id, ok, now().today); q.log.push({ role: "user", text: ok ? "Знала" : "Не знала" }); q.phase = "result"; render(); save(); }
+function quizSelf(ok) { const q = quiz, c = q.cards[q.i]; q.results.push(ok); q.fb = { ok, text: ok ? `Отлично! ${c.a}` : `Запомни: ${c.a}` }; C.recordAnswer(S, c.id, ok, now().today); q.log.push({ role: "user", text: ok ? "{Знала|Знал}" : "Не {знала|знал}" }); q.phase = "result"; render(); save(); }
 function quizNext() {
   const q = quiz;
   if (q.i + 1 < q.cards.length) { q.i++; q.phase = "ask"; q.log.push({ role: "assistant", text: q.cards[q.i].q }); render(); focusQuiz(); return; }
@@ -773,9 +776,9 @@ function renderToday(d, n) {
   else if (d.off) { mood = "rest"; moodLabel = "отдыхает"; say1 = "Сегодня выходной! Я тоже валяюсь. Завтра продолжим."; }
   else if (tiredT && tiredT.rest) { mood = "rest"; moodLabel = "отдыхает"; say1 = "Отдыхай. Всё несделанное я перенесла — ничего не потеряется."; }
   else if (nxt) say1 = doneN
-    ? oneOf(["Так держать! Ещё немного — и можно отдыхать.", "Хорошо идёшь! Я рядом, если что — пиши.", "Умница, продолжаем в том же темпе!"])
-    : oneOf(["Готова? Я засеку время и напомню про перерыв.", "Начнём потихоньку — первые 25 минут самые трудные.", "Привет! Жми «Начать», а я буду рядом."]);
-  else if (totalN) { say1 = "Всё на сегодня сделано! Ты умница."; moodLabel = "гордится"; }
+    ? oneOf(["Так держать! Ещё немного — и можно отдыхать.", "Хорошо идёшь! Я рядом, если что — пиши.", "{Умница|Молодец}, продолжаем в том же темпе!"])
+    : oneOf(["{Готова|Готов}? Я засеку время и напомню про перерыв.", "Начнём потихоньку — первые 25 минут самые трудные.", "Привет! Жми «Начать», а я буду рядом."]);
+  else if (totalN) { say1 = "Всё на сегодня сделано! Ты {умница|молодец}."; moodLabel = "гордится"; }
   else say1 = "Задач пока нет. Напиши мне, что нужно сделать, — разложу по времени.";
   h += `<div class="hero"><div class="herohead"><b>Козя</b><span class="mood">${moodLabel}</span></div>
     <div class="bubble">${esc(say1)}</div><div class="mascot">${mascot(mood)}</div>
@@ -795,12 +798,12 @@ function renderToday(d, n) {
     if (!rest.length) h += `<p class="empty">${nxt ? "После этого — свободно." : "Пусто. Напиши Козе, что нужно сделать."}</p>`;
     for (const b of rest) {
       const t = C.toHHMM(b.start), sub = b.type === "review" ? `10 мин · Козя спросит 5 вопросов` : `${t}–${C.toHHMM(b.end)} · ${b.count > 1 ? `${b.count} × ${S.sessionMin} мин` : `${S.sessionMin} мин`}`;
-      h += `<div class="nx" style="--c:${color(b.subject)}">${b.type === "review" ? `<button class="box review" data-quiz-topic="${b.ref}" type="button" aria-label="Проверить: ${esc(b.title)}"></button>` : `<button class="box" data-done="${b._i}" type="button" aria-label="Сделала: ${esc(b.title)}"></button>`}
+      h += `<div class="nx" style="--c:${color(b.subject)}">${b.type === "review" ? `<button class="box review" data-quiz-topic="${b.ref}" type="button" aria-label="Проверить: ${esc(b.title)}"></button>` : `<button class="box" data-done="${b._i}" type="button" aria-label="{Сделала|Сделал}: ${esc(b.title)}"></button>`}
         <button class="tx" ${b.type === "review" ? `data-quiz-topic="${b.ref}"` : `data-start="${b.type}|${b.ref}"`} type="button"><b>${b.type === "review" ? "Повторить: " : ""}${esc(b.title)}</b><span>${sub}</span></button></div>`;
     }
     h += `</div>`;
   }
-  h += `<div class="quick"><button class="btn" data-act="tired" type="button">Сил нет</button><button class="btn" data-act="learned" type="button">Изучила тему</button><button class="btn" data-act="new-task" type="button">+ Задача</button></div>`;
+  h += `<div class="quick"><button class="btn" data-act="tired" type="button">Сил нет</button><button class="btn" data-act="learned" type="button">{Изучила|Изучил} тему</button><button class="btn" data-act="new-task" type="button">+ Задача</button></div>`;
   return h;
 }
 
@@ -819,7 +822,7 @@ function renderTired(d, n) {
         <form class="qform" data-quiz><input id="qa-in" type="text" autocomplete="off" maxlength="500" placeholder="Своими словами"><button type="submit" aria-label="Ответить">${icon("i-send")}</button></form>
         <div class="row"><button class="btn sm" data-act="quiz-skip" type="button">Не помню</button><button class="btn sm" data-act="quiz-stop" type="button">Хватит на сегодня</button></div>` :
       q.phase === "checking" ? `<div class="small muted" style="font-weight:700">Козя проверяет…</div>` :
-      q.phase === "self" ? `<div class="small muted" style="font-weight:700">Сверь сама: ты знала?</div><div class="row"><button class="btn sm primary" data-act="quiz-self-yes" type="button">Знала</button><button class="btn sm" data-act="quiz-self-no" type="button">Не знала</button></div>` :
+      q.phase === "self" ? `<div class="small muted" style="font-weight:700">Сверь {сама|сам}: ты {знала|знал}?</div><div class="row"><button class="btn sm primary" data-act="quiz-self-yes" type="button">Знала</button><button class="btn sm" data-act="quiz-self-no" type="button">Не {знала|знал}</button></div>` :
       `<div class="row"><button class="btn sm primary" data-act="quiz-next" type="button">${q.i + 1 < q.cards.length ? "Дальше" : "Итог"}</button><button class="btn sm" data-act="quiz-stop" type="button">Хватит на сегодня</button></div>`}
     </div>`;
   } else if (generating) {
@@ -846,7 +849,7 @@ function renderDay(d, n) {
   const totalTasks = live.filter(b => b.type !== "lesson").length + done.length;
 
   h += `<div class="card"><div class="cardhead"><h2>${d.off ? "Сегодня выходной 🌿" : tired && tired.rest ? "Сегодня отдыхаем 🫶" : "План на сегодня"}</h2><span class="small muted">${totalTasks ? `${done.length} из ${totalTasks}` : ""}</span></div>`;
-  if (tired && tired.rest) h += `<p class="empty">Всё несделанное перенесено на ближайшие дни.${tired.micro ? ` А ещё ты сделала ${tired.micro} ${word(tired.micro, "маленький шаг", "маленьких шага", "маленьких шагов")} — это считается!` : ""}</p><div class="row"><button class="btn sm" data-act="untired" type="button">Силы вернулись — показать план</button></div>`;
+  if (tired && tired.rest) h += `<p class="empty">Всё несделанное перенесено на ближайшие дни.${tired.micro ? ` А ещё ты {сделала|сделал} ${tired.micro} ${word(tired.micro, "маленький шаг", "маленьких шага", "маленьких шагов")} — это считается!` : ""}</p><div class="row"><button class="btn sm" data-act="untired" type="button">Силы вернулись — показать план</button></div>`;
   else if (tired) h += `<p class="empty">Режим «сил нет»: только маленькие шаги, без давления.</p><div class="row"><button class="btn sm" data-act="untired" type="button">Вернуть обычный план</button></div>`;
   else if (d.off) h += `<p class="empty">Никакой подготовки. Отдыхай — завтра будет проще.</p>`;
   if (!d.off && !tired) {
@@ -856,7 +859,7 @@ function renderDay(d, n) {
     h += `<div class="blocks">${all.map(b => blockHTML(b, d.date)).join("")}</div>`;
   }
   h += `</div>`;
-  h += `<div class="row"><button class="btn" data-act="new-task" type="button">${icon("i-plus")}Задача</button><button class="btn" data-act="learned" type="button">📚 Изучила тему</button>${tired ? "" : `<button class="btn" data-act="tired" type="button">🪫 Сил нет</button>`}</div>`;
+  h += `<div class="row"><button class="btn" data-act="new-task" type="button">${icon("i-plus")}Задача</button><button class="btn" data-act="learned" type="button">📚 {Изучила|Изучил} тему</button>${tired ? "" : `<button class="btn" data-act="tired" type="button">🪫 Сил нет</button>`}</div>`;
   h += tasksCard();
   return h;
 }
@@ -869,17 +872,17 @@ function blockHTML(b, date) {
   if (b.type === "free") return `<div class="b free"><span class="tm">${time} · свободно</span><button class="btn sm" data-act="new-task" data-at="${C.toHHMM(b.start)}" type="button">${icon("i-plus")}Сюда задачу</button></div>`;
   if (b.type === "lesson") return `<div class="b lesson" style="--c:${c}"><span class="mark">${icon("i-week")}</span><span class="tm">${time} · занятие</span><button class="tt" data-edit-lesson="${b.ref}" type="button"><span class="dot"></span>${esc(b.title)}</button></div>`;
   if (b.type === "done") {
-    const lbl = b.kind === "review" ? "повторила" : b.kind === "micro" ? "маленький шаг" : "сделано";
+    const lbl = b.kind === "review" ? "{повторила|повторил}" : b.kind === "micro" ? "маленький шаг" : "сделано";
     return `<div class="b done" style="--c:${c}"><button class="mark" data-undo="${b.idx}" type="button" aria-label="Вернуть: ${esc(b.title)}">${icon("i-check", "")}</button><span class="tm">${time} · ${lbl}</span><span class="tt">${esc(b.title)}</span></div>`;
   }
   const cls = ["b", b.type, highlight.has(key) ? "new" : ""].join(" ");
   if (b.type === "review") {
     return `<div class="${cls}" style="--c:${c}"><span class="mark"></span><span class="tm">${time} · повторение, ${(b.step || 0) + 1}-й раз${b.overdue ? " · пропущенное" : ""}</span><span class="tt"><span class="dot"></span>${esc(b.title)}</span>
-      <div class="grades"><button class="btn soft sm" data-quiz-topic="${b.ref}" type="button">Проверь меня</button><span class="small muted" style="align-self:center">или отметь сама:</span><button class="btn sm" data-grade="easy" data-ref="${b.ref}" data-start="${b.start}" type="button">Легко</button><button class="btn sm" data-grade="hard" data-ref="${b.ref}" data-start="${b.start}" type="button">С трудом</button><button class="btn sm" data-grade="forgot" data-ref="${b.ref}" data-start="${b.start}" type="button">Забыла</button></div></div>`;
+      <div class="grades"><button class="btn soft sm" data-quiz-topic="${b.ref}" type="button">Проверь меня</button><span class="small muted" style="align-self:center">или отметь {сама|сам}:</span><button class="btn sm" data-grade="easy" data-ref="${b.ref}" data-start="${b.start}" type="button">Легко</button><button class="btn sm" data-grade="hard" data-ref="${b.ref}" data-start="${b.start}" type="button">С трудом</button><button class="btn sm" data-grade="forgot" data-ref="${b.ref}" data-start="${b.start}" type="button">Забыла</button></div></div>`;
   }
   const t = b.type === "task" ? S.tasks.find(x => x.id === b.ref) : null;
   const meta = [`${time}`, b.count > 1 ? `${b.count} × ${S.sessionMin} мин` : `${S.sessionMin} мин`, t?.due ? `срок ${t.due === date ? "сегодня" : C.humanDate(t.due)}${t.dueTime ? " " + t.dueTime : ""}` : ""].filter(Boolean).join(" · ");
-  return `<div class="${cls}" style="--c:${c}"><button class="mark" data-done="${b._i}" type="button" aria-label="Сделала ${S.sessionMin} минут: ${esc(b.title)}"></button><span class="tm">${esc(meta)}</span>
+  return `<div class="${cls}" style="--c:${c}"><button class="mark" data-done="${b._i}" type="button" aria-label="{Сделала|Сделал} ${S.sessionMin} минут: ${esc(b.title)}"></button><span class="tm">${esc(meta)}</span>
     <button class="tt" ${t ? `data-edit-task="${t.id}"` : ""} type="button"><span class="dot"></span>${esc(b.title)}${b.overdue ? '<span class="tag">просрочено</span>' : ""}${b.late ? '<span class="tag">срок сегодня · сверх плана</span>' : ""}${b.pinned ? '<span class="tag pin">по времени</span>' : ""}</button>
     <button class="play" data-start="${b.type}|${b.ref}" type="button" aria-label="Начать сессию: ${esc(b.title)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button></div>`;
 }
@@ -890,7 +893,7 @@ function tasksCard() {
     ${list.length ? `<div class="list">${list.map(t => `<div class="li"><div><button class="t" data-edit-task="${t.id}" type="button">${esc(t.title)}</button>
       <div class="meta">${esc([t.subject, `${t.done} из ${t.sessions} по ${S.sessionMin} мин`, t.due ? "срок " + C.humanDate(t.due) + (t.dueTime ? " " + t.dueTime : "") : "без срока", t.pin ? `по времени: ${C.humanDate(t.pin.date)} ${t.pin.from}` : ""].filter(Boolean).join(" · "))}</div>
       <div class="progress" style="margin-top:6px"><i style="width:${t.done / t.sessions * 100}%"></i></div></div>
-      <button class="iconbtn" data-edit-task="${t.id}" type="button" aria-label="Изменить ${esc(t.title)}">${icon("i-edit")}</button></div>`).join("")}</div>` : `<p class="empty">Задач нет. Добавь сама или напиши помощнику.</p>`}</div>`;
+      <button class="iconbtn" data-edit-task="${t.id}" type="button" aria-label="Изменить ${esc(t.title)}">${icon("i-edit")}</button></div>`).join("")}</div>` : `<p class="empty">Задач нет. Добавь {сама|сам} или напиши помощнику.</p>`}</div>`;
 }
 
 function renderWeek(plan) {
@@ -913,7 +916,7 @@ function renderWeek(plan) {
     }
     return `<div class="day${d.isToday ? " today" : ""}"><div class="dayhead"><div><b>${C.DAYS[d.wd]}${d.isToday ? " · сегодня" : ""}</b> <span class="small muted">${C.humanDate(d.date)}${doneN ? ` · ✓${doneN}` : ""}</span></div>
       <button class="iconbtn" data-edit-day="${d.date}" type="button" aria-label="Время на ${C.humanDate(d.date)}" title="Изменить время дня">${icon("i-edit")}</button></div>
-      ${ov ? `<div class="small muted">${ov.off ? "в этот день без подготовки" : `свободна ${ov.from}–${ov.to}`}</div>` : ""}${body}</div>`;
+      ${ov ? `<div class="small muted">${ov.off ? "в этот день без подготовки" : `{свободна|свободен} ${ov.from}–${ov.to}`}</div>` : ""}${body}</div>`;
   }).join("")}</div>${tasksCard()}`;
 }
 
@@ -936,7 +939,7 @@ function renderTopics(n) {
     <p class="small muted" style="margin:0">Темы повторяются через ${C.INTERVALS.join(", ")} дней. Внутри темы — карточки «вопрос → ответ»: по ним я тебя спрашиваю, когда пора повторять или когда сил нет.</p>
     <div class="row"><button class="btn primary" data-act="quiz-any" type="button">Проверь меня · 5 вопросов</button><button class="btn" data-act="learned" type="button">${icon("i-plus")}Тема</button><button class="btn" data-add-cards="" type="button">${icon("i-plus")}Карточки без темы</button></div></div>`;
   h += materialsCard();
-  h += `<div class="card"><div class="cardhead"><h2>Темы</h2><span class="small muted">${S.topics.length}</span></div>${sorted.length ? sorted.map(topicItem).join("") : `<p class="empty">Пока тем нет. Изучила тему — нажми «+ Тема».</p>`}</div>`;
+  h += `<div class="card"><div class="cardhead"><h2>Темы</h2><span class="small muted">${S.topics.length}</span></div>${sorted.length ? sorted.map(topicItem).join("") : `<p class="empty">Пока тем нет. {Изучила|Изучил} тему — нажми «+ Тема».</p>`}</div>`;
   if (loose.length) h += `<div class="card"><div class="cardhead"><h2>Карточки без темы</h2><span class="small muted">${loose.length}</span></div><div class="cardlist">${loose.map(cardRow).join("")}</div></div>`;
   return h;
 }
@@ -964,7 +967,7 @@ async function genCards(topicId) {
     const j = await r.json(); cards = j.cards || [];
   } catch {}
   if (!dlg.open) return;
-  if (!cards.length) { openDialog("Не получилось", `<p class="small muted" style="margin:0">Помощник сейчас не смог придумать карточки. Попробуй ещё раз через минуту или добавь их сама.</p>`, { submit: () => {}, submitLabel: "Понятно" }); return; }
+  if (!cards.length) { openDialog("Не получилось", `<p class="small muted" style="margin:0">Помощник сейчас не смог придумать карточки. Попробуй ещё раз через минуту или добавь их {сама|сам}.</p>`, { submit: () => {}, submitLabel: "Понятно" }); return; }
   openDialog(`✨ Карточки: ${esc(t.title)}`, `<p class="small muted" style="margin:0">Проверь факты и сними галочки с лишнего — помощник иногда ошибается.</p>
     <div class="genlist">${cards.map((c, i) => `<label><input type="checkbox" data-gen="${i}" checked><span><b>${esc(c.q)}</b><br><span class="muted">${esc(c.a)}</span></span></label>`).join("")}</div>`, {
     submitLabel: "Добавить выбранные",
@@ -998,9 +1001,9 @@ const dlg = $("#dlg"), dlgform = $("#dlgform");
 let dlgSubmit = null, dlgAct = {};
 function openDialog(title, body, { submit, actions = {}, submitLabel = "Сохранить" }) {
   dlgSubmit = submit; dlgAct = actions;
-  dlgform.innerHTML = `<div class="cardhead"><h2>${title}</h2><button class="iconbtn" value="cancel" formnovalidate type="submit" aria-label="Закрыть">✕</button></div>${body}
+  dlgform.innerHTML = gx(`<div class="cardhead"><h2>${title}</h2><button class="iconbtn" value="cancel" formnovalidate type="submit" aria-label="Закрыть">✕</button></div>${body}
     <div class="dlgfoot"><span class="row">${Object.entries(actions).map(([k, a]) => `<button class="btn sm ${a.cls || ""}" type="button" data-dlg="${k}">${a.label}</button>`).join("")}</span>
-    <span class="row"><button class="btn" value="cancel" formnovalidate type="submit">Отмена</button><button class="btn primary" value="ok" type="submit">${submitLabel}</button></span></div>`;
+    <span class="row"><button class="btn" value="cancel" formnovalidate type="submit">Отмена</button><button class="btn primary" value="ok" type="submit">${submitLabel}</button></span></div>`);
   dlg.showModal();
   dlgform.querySelector("input,select,textarea")?.focus();
 }
@@ -1448,6 +1451,10 @@ function bestStreak(today) {
   }
   return l.best || 0;
 }
+function genderAsk() {
+  return `<div class="card genderask"><b>Как к тебе обращаться?</b><span class="small muted">Чтобы я писала «ты сделала» или «ты сделал».</span>
+    <div class="row"><button class="btn" data-gender-set="f" type="button">В женском роде</button><button class="btn" data-gender-set="m" type="button">В мужском роде</button></div></div>`;
+}
 function renderSettings(n) {
   const l = look(), best = bestStreak(n.today), cur = streakDays(n.today);
   const row = (ic, title, sub, attrs) => `<button class="setrow" type="button" ${attrs}><span class="setic">${ic}</span><span class="rt"><b>${title}</b>${sub ? `<span>${sub}</span>` : ""}</span><span class="chev">›</span></button>`;
@@ -1456,6 +1463,8 @@ function renderSettings(n) {
   <div class="card setcard">
     ${row("👤", esc(S.name || "Без имени"), S.email ? esc(S.email) : "почта не привязана", 'data-act="set-name"')}
     ${S.email ? row("🔑", "Сменить пароль", "", 'data-act="set-pass"') : row("✉️", "Привязать почту и пароль", "чтобы входить с любого телефона", 'data-act="set-pass"')}
+    <div class="setrow" style="cursor:default;flex-wrap:wrap"><span class="setic">💬</span><span class="rt"><b>Обращение</b></span>
+      <div class="seg" role="radiogroup" aria-label="Обращение" style="grid-template-columns:repeat(2,minmax(0,1fr));flex-basis:100%">${[["f", "В женском роде"], ["m", "В мужском роде"]].map(([k, t]) => `<button type="button" role="radio" aria-checked="${(S.gender || "f") === k}" data-gender-set="${k}">${t}</button>`).join("")}</div></div>
     ${row("🎓", "Предметы и цели", esc(S.subjects.map(s => s.name).join(" · ") || "не выбраны"), 'data-act="set-subj"')}
     ${row("🗓️", "Расписание и свободное время", "занятия, импорт из школы, сколько заниматься", 'data-view="setup"')}
   </div>
@@ -1628,10 +1637,10 @@ function renderEge() {
   } else if (q.phase === "self") {
     foot = `<div class="egeans"><b>Правильный ответ:</b> ${esc(c.answer)}${c.explain ? `<span>${esc(c.explain)}</span>` : ""}</div>
       ${q.given ? `<p class="small muted" style="margin:0">Твой ответ: ${esc(q.given)}</p>` : ""}
-      <div class="small" style="font-weight:700">Сверь сама: ты ответила верно?</div>
+      <div class="small" style="font-weight:700">Сверь {сама|сам}: ты {ответила|ответил} верно?</div>
       <div class="row"><button class="btn primary" data-act="ege-self-yes" type="button">Да, верно</button><button class="btn" data-act="ege-self-no" type="button">Нет</button></div>`;
   } else {
-    foot = `<div class="egeans ${q.ok ? "ok" : "bad"}"><b>${q.ok ? "Верно! " : "Неверно. "}Ответ: ${esc(c.answer)}</b>${q.given && !q.ok ? `<span>Ты написала: ${esc(q.given)}</span>` : ""}${c.explain ? `<span>${esc(c.explain)}</span>` : ""}</div>
+    foot = `<div class="egeans ${q.ok ? "ok" : "bad"}"><b>${q.ok ? "Верно! " : "Неверно. "}Ответ: ${esc(c.answer)}</b>${q.given && !q.ok ? `<span>Ты {написала|написал}: ${esc(q.given)}</span>` : ""}${c.explain ? `<span>${esc(c.explain)}</span>` : ""}</div>
       <button class="btn primary" data-act="ege-next" type="button" style="justify-content:center">${q.i + 1 < q.cards.length ? "Дальше" : "Итог"}</button>`;
   }
   return `<div class="egehead"><span>${esc(q.subject)} · ${esc(c.block)}</span><span>${q.i + 1} из ${q.cards.length}</span></div>
@@ -1668,7 +1677,7 @@ function dayDialog(date) {
   });
 }
 function learnedDialog() {
-  openDialog("Какую тему изучила?", `<p class="small muted" style="margin:0">Повторения сами появятся в плане через ${C.INTERVALS.join(", ")} дней.</p>
+  openDialog("Какую тему {изучила|изучил}?", `<p class="small muted" style="margin:0">Повторения сами появятся в плане через ${C.INTERVALS.join(", ")} дней.</p>
     <label class="field"><span>Тема</span><input type="text" id="f-title" required maxlength="80" placeholder="Реформы Петра I"></label>
     <label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(S.subjects[0]?.name)}</select></label>`, {
     submitLabel: "Запомнить",
@@ -1698,6 +1707,7 @@ document.addEventListener("click", e => {
     ege.given = v; render(); return; }
   if ("back" in d) { if (view === "ege") ege = null; view = backStack.pop() || (view === "buddy" ? "settings" : "today"); history.replaceState(null, "", "#" + view); render(); scrollTo(0, 0); return; }
   if (d.delMat) { deleteMaterial(d.delMat); return; }
+  if (d.genderSet) { change(() => { S.gender = d.genderSet; }); flash(d.genderSet === "m" ? "Готово! Буду писать «ты сделал» 👍" : "Готово! Буду писать «ты сделала» 👍"); setTimeout(() => flash(""), 2500); return; }
   if ("themeSet" in d) { change(() => { look().theme = d.themeSet; }); applyLook(); return; }
   if (d.accentSet) { change(() => { look().accent = d.accentSet; }); applyLook(); return; }
   if (d.charSet) { change(() => { look().char = d.charSet; }); return; }
@@ -1746,7 +1756,7 @@ document.addEventListener("click", e => {
         if (o.kind === "review") C.gradeReview(S, n.today, o.ref, "hard", n.min);
         else (S.log[n.today] ||= []).push({ kind: "micro", ref: o.ref, title: o.title, subject: o.subject, start: n.hhmm, end: C.toHHMM(Math.min(n.min + 5, 1439)) });
         S.tired[n.today].micro = (S.tired[n.today].micro || 0) + 1;
-        say("user", "Сделала ✓"); say("assistant", pick(PRAISE));
+        say("user", "{Сделала|Сделал} ✓"); say("assistant", pick(PRAISE));
       }); return;
     }
     case "micro-no": change(() => { S.tired[n.today].rest = true; say("user", S.tired[n.today].micro ? "Всё, отдыхаю" : "Не сегодня"); say("assistant", "Отдыхай 🫶 Всё несделанное я перенесла на ближайшие дни, ничего не потеряется."); }); return;

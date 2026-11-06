@@ -27,6 +27,7 @@ export default async function handler(req, res) {
 
   const state = formToState(b.form);
   state.email = email;
+  if (b.gender === "m" || b.gender === "f") state.gender = b.gender;
   const u = crypto.randomBytes(12).toString("hex");
   const { salt, hash } = hashPassword(password);
   await saveState(u, state);

@@ -190,6 +190,9 @@ a{color:var(--accent)}
     <div class="sec"><span>Последний шаг</span></div>
     <h2>Куда сохранить план</h2>
     <p class="hint">По почте и паролю ты войдёшь в план с любого телефона. Письма слать не будем.</p>
+    <div class="field"><span>Как к тебе обращаться?</span><div style="display:flex;gap:8px;flex-wrap:wrap" role="radiogroup" aria-label="Как к тебе обращаться">
+      <label class="chip" style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="radio" name="a-gender" value="f"> В женском роде</label>
+      <label class="chip" style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="radio" name="a-gender" value="m"> В мужском роде</label></div></div>
     <label class="field"><span>Почта</span><input type="email" id="a-email" autocomplete="email" inputmode="email" placeholder="you@mail.ru"></label>
     <label class="field"><span>Пароль — минимум 8 символов</span><input type="password" id="a-pass" autocomplete="new-password" minlength="8"></label>
     <label style="display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.4"><input type="checkbox" id="a-consent" style="width:20px;height:20px;flex:none;margin-top:1px">
@@ -204,7 +207,7 @@ const SUBJECTS=["Русский язык","Математика (профиль)
 const KINDS=["Репетитор","Вебинар онлайн-курса","Групповое занятие","Школьный электив или консультация","Другое"];
 const DAYS=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
 const CHOICE={
-  selfHours:{t:"Сколько часов в день ты готова заниматься сама, кроме занятий?",h:"Один вариант. Решать задания, повторять, писать пробники.",o:["Меньше часа","1–2 часа","2–3 часа","3–4 часа","Больше 4 часов"]},
+  selfHours:{t:"Сколько часов в день готов(а) заниматься самостоятельно, кроме занятий?",h:"Один вариант. Решать задания, повторять, писать пробники.",o:["Меньше часа","1–2 часа","2–3 часа","3–4 часа","Больше 4 часов"]},
   session:{t:"Сколько ты можешь заниматься без перерыва?",h:"Один вариант.",o:["25–30 минут","45 минут","1 час","1,5 часа и больше"]},
   bestTime:{t:"Когда тебе лучше всего думается?",h:"Можно несколько вариантов.",multi:true,o:["Утром","Днём","Вечером","Поздно вечером"]},
   dayOff:{t:"Нужен ли день без подготовки?",h:"Один вариант.",o:["Да, целый день отдыха","Полдня отдыха","Нет, занимаюсь каждый день"]},
@@ -254,7 +257,7 @@ function render(){
      ${F.subjects.length?F.subjects.map((s,i)=>`<div class="rowbox"><div class="rowhead"><b>${esc(s.name)}</b></div><div class="grid">
        <label class="field"><span>Цель, баллов</span>${inp(`subjects.${i}.target`,"Например, 85","number",'min="0" max="100" inputmode="numeric"')}</label>
        <label class="field"><span>Последний пробник, баллов</span>${inp(`subjects.${i}.current`,"Если писала","number",'min="0" max="100" inputmode="numeric"')}</label>
-       <label class="field"><span>Где готовишься</span>${inp(`subjects.${i}.where`,"Курс, репетитор, сама")}</label></div></div>`).join(""):`<p class="empty">Пока ничего не выбрано.</p>`}`,"q-subj");
+       <label class="field"><span>Где готовишься</span>${inp(`subjects.${i}.where`,"Курс, репетитор, самостоятельно")}</label></div></div>`).join(""):`<p class="empty">Пока ничего не выбрано.</p>`}`,"q-subj");
 
   h+=sec(2,"Занятия по расписанию");
   h+=card(3,"Какие у тебя занятия в конкретное время?","Репетиторы, вебинары курсов, групповые занятия. Одно занятие — одна строка. Если занятие повторяется, отметь все дни.",
@@ -339,8 +342,9 @@ async function send(){
   sending=false; b.disabled=false; b.textContent="Отправить анкету";
 }
 async function signup(){
-  const email=$("#a-email").value.trim(), password=$("#a-pass").value, consent=$("#a-consent").checked;
+  const email=$("#a-email").value.trim(), password=$("#a-pass").value, consent=$("#a-consent").checked, gender=(document.querySelector('input[name="a-gender"]:checked')||{}).value||"";
   const need=(t,el)=>{flash(t);el.scrollIntoView({behavior:"smooth",block:"center"});el.focus()};
+  if(!gender) return need("Выбери, как к тебе обращаться.",document.querySelector('input[name="a-gender"]'));
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return need("Впиши почту — по ней ты будешь входить.",$("#a-email"));
   if(password.length<8) return need("Пароль — минимум 8 символов.",$("#a-pass"));
   if(!consent) return need("Поставь галочку согласия — без неё план не сохранить.",$("#a-consent"));
@@ -348,7 +352,7 @@ async function signup(){
   const readable={...F, choices:Object.fromEntries(Object.entries(F.choices).map(([k,v])=>[k,v.map(i=>CHOICE[k].o[i])])),
     lessons:F.lessons.map(l=>({...l,days:l.days.map(d=>DAYS[d])})), free:F.free.map((f,i)=>({day:DAYS[i],...f}))};
   try{
-    const r=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({form:readable,email,password,consent})});
+    const r=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({form:readable,email,password,consent,gender})});
     const j=await r.json().catch(()=>({}));
     if(!r.ok||!j.u){flash(j.error||"Не получилось. Попробуй ещё раз — ответы не потеряются.")}
     else{try{localStorage.setItem("ege-u",j.u);localStorage.removeItem("ege-plan-draft")}catch(e){} location.replace("/app?u="+j.u+"&new=1"); return}

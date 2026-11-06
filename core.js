@@ -358,7 +358,7 @@ export function applyActions(state, actions, today) {
         else if (isTime(a.from) || isTime(a.to)) {
           const f = state.free[weekday(a.date)];
           state.avail[a.date] = { from: isTime(a.from) ? a.from : f.from, to: isTime(a.to) ? a.to : f.to };
-          changes.push(`${humanDate(a.date)} свободна ${state.avail[a.date].from}–${state.avail[a.date].to}`);
+          changes.push(`${humanDate(a.date)} ${state.gender === "m" ? "свободен" : "свободна"} ${state.avail[a.date].from}–${state.avail[a.date].to}`);
         }
         break;
       }
