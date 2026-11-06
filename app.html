@@ -87,6 +87,24 @@ h3{font-size:14px;font-weight:600;margin:0}
 .mood{font-size:13px;font-weight:700;color:#5A2A3D;background:#FFFFFF;border-radius:999px;padding:4px 10px}
 .bubble{align-self:center;background:#FFFFFF;border-radius:18px;padding:10px 14px;font-size:15px;font-weight:700;text-align:center;max-width:290px;line-height:1.35}
 .mascot{display:flex;justify-content:center}
+/* Козя живая: дышит, моргает, шевелит ушами, машет лапкой */
+.kz *{transform-box:view-box}
+.kz .kzb{transform-origin:100px 190px;animation:kzbreath 3.4s ease-in-out infinite var(--kd,0s)}
+.kz .kzshadow{transform-origin:100px 190px;animation:kzshadow 3.4s ease-in-out infinite var(--kd,0s)}
+.kz .kzeyes{transform-origin:100px 115px;animation:kzblink 4.6s infinite var(--kd,0s)}
+.kz .kzel{transform-origin:68px 96px;animation:kzearl 7s ease-in-out infinite calc(var(--kd,0s) - 1s)}
+.kz .kzer{transform-origin:132px 96px;animation:kzearr 7s ease-in-out infinite calc(var(--kd,0s) - 4.5s)}
+.kz .kzpaw{transform-origin:140px 142px;animation:kzwave 6s ease-in-out infinite var(--kd,0s)}
+.kz .kzz{animation:kzz 3s ease-in-out infinite}
+.kz-focus .kzb{animation-duration:4.2s}
+@keyframes kzbreath{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-2.5px) scale(1.015,.985)}}
+@keyframes kzshadow{0%,100%{transform:scaleX(1);opacity:1}50%{transform:scaleX(.94);opacity:.8}}
+@keyframes kzblink{0%,90%,96%,100%{transform:scaleY(1)}93%{transform:scaleY(.08)}}
+@keyframes kzearl{0%,82%,100%{transform:rotate(0)}86%{transform:rotate(-12deg)}90%{transform:rotate(5deg)}94%{transform:rotate(0)}}
+@keyframes kzearr{0%,82%,100%{transform:rotate(0)}86%{transform:rotate(12deg)}90%{transform:rotate(-5deg)}94%{transform:rotate(0)}}
+@keyframes kzwave{0%,62%,100%{transform:rotate(0)}68%{transform:rotate(-16deg)}74%{transform:rotate(10deg)}80%{transform:rotate(-16deg)}86%{transform:rotate(6deg)}92%{transform:rotate(0)}}
+@keyframes kzz{0%{opacity:0;transform:translate(0,8px)}30%{opacity:1}100%{opacity:0;transform:translate(8px,-14px)}}
+@media (prefers-reduced-motion:reduce){.kz *{animation:none!important}}
 /* тур и подсказки */
 #tour{position:fixed;inset:0;z-index:60;touch-action:none;overscroll-behavior:none}
 html.tourlock,html.tourlock body{overflow:hidden;overscroll-behavior:none}
@@ -561,21 +579,21 @@ const say = (role, text, extra) => C.pushChat(S, role, text, extra);
 const INK = "#1B1620", FACE = "#F8D3DC", CHEEK = "#F29BB2";
 function goatBase(ears = 14) {
   return `<path d="M76 58 C66 38 66 20 74 6 C82 24 88 38 92 52 Z" fill="${INK}"/><path d="M124 58 C134 38 134 20 126 6 C118 24 112 38 108 52 Z" fill="${INK}"/>
-  <ellipse cx="44" cy="92" rx="25" ry="12" fill="${INK}" transform="rotate(-${ears} 44 92)"/><ellipse cx="47" cy="93" rx="15" ry="6" fill="${FACE}" transform="rotate(-${ears} 47 93)"/>
-  <ellipse cx="156" cy="92" rx="25" ry="12" fill="${INK}" transform="rotate(${ears} 156 92)"/><ellipse cx="153" cy="93" rx="15" ry="6" fill="${FACE}" transform="rotate(${ears} 153 93)"/>
+  <g class="kzel"><ellipse cx="44" cy="92" rx="25" ry="12" fill="${INK}" transform="rotate(-${ears} 44 92)"/><ellipse cx="47" cy="93" rx="15" ry="6" fill="${FACE}" transform="rotate(-${ears} 47 93)"/></g>
+  <g class="kzer"><ellipse cx="156" cy="92" rx="25" ry="12" fill="${INK}" transform="rotate(${ears} 156 92)"/><ellipse cx="153" cy="93" rx="15" ry="6" fill="${FACE}" transform="rotate(${ears} 153 93)"/></g>
   <circle cx="100" cy="100" r="46" fill="${FACE}"/><ellipse cx="100" cy="72" rx="44" ry="24" fill="#FFFFFF"/>
   ${[62, 76, 91, 109, 124, 138].map((x, i) => `<circle cx="${x}" cy="${[84, 90, 92, 92, 90, 84][i]}" r="11" fill="#FFFFFF"/>`).join("")}
   <circle cx="100" cy="66" r="2.4" fill="${INK}"/><circle cx="84" cy="72" r="2" fill="${INK}"/><circle cx="116" cy="72" r="2" fill="${INK}"/>
   <circle cx="68" cy="128" r="7" fill="${CHEEK}"/><circle cx="132" cy="128" r="7" fill="${CHEEK}"/>`;
 }
-const openEyes = `<ellipse cx="84" cy="114" rx="11" ry="13" fill="#FFFFFF" stroke="${INK}" stroke-width="2"/><ellipse cx="116" cy="114" rx="11" ry="13" fill="#FFFFFF" stroke="${INK}" stroke-width="2"/>
+const openEyes = `<g class="kzeyes"><ellipse cx="84" cy="114" rx="11" ry="13" fill="#FFFFFF" stroke="${INK}" stroke-width="2"/><ellipse cx="116" cy="114" rx="11" ry="13" fill="#FFFFFF" stroke="${INK}" stroke-width="2"/>
   <circle cx="85" cy="116" r="7" fill="${INK}"/><circle cx="115" cy="116" r="7" fill="${INK}"/><circle cx="87.5" cy="113" r="2.4" fill="#FFFFFF"/><circle cx="117.5" cy="113" r="2.4" fill="#FFFFFF"/>
-  <path d="M75 104 L71 99 M80 101 L78 96 M86 100 L87 95 M125 104 L129 99 M120 101 L122 96 M114 100 L113 95" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>`;
+  <path d="M75 104 L71 99 M80 101 L78 96 M86 100 L87 95 M125 104 L129 99 M120 101 L122 96 M114 100 L113 95" stroke="${INK}" stroke-width="2" stroke-linecap="round"/></g>`;
 const closedEyes = `<path d="M74 116 Q84 108 94 116 M106 116 Q116 108 126 116" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/><path d="M73 111 L69 107 M126 111 L130 107" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>`;
 function mascot(mood = "happy", label = "Козя") {
   let body = `<rect x="60" y="126" width="80" height="58" rx="28" fill="${INK}"/><ellipse cx="100" cy="160" rx="18" ry="13" fill="${FACE}"/>`, face = "", extra = "", front = "", ears = 14;
   if (mood === "happy") {
-    extra = `<path d="M140 140 C158 128 164 112 160 100" fill="none" stroke="${INK}" stroke-width="13" stroke-linecap="round"/><path d="M62 142 C50 150 48 162 54 170" fill="none" stroke="${INK}" stroke-width="13" stroke-linecap="round"/>`;
+    extra = `<g class="kzpaw"><path d="M140 140 C158 128 164 112 160 100" fill="none" stroke="${INK}" stroke-width="13" stroke-linecap="round"/></g><path d="M62 142 C50 150 48 162 54 170" fill="none" stroke="${INK}" stroke-width="13" stroke-linecap="round"/>`;
     face = openEyes + `<circle cx="96" cy="128" r="1.6" fill="${INK}"/><circle cx="104" cy="128" r="1.6" fill="${INK}"/><path d="M92 134 Q100 141 108 134" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`;
   } else if (mood === "focus") {
     face = closedEyes + `<path d="M95 134 L105 134" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`;
@@ -589,9 +607,9 @@ function mascot(mood = "happy", label = "Козя") {
     front = `<path d="M80 168 C88 156 96 156 100 162 C104 156 112 156 120 168" fill="${INK}" stroke="${INK}" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`;
   } else { // rest
     face = closedEyes + `<path d="M94 133 Q100 137 106 133" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`;
-    extra = `<text x="150" y="58" font-family="Nunito, sans-serif" font-size="22" font-weight="800" fill="#B8325E">z</text><text x="164" y="40" font-family="Nunito, sans-serif" font-size="16" font-weight="800" fill="#B8325E">z</text>`;
+    extra = `<g class="kzz"><text x="150" y="58" font-family="Nunito, sans-serif" font-size="22" font-weight="800" fill="#B8325E">z</text><text x="164" y="40" font-family="Nunito, sans-serif" font-size="16" font-weight="800" fill="#B8325E">z</text></g>`;
   }
-  return dressUp(`<svg class="kz" viewBox="0 0 200 196" role="img" aria-label="${esc(label)}"><ellipse cx="100" cy="190" rx="52" ry="6" fill="#E9C3D1" class="kzshadow"/>${body}${extra}${goatBase(ears)}${face}${front}</svg>`, mood);
+  return dressUp(`<svg class="kz kz-${mood}" viewBox="0 0 200 196" role="img" aria-label="${esc(label)}" style="--kd:-${(Math.random() * 4).toFixed(2)}s"><ellipse cx="100" cy="190" rx="52" ry="6" fill="#E9C3D1" class="kzshadow"/><g class="kzb">${body}${extra}${goatBase(ears)}${face}${front}<!--outfit--></g></svg>`, mood);
 }
 // день с занятиями: отметка в плане, тренажёр ЕГЭ, задача закрыта через чат, или день подарен вручную (streakFix)
 function activeDays() {
@@ -1513,7 +1531,7 @@ function dressUp(svg, mood) {
   const l = S?.look || {}, ch = CHARS[l.char] || CHARS.kozya;
   if (ch !== CHARS.kozya) svg = svg.replaceAll(INK, ch.ink).replaceAll(FACE, ch.face);
   const o = l.outfit && OUTFITS.find(x => x[0] === l.outfit);
-  if (o && !(o[0] === "glasses" && mood === "plead")) svg = svg.replace("</svg>", outfitSVG(o[0]) + "</svg>");
+  if (o && !(o[0] === "glasses" && mood === "plead")) svg = svg.replace("<!--outfit-->", outfitSVG(o[0]));
   return svg;
 }
 function bestStreak(today) {
