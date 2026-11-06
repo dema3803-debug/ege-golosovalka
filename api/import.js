@@ -1,12 +1,14 @@
 import { aiOverLimit } from "./_limits.js";
-import { hasDb } from "./_redis.js";
+import crypto from "node:crypto";
+import { hasDb, redis } from "./_redis.js";
 import { validU, loadState, readBody } from "./_store.js";
 import { chat, uploadImage } from "./_giga.js";
 import { DAYS_FULL, weekday, addDays } from "../core.js";
 import { mskToday } from "./_fromForm.js";
 
 // Импорт расписания онлайн-школы: POST {u, text?, images?: ["data:image/jpeg;base64,..."]}
-// Ничего не сохраняет — возвращает найденное, человек сам отмечает, что добавить.
+// Разбор идёт в фоне: POST сразу отвечает {job}, телефон спрашивает GET ?u=&job= пока не будет готово.
+// Ничего не сохраняет в план — возвращает найденное, человек сам отмечает, что добавить.
 const DATE = /^\d{4}-\d{2}-\d{2}$/, TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 const clip = (s, n) => String(s ?? "").replace(/\s+/g, " ").trim().slice(0, n);
 const hhmm = t => { const m = String(t || "").match(/^(\d{1,2})[:.](\d{2})$/); if (!m) return ""; const v = `${m[1].padStart(2, "0")}:${m[2]}`; return TIME.test(v) ? v : ""; };
@@ -53,8 +55,15 @@ function parse(text) {
 
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
-  if (req.method !== "POST") return res.status(405).json({ error: "Только POST" });
   if (!hasDb()) return res.status(503).json({ error: "База не подключена" });
+  if (req.method === "GET") {
+    const { u, job } = req.query;
+    if (!validU(u) || !/^[a-f0-9]{16}$/.test(String(job || ""))) return res.status(400).json({ error: "Неверная ссылка" });
+    const raw = await redis("GET", `job:${u}:${job}`);
+    if (!raw) return res.status(404).json({ status: "error", error: "Разбор потерялся. Попробуй ещё раз." });
+    return res.status(200).json(JSON.parse(raw));
+  }
+  if (req.method !== "POST") return res.status(405).json({ error: "Только GET и POST" });
   const b = readBody(req) || {};
   if (!validU(b.u)) return res.status(400).json({ error: "Неверная ссылка" });
   const state = await loadState(b.u);
@@ -64,6 +73,17 @@ export default async function handler(req, res) {
   if (!text && !images.length) return res.status(400).json({ error: "Вставь текст расписания или прикрепи скриншот." });
   if (await aiOverLimit(b.u)) return res.status(429).json({ error: "На сегодня я наговорилась 😴 Завтра продолжим." });
 
+  const job = crypto.randomBytes(8).toString("hex"), key = `job:${b.u}:${job}`;
+  await redis("SET", key, JSON.stringify({ status: "work" }), "EX", 900);
+  runImport(state, text, images).then(
+    found => redis("SET", key, JSON.stringify({ status: "done", ...found }), "EX", 900),
+    e => redis("SET", key, JSON.stringify({ status: "error", error: e.message }), "EX", 900),
+  ).catch(() => {});
+  res.status(200).json({ job });
+}
+
+async function runImport(state, text, images) {
+  const t0 = Date.now();
   const today = mskToday();
   const subjects = state.subjects || [];
   const sys = `Ты разбираешь расписание онлайн-школы подготовки к ЕГЭ (Умскул, Вебиум, 100балльный, Lomonosov School, Фоксфорд, репетитор и т.п.) и переводишь его в план школьницы.
@@ -87,9 +107,10 @@ export default async function handler(req, res) {
     try { r = await chat([{ role: "system", content: sys }, user], { model: "GigaChat-2-Pro", temperature: 0, maxTokens: 3000, timeout: 60000, base }); }
     catch (e) { if (attachments.length) throw e; r = await chat([{ role: "system", content: sys }, user], { model: "GigaChat-2", temperature: 0, maxTokens: 3000, timeout: 60000 }); }
     const found = normalize(parse(r.text), subjects, today);
-    res.status(200).json(found);
+    console.log(`import: ${Date.now() - t0} мс, скриншотов ${images.length}, найдено ${found.lessons.length}/${found.events.length}/${found.deadlines.length}`);
+    return found;
   } catch (e) {
-    console.error("import:", e.message);
-    res.status(502).json({ error: images.length ? "Не получилось прочитать скриншот. Попробуй скопировать текст расписания и вставить его." : "Козя сейчас не может разобрать расписание. Попробуй через пару минут." });
+    console.error(`import: ошибка через ${Date.now() - t0} мс:`, e.message);
+    throw new Error(images.length ? "Не получилось прочитать скриншот. Попробуй скопировать текст расписания и вставить его." : "Козя сейчас не может разобрать расписание. Попробуй через пару минут.");
   }
 }
