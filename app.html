@@ -83,6 +83,28 @@ h3{font-size:14px;font-weight:600;margin:0}
 .mood{font-size:13px;font-weight:700;color:#5A2A3D;background:#FFFFFF;border-radius:999px;padding:4px 10px}
 .bubble{align-self:center;background:#FFFFFF;border-radius:18px;padding:10px 14px;font-size:15px;font-weight:700;text-align:center;max-width:290px;line-height:1.35}
 .mascot{display:flex;justify-content:center}
+/* тур и подсказки */
+#tour{position:fixed;inset:0;z-index:60}
+.tour-hole{position:fixed;border-radius:18px;box-shadow:0 0 0 9999px rgba(24,10,20,.62);transition:all .25s ease;pointer-events:none}
+.tour-hole.on{outline:3px solid var(--pink);outline-offset:3px}
+.tour-box{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));margin:0 auto;max-width:420px;background:var(--surface);color:var(--ink);border-radius:22px;padding:14px 14px 12px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 12px 40px rgba(0,0,0,.25);transition:top .25s ease,bottom .25s ease}
+.tour-box .tm{flex:0 0 64px}.tour-box .tm svg{width:64px;height:auto}
+.tour-body{display:flex;flex-direction:column;gap:10px;min-width:0;flex:1}
+.tour-txt{font-size:15px;line-height:1.4}
+.tour-foot{display:flex;align-items:center;gap:8px}.tour-foot .tour-n{flex:1;font-size:12px;color:var(--faint);font-weight:700}
+.tipbox{position:fixed;z-index:30;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(var(--dockh,0px) + 12px + env(safe-area-inset-bottom,0px));margin:0 auto;max-width:460px;background:var(--surface);border:1px solid var(--accent-line);border-radius:20px;padding:12px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 10px 30px rgba(0,0,0,.16);animation:tipin .3s ease}
+.tipbox .tm{flex:0 0 46px}.tipbox .tm svg{width:46px;height:auto}
+.tipbox .tb{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1;font-size:14px}
+.tipbox .tb b{font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+@keyframes tipin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.helpsec{background:var(--surface);border-radius:var(--r);padding:0 16px}
+.helpsec summary{cursor:pointer;list-style:none;padding:14px 0;font-weight:800;display:flex;justify-content:space-between;gap:10px}
+.helpsec summary::-webkit-details-marker{display:none}
+.helpsec summary::after{content:"›";color:var(--faint);transition:transform .2s}
+.helpsec[open] summary::after{transform:rotate(90deg)}
+.helpsec .hb{padding:0 0 14px;font-size:14px;line-height:1.5;color:var(--muted)}
+.helpsec .hb ol,.helpsec .hb ul{margin:4px 0 8px;padding-left:20px}.helpsec .hb li+li{margin-top:3px}
+.helpsec .hb b{color:var(--ink)}
 .mascot svg{width:170px;height:auto;max-width:100%}
 .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .stat{background:#FFFFFF;border-radius:18px;padding:10px 14px;min-width:0}
@@ -398,6 +420,8 @@ i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
     <form class="composer" data-composer><input id="msg-desk" type="text" autocomplete="off" maxlength="600" placeholder="Напиши, что у тебя сегодня…" aria-label="Сообщение помощнику"><button class="send" type="submit" aria-label="Отправить"><svg class="ico"><use href="#i-send"/></svg></button></form>
   </aside>
 </div>
+<div id="tip" class="tipbox" hidden></div>
+<div id="tour" hidden><div class="tour-hole"></div><div class="tour-box"><div class="tm"></div><div class="tour-body"><div class="tour-txt"></div><div class="tour-foot"><span class="tour-n"></span><button class="btn sm" data-tour="skip" type="button">Пропустить</button><button class="btn sm primary" data-tour="next" type="button">Дальше</button></div></div></div></div>
 <div class="dock" id="dock" hidden>
   <form class="composer" data-composer id="composer-m"><input id="msg-m" type="text" autocomplete="off" maxlength="600" placeholder="Напиши, что у тебя сегодня…" aria-label="Сообщение помощнику"><button class="send" type="submit" aria-label="Отправить"><svg class="ico"><use href="#i-send"/></svg></button></form>
   <nav class="nav" id="nav" aria-label="Разделы"></nav>
@@ -413,8 +437,8 @@ let U = new URLSearchParams(location.search).get("u");
 if (/[?&]new=1/.test(location.search)) history.replaceState(null, "", "/app?u=" + U + location.hash);
 try { if (U) localStorage.setItem("ege-u", U); else if (location.hash !== "#login") { U = localStorage.getItem("ege-u"); if (U) history.replaceState(null, "", "/app?u=" + U + location.hash); } } catch {}
 if (U) document.getElementById("manifest-link")?.setAttribute("href", "/api/manifest?u=" + encodeURIComponent(U));
-const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"], ["calendar", "Важные даты", "i-week"], ["settings", "Настройки", "i-set"], ["buddy", "Помощник", "i-set"], ["ege", "Тренажёр ЕГЭ", "i-topics"]];
-const SUB = { ege: "Тренажёр ЕГЭ", day: "Весь план на сегодня", setup: "Расписание", calendar: "Важные даты", settings: "Настройки", buddy: "Помощник и награды" };
+const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"], ["calendar", "Важные даты", "i-week"], ["settings", "Настройки", "i-set"], ["buddy", "Помощник", "i-set"], ["ege", "Тренажёр ЕГЭ", "i-topics"], ["help", "Как пользоваться", "i-set"]];
+const SUB = { ege: "Тренажёр ЕГЭ", day: "Весь план на сегодня", setup: "Расписание", calendar: "Важные даты", settings: "Настройки", buddy: "Помощник и награды", help: "Как пользоваться" };
 let backStack = [];
 let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
 let quiz = null; const openTopics = new Set();
@@ -624,9 +648,9 @@ function render() {
   $("#streak").innerHTML = true ? `<div class="streak" title="Дней подряд с занятиями"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0702B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-3.5 2-5 1 1.5 2 2 3-5z"/></svg>${sd} ${word(sd, "день", "дня", "дней")}</div>` : "";
   $("#streak").insertAdjacentHTML("beforeend", `<button class="gearbtn" type="button" data-view="settings" aria-label="Настройки"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>`);
   { const nm = helperName(); const h = document.querySelector(".chatcol .head h2"); if (h) h.textContent = nm; }
-  const navHTML = VIEWS.map(v => v[0] === "chat" ? [v[0], helperName(), v[2]] : v).filter(v => !["setup", "calendar", "settings", "buddy", "ege"].includes(v[0])).map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id || (id === "today" && view === "day") ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
+  const navHTML = VIEWS.map(v => v[0] === "chat" ? [v[0], helperName(), v[2]] : v).filter(v => !["setup", "calendar", "settings", "buddy", "ege", "help"].includes(v[0])).map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id || (id === "today" && view === "day") ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
   $("#nav").innerHTML = navHTML;
-  $("#toptabs").innerHTML = VIEWS.filter(v => !["chat", "settings", "buddy", "ege"].includes(v[0])).map(([id, label]) => `<button type="button" data-view="${id}" ${view === id ? 'aria-current="page"' : ""}>${label}</button>`).join("");
+  $("#toptabs").innerHTML = VIEWS.filter(v => !["chat", "settings", "buddy", "ege", "help"].includes(v[0])).map(([id, label]) => `<button type="button" data-view="${id}" ${view === id ? 'aria-current="page"' : ""}>${label}</button>`).join("");
   $("#composer-m").hidden = view !== "chat";
   $("#dock").hidden = view === "session";
   const tiredNow = view === "today" && S.tired[n.today] && !S.tired[n.today].rest;
@@ -634,10 +658,11 @@ function render() {
   document.body.classList.toggle("subpage", !!SUB[view]);
   const plan = C.buildPlan(S, n.today, 7, n.min);
   const v = view === "chat" && matchMedia("(min-width:1000px)").matches ? "today" : view;
-  $("#view").innerHTML = gx((v === "today" && !S.gender ? genderAsk() : "") + (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "ege" ? renderEge() : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n)));
+  $("#view").innerHTML = gx((v === "today" && !S.gender ? genderAsk() : "") + (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "ege" ? renderEge() : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "help" ? renderHelp() : v === "setup" ? renderSetup() : renderChatView(n)));
   $("#chat-desk").innerHTML = gx(chatHTML(n, 60));
   const cd = $("#chat-desk"); cd.scrollTop = cd.scrollHeight;
   if (v === "chat") scrollTo(0, document.body.scrollHeight);
+  afterRender(v);
 }
 
 function chatHTML(n, limit) {
@@ -1470,6 +1495,91 @@ function bestStreak(today) {
   }
   return l.best || 0;
 }
+
+// ---------- тур по приложению и подсказки на экранах ----------
+const TOUR = [
+  { t: () => `Привет! Я ${helperName()}. Покажу за минуту, как тут всё устроено.` },
+  { sel: ".startbtn", t: "Тут следующее дело на сегодня. Нажми, и запустится таймер: 25 минут занимаешься, потом 5 минут отдыха." },
+  { sel: ".stats .stat", t: "Здесь видно, сколько дел на сегодня уже {сделала|сделал}." },
+  { sel: '#nav [data-view="week"], #toptabs [data-view="week"]', t: "«Неделя» - план на 7 дней и все задачи. Добавляй задачу со сроком, а я сама разложу её по свободному времени." },
+  { sel: '#nav [data-view="topics"], #toptabs [data-view="topics"]', t: "«Знания» - изученные темы, свои карточки и тренажёр ЕГЭ. Темы я сама напомню повторить." },
+  { sel: '#nav [data-view="chat"], .chatcol .composer', t: "А сюда пиши мне обычными словами: «к пятнице сочинение», «репетитора не будет». Я поправлю план." },
+  { sel: '[data-act="tired"]', t: "Если сил нет, жми сюда. Ругать не буду: дам маленький шаг или перенесу всё на другие дни." },
+  { sel: ".gearbtn", t: "Настройки: расписание и импорт из онлайн-школы, тема, награды. Там же «Как пользоваться», если что-то забудется." },
+];
+const TIPS = {
+  week: "Это план на 7 дней. Нажми «+ Задача», укажи срок, и я раскидаю её по дням. Все задачи списком - внизу экрана.",
+  topics: "{Изучила|Изучил} тему? Добавь её сюда: я напомню повторить через 1, 3 и 7 дней, чтобы не забылось. Тут же тренажёр ЕГЭ.",
+  ege: "Ответ пиши цифрами, как на экзамене, или нажимай на варианты. Если в карточке ошибка, после ответа нажми «Здесь ошибка».",
+  setup: "Не хочешь вбивать расписание руками? Нажми «Загрузить расписание» и прикрепи скриншот из онлайн-школы.",
+  calendar: "Добавь пробники, олимпиады и даты ЕГЭ. Я заранее поставлю подготовку в план.",
+  chat: "Пиши как {подруге|другу}: «завтра контрольная по истории», «{устала|устал}». Я сама поменяю план и скажу, что изменила.",
+  buddy: "За дни подряд с занятиями я получаю наряды. Нажми на открытый наряд, чтобы надеть.",
+};
+let tourI = -1;
+const tourVisible = sel => [...document.querySelectorAll(sel)].find(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+function tourSteps() { return TOUR.filter(s => !s.sel || tourVisible(s.sel)); }
+function tourShow() {
+  const steps = tourSteps(), st = steps[tourI], box = $("#tour");
+  if (!st) { tourEnd(); return; }
+  box.hidden = false; $("#tip").hidden = true;
+  box.querySelector(".tm").innerHTML = mascot(tourI === 0 ? "happy" : "focus", helperName());
+  box.querySelector(".tour-txt").textContent = gx(typeof st.t === "function" ? st.t() : st.t);
+  box.querySelector(".tour-n").textContent = `${tourI + 1} из ${steps.length}`;
+  box.querySelector('[data-tour="next"]').textContent = tourI + 1 < steps.length ? "Дальше" : "Понятно!";
+  const hole = box.querySelector(".tour-hole"), tb = box.querySelector(".tour-box");
+  const el = st.sel && tourVisible(st.sel);
+  if (el) {
+    el.scrollIntoView({ block: "center" });
+    const r = el.getBoundingClientRect(), p = 6;
+    Object.assign(hole.style, { left: r.left - p + "px", top: r.top - p + "px", width: r.width + p * 2 + "px", height: r.height + p * 2 + "px" });
+    hole.classList.add("on");
+    const below = r.top + r.height / 2 < innerHeight / 2;
+    tb.style.top = below ? r.bottom + 16 + "px" : "auto";
+    tb.style.bottom = below ? "auto" : innerHeight - r.top + 16 + "px";
+  } else {
+    Object.assign(hole.style, { left: "50%", top: "50%", width: "0px", height: "0px" });
+    hole.classList.remove("on");
+    tb.style.top = "auto"; tb.style.bottom = "calc(40% - 60px)";
+  }
+}
+function tourStart() { if (tourI >= 0) return; tourI = 0; scrollTo(0, 0); tourShow(); }
+function tourEnd() { tourI = -1; $("#tour").hidden = true; scrollTo(0, 0); if (!S.tips?.tour) change(() => { (S.tips ||= {}).tour = 1; }); }
+$("#tour").addEventListener("click", e => {
+  e.stopPropagation();
+  const b = e.target.closest("[data-tour]"); if (!b) return;
+  if (b.dataset.tour === "skip") { tourEnd(); return; }
+  tourI++; tourSteps()[tourI] ? tourShow() : tourEnd();
+});
+addEventListener("resize", () => { if (tourI >= 0) tourShow(); });
+function afterRender(v) {
+  document.documentElement.style.setProperty("--dockh", ($("#dock").hidden ? 0 : $("#dock").offsetHeight) + "px");
+  const tips = S.tips || {}, busy = tourI >= 0 || dlg.open || !S.gender;
+  if (v === "today" && !tips.tour && !session && !busy && !(S.tired[now().today] && !S.tired[now().today].rest)) { setTimeout(() => { if (view === "today" && tourI < 0 && !dlg.open) tourStart(); }, 500); }
+  const tip = $("#tip"), txt = tips.tour && !busy && TIPS[v] && !tips[v] ? TIPS[v] : "";
+  if (!txt) { tip.hidden = true; return; }
+  if (tip.dataset.k !== v || tip.hidden) {
+    tip.dataset.k = v;
+    tip.innerHTML = `<div class="tm">${mascot("happy", helperName())}</div><div class="tb"><b>Подсказка</b><span>${esc(gx(txt))}</span><div><button class="btn sm primary" data-tip-ok="${v}" type="button">Понятно</button></div></div>`;
+    tip.hidden = false;
+  }
+}
+function renderHelp() {
+  const sec = (title, body, open) => `<details class="helpsec"${open ? " open" : ""}><summary>${title}</summary><div class="hb">${body}</div></details>`;
+  return `<div class="card" style="flex-direction:row;align-items:center;gap:12px"><div class="mascot" style="flex:0 0 72px">${mascot("happy", helperName())}</div><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><span>Покажу всё по шагам прямо на экране.</span><div class="row"><button class="btn primary sm" data-act="tour-again" type="button">▶ Пройти тур заново</button><button class="btn sm" data-act="tips-reset" type="button">Вернуть подсказки</button></div></div></div>
+  ${sec("📱 Поставить на телефон", `<b>iPhone (Safari):</b><ol><li>Нажми <b>«Поделиться»</b> внизу экрана.</li><li><b>«На экран Домой»</b> → <b>«Добавить»</b>.</li></ol><b>Android (Chrome):</b><ol><li>Нажми <b>⋮</b> справа вверху.</li><li><b>«Добавить на главный экран»</b>.</li></ol>`)}
+  ${sec("✅ Задачи и план", `<ol><li>Открой <b>«Неделя»</b> → <b>«+ Задача»</b>.</li><li>Напиши, что сделать, срок и сколько сессий по ${S.sessionMin || 25} минут.</li><li><b>«Готово»</b> - я сама разложу её по свободному времени.</li></ol>Нажми на задачу в плане: <b>«📅 На другой день»</b>, <b>«Не сегодня»</b>, <b>📎</b> - прикрепить материал.`)}
+  ${sec("⏱ Таймер", `Нажми <b>«Начать»</b> или <b>▶</b> у задачи. ${S.sessionMin || 25} минут занимаешься, потом 5 минут отдыха. Можно <b>«Пауза»</b> или <b>«{Сделала|Сделал} раньше»</b>.`)}
+  ${sec("🗓 Расписание из онлайн-школы", `<ol><li>⚙︎ → <b>«Расписание и свободное время»</b>.</li><li><b>«Загрузить расписание»</b> - скриншот, текст или файл .ics.</li><li><b>«Разобрать»</b>, проверь список → <b>«Добавить в план»</b>.</li></ol>Если скриншот читается плохо: зажми текст на фото, скопируй и вставь в поле для текста.`)}
+  ${sec(`💬 Как писать мне`, `Обычными словами: «к среде домашка по истории», «репетитора в четверг не будет», «в субботу {свободна|свободен} только с обеда», «проверь меня по экономике». Я сама поменяю план.`)}
+  ${sec("🪫 Сил нет", `Нажми <b>«Сил нет»</b> на главном экране. Дам одно маленькое дело или <b>«Не сегодня»</b> - перенесу всё на другие дни. Вернуть: <b>«Обычный план»</b>.`)}
+  ${sec("🎓 Тренажёр ЕГЭ", `<b>«Знания»</b> → выбери предмет. 10 карточек в формате ЕГЭ. Ответ - цифры, как на экзамене. Ошибки вернутся скорее, верные - позже. {Нашла|Нашёл} ошибку в карточке - <b>«Здесь ошибка»</b>.`)}
+  ${sec("📚 Темы и повторение", `Изученную тему добавь в <b>«Знания»</b> → <b>«+ Тема»</b>. Нажми <b>«✨ Придумай карточки»</b> - я составлю вопросы и напомню повторить через 1, 3, 7 дней.`)}
+  ${sec("📅 Важные даты", `<b>«Неделя»</b> → <b>«Важные даты»</b> → <b>«+ Добавить»</b>: пробники, олимпиады, ЕГЭ. Я заранее поставлю подготовку. После пробника впиши баллы.`)}
+  ${sec("🎀 Награды", `За дни подряд с занятиями я получаю наряды: 3, 5, 7, 10, 14, 21, 30 и 45 дней. На 14 днях появится Шоколадка, моя сестрёнка. Надеть наряд: ⚙︎ → <b>«Помощник и награды»</b>.`)}
+  ${sec("🛟 Если что-то не так", `<ul><li>Зависло - закрой приложение и открой снова.</li><li>Ошибка сети - проверь интернет и выключи VPN.</li><li>Не помогло - напиши тому, кто дал тебе ссылку, и приложи скриншот.</li></ul>`)}`;
+}
+
 function genderAsk() {
   return `<div class="card genderask"><b>Как к тебе обращаться?</b><span class="small muted">Чтобы я писала «ты сделала» или «ты сделал».</span>
     <div class="row"><button class="btn" data-gender-set="f" type="button">В женском роде</button><button class="btn" data-gender-set="m" type="button">В мужском роде</button></div></div>`;
@@ -1495,6 +1605,7 @@ function renderSettings(n) {
   <h3 class="setcap">Персонализация</h3>
   <div class="card setcard">
     ${row("🐐", "Помощник и награды", `${esc(helperName())} · ${got} из ${OUTFITS.length} наград${cur ? ` · серия ${cur} ${word(cur, "день", "дня", "дней")}` : ""}`, 'data-view="buddy"')}
+    ${row("❓", "Как пользоваться", "тур по приложению и короткая справка", 'data-view="help"')}
     <div class="setrow off"><span class="setic">🔔</span><span class="rt"><b>Напоминания</b><span>скоро</span></span></div>
   </div>
   <button class="btn ghostdanger" data-act="logout" type="button">${S.email ? "Выйти из аккаунта" : "Выйти из плана на этом телефоне"}</button>`;
@@ -1752,6 +1863,7 @@ document.addEventListener("click", e => {
     if (c.kind === "match" || c.kind === "order") { if (!v.includes(d.egeOpt) || c.kind === "match") v += d.egeOpt; else v = v.replace(d.egeOpt, ""); } else v = v.includes(d.egeOpt) ? v.replace(d.egeOpt, "") : [...v + d.egeOpt].sort().join("");
     ege.given = v; render(); return; }
   if ("back" in d) { if (view === "ege") ege = null; view = backStack.pop() || (view === "buddy" ? "settings" : "today"); history.replaceState(null, "", "#" + view); render(); scrollTo(0, 0); return; }
+  if (d.tipOk) { change(() => { (S.tips ||= {})[d.tipOk] = 1; }); return; }
   if (d.delMat) { deleteMaterial(d.delMat); return; }
   if (d.genderSet) { change(() => { S.gender = d.genderSet; }); flash(d.genderSet === "m" ? "Готово! Буду писать «ты сделал» 👍" : "Готово! Буду писать «ты сделала» 👍"); setTimeout(() => flash(""), 2500); return; }
   if ("themeSet" in d) { change(() => { look().theme = d.themeSet; }); applyLook(); return; }
@@ -1766,6 +1878,8 @@ document.addEventListener("click", e => {
   if (d.genCards) { genCards(d.genCards); return; }
   if (d.quizTopic) { startQuiz({ topicId: d.quizTopic, n: 5, mode: "topic" }); return; }
   switch (d.act) {
+    case "tour-again": change(() => { (S.tips ||= {}).tour = 0; }); backStack = []; view = "today"; history.replaceState(null, "", "#today"); render(); scrollTo(0, 0); return;
+    case "tips-reset": change(() => { S.tips = { tour: 1 }; }); flash("Подсказки на экранах снова будут появляться"); return;
     case "new-task": taskDialog(null, { at: d.at }); return;
     case "import": importDialog(); return;
     case "ege-any": egeStart(); return;
