@@ -4,6 +4,7 @@ import { validU, loadState, saveState, readBody } from "./_store.js";
 // GET ?u=... — план; PUT {u, state} — сохранить (с проверкой версии rev).
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
+  if (process.env.MOVED_TO) return res.status(410).json({ error: "Козя переехала", movedTo: process.env.MOVED_TO.replace(/\/$/, "") });
   if (!hasDb()) return res.status(503).json({ error: "База не подключена" });
   const u = req.method === "GET" ? req.query.u : readBody(req)?.u;
   if (!validU(u)) return res.status(400).json({ error: "Неверная ссылка" });

@@ -356,6 +356,7 @@ async function load() {
   try {
     const r = await fetch(`/api/app?u=${encodeURIComponent(U)}`, { cache: "no-store" });
     const j = await r.json();
+    if (r.status === 410 && j.movedTo) { showMoved(j.movedTo); return; }
     if (!r.ok) { flash(j.error || "Не удалось загрузить план."); return; }
     S = j.state; S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; flash(""); $("#dock").hidden = false; render();
     try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {}
@@ -371,7 +372,8 @@ async function save() {
   try {
     const r = await fetch("/api/app", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, state: S }) });
     const j = await r.json();
-    if (r.status === 409) { S = j.state; flash("План обновился с другого устройства — показываю свежую версию."); render(); }
+    if (r.status === 410 && j.movedTo) { showMoved(j.movedTo); }
+    else if (r.status === 409) { S = j.state; flash("План обновился с другого устройства — показываю свежую версию."); render(); }
     else if (!r.ok) flash(j.error || "Не удалось сохранить. Проверь интернет.");
     else { S.rev = j.state.rev; try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {} if (/^(Не удалось|Нет интернета)/.test($("#status").textContent || "")) flash(""); }
   } catch { flash("Не удалось сохранить. Проверь интернет — попробую ещё раз при следующем действии."); }
@@ -1066,6 +1068,7 @@ document.addEventListener("submit", async e => {
       const r = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, message: msg, today: n.today, now: n.hhmm }) });
       const j = await r.json();
       thinking = false;
+      if (r.status === 410 && j.movedTo) { showMoved(j.movedTo); return; }
       if (!r.ok) { S.chat = S.chat.filter(m => !m.pending); S.chat.push({ role: "assistant", text: j.error || "Помощник не ответил. Попробуй ещё раз.", at: Date.now() }); input.value = msg; render(); return; }
       S = j.state; S.cards ||= [];
       if (j.quiz) setTimeout(() => startQuiz({ subject: j.quiz.subject, topicTitle: j.quiz.topic, n: j.quiz.n || 5 }), 300);
@@ -1085,6 +1088,17 @@ function planKeys(plan) { const k = new Set(); for (const d of plan) for (const 
 addEventListener("hashchange", () => { const v = location.hash.slice(1); if (VIEWS.some(x => x[0] === v) || v === "session" || v === "day") { view = v; if (S) render(); } });
 setInterval(() => { if (S && !quiz && !document.hidden && !dlg.open && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) render(); }, 60000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && S && !thinking && !quiz && !dlg.open) load(); });
+// ---------- переезд на новый адрес ----------
+function showMoved(to) {
+  const link = `${to}/app?u=${encodeURIComponent(U)}`;
+  $("#dock").hidden = true; document.querySelector(".top").hidden = false; flash("");
+  $("#date").textContent = ""; $("#hello").textContent = "Козя переехала!";
+  $("#view").innerHTML = `<div class="hero"><div class="bubble">Теперь я живу по новому адресу — открываюсь без VPN. Весь твой план, темы и переписка уже там.</div><div class="mascot">${mascot("happy")}</div></div>
+    <div class="card"><a class="btn primary" style="justify-content:center;text-decoration:none" href="${esc(link)}">Открыть Козю на новом адресе</a>
+    <p class="small muted" style="margin:0">Открой ссылку в Safari и поставь иконку заново: Поделиться → На экран «Домой». Старую иконку можно удалить.</p>
+    <p class="small muted" style="margin:0;overflow-wrap:anywhere">${esc(link)}</p></div>`;
+}
+
 // ---------- установка на телефон ----------
 let installEvt = null;
 const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;

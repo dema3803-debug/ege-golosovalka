@@ -6,6 +6,7 @@ import { applyActions, pushChat, DAYS_FULL, weekday, addDays, humanDate } from "
 // POST {u, message, today, now} — помощник понимает сообщение и правит план.
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
+  if (process.env.MOVED_TO) return res.status(410).json({ error: "Козя переехала на новый адрес — обнови приложение", movedTo: process.env.MOVED_TO.replace(/\/$/, "") });
   if (req.method !== "POST") return res.status(405).json({ error: "Только POST" });
   if (!hasDb()) return res.status(503).json({ error: "База не подключена" });
   const b = readBody(req) || {};
