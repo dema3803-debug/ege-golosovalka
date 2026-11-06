@@ -133,8 +133,11 @@ html.tourlock,html.tourlock body{overflow:hidden;overscroll-behavior:none}
 .session{display:flex;flex-direction:column;gap:16px;align-items:stretch;min-height:calc(100vh - 60px)}
 .shead{display:flex;align-items:center;justify-content:space-between}
 .circbtn{width:44px;height:44px;border-radius:50%;border:0;background:var(--surface);display:grid;place-items:center}
-.sbtns{margin-top:auto}
-.session .ring{position:relative;width:min(260px,72vw);aspect-ratio:1;margin:0 auto;max-width:100%}
+.sbtns{margin-top:4px}
+.scancel{all:unset;cursor:pointer;min-width:44px;height:36px;padding:0 12px;border-radius:99px;background:var(--surface);font-size:14px;font-weight:700;color:var(--muted);display:grid;place-items:center}
+body.insession #install{display:none!important}
+@media (max-height:700px){body .session{gap:10px}body .session .big{font-size:50px}}
+.session .ring{position:relative;width:min(260px,72vw,34vh);aspect-ratio:1;margin:0 auto;max-width:100%}
 .session .ring svg{position:absolute;inset:0;width:100%;height:100%}
 .session .big{font-size:56px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1;text-align:center}
 .durs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
@@ -629,7 +632,7 @@ function renderSession() {
   const work = session.phase === "work", left = leftMs(), paused = !session.endAt;
   return `<div class="session">
     <div class="shead"><button class="circbtn" data-act="session-back" type="button" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <b style="font-size:17px;font-weight:800">${work ? "Сессия" : "Перерыв"}</b><span style="width:44px"></span></div>
+      <b style="font-size:17px;font-weight:800">${work ? "Сессия" : "Перерыв"}</b>${work ? `<button class="scancel" data-act="session-cancel" type="button">Отменить</button>` : `<span style="width:44px"></span>`}</div>
     <div style="text-align:center;font-size:15px;font-weight:700;color:var(--muted)">${work ? (paused ? "Пауза - Козя ждёт тебя" : "Козя сосредоточилась вместе с тобой") : "Перерыв! Попей воды и разомнись"}</div>
     <div class="ring"><svg viewBox="0 0 240 240" aria-hidden="true"><circle cx="120" cy="120" r="108" fill="none" stroke="var(--accent-soft)" stroke-width="14"/>
       <circle id="sess-ring" cx="120" cy="120" r="108" fill="none" stroke="${work ? "var(--pink)" : "var(--ok)"}" stroke-width="14" stroke-linecap="round" stroke-dasharray="679" stroke-dashoffset="${Math.round(679 * (1 - left / (session.len * 60000)))}" transform="rotate(-90 120 120)"/></svg>
@@ -637,10 +640,9 @@ function renderSession() {
     <div style="text-align:center;display:flex;flex-direction:column;gap:4px"><div class="big" id="sess-time" aria-live="off">${fmt(left)}</div>
       <div style="font-size:16px;font-weight:700">${esc(work ? session.title : "Отдых")}</div>
       <div style="font-size:14px;color:var(--muted);font-weight:600">${work ? `${session.len} минут · потом 5 минут отдыха` : "потом можно браться за следующее"}</div></div>
-    ${work ? `<div class="card" style="gap:10px;border-radius:22px;padding:14px"><b style="font-size:14px;font-weight:800">Длина сессии</b><div class="durs">${[25, 30, 45, 5].map(m => `<button type="button" data-dur="${m}" aria-pressed="${session.len === m}">${m} мин</button>`).join("")}</div></div>` : ""}
     <div class="sbtns"><button class="btn" data-act="session-pause" type="button">${paused ? "Продолжить" : "Пауза"}</button>
       <button class="btn primary" data-act="session-done" type="button">${work ? "{Сделала|Сделал} раньше" : "Пропустить перерыв"}</button></div>
-    ${work ? `<button class="more" data-act="session-cancel" type="button">Отменить сессию</button>` : ""}
+    ${work ? `<div class="card" style="gap:10px;border-radius:22px;padding:14px"><b style="font-size:14px;font-weight:800">Длина сессии</b><div class="durs">${[25, 30, 45, 5].map(m => `<button type="button" data-dur="${m}" aria-pressed="${session.len === m}">${m} мин</button>`).join("")}</div></div>` : ""}
   </div>`;
 }
 setInterval(sessionTick, 500);
@@ -662,6 +664,7 @@ function render() {
   const tiredNow = view === "today" && S.tired[n.today] && !S.tired[n.today].rest;
   document.querySelector(".top").hidden = view === "session" || !!tiredNow || !!SUB[view];
   document.body.classList.toggle("subpage", !!SUB[view]);
+  document.body.classList.toggle("insession", view === "session");
   const plan = C.buildPlan(S, n.today, 7, n.min);
   const v = view === "chat" && matchMedia("(min-width:1000px)").matches ? "today" : view;
   $("#view").innerHTML = gx((v === "today" && !S.gender ? genderAsk() : "") + (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "ege" ? renderEge() : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "help" ? renderHelp() : v === "setup" ? renderSetup() : renderChatView(n)));
