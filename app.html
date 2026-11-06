@@ -582,15 +582,24 @@ function mascot(mood = "happy", label = "Козя") {
   }
   return dressUp(`<svg class="kz" viewBox="0 0 200 196" role="img" aria-label="${esc(label)}"><ellipse cx="100" cy="190" rx="52" ry="6" fill="#E9C3D1" class="kzshadow"/>${body}${extra}${goatBase(ears)}${face}${front}</svg>`, mood);
 }
+// день с занятиями: отметка в плане, тренажёр ЕГЭ, задача закрыта через чат, или день подарен вручную (streakFix)
+function activeDays() {
+  const set = new Set(Object.keys(S.log || {}).filter(d => (S.log[d] || []).length));
+  for (const c of Object.values(S.ege || {})) if (c?.last) set.add(c.last);
+  for (const t of S.tasks || []) if (t.doneAt) set.add(t.doneAt);
+  for (const d of S.streakFix || []) set.add(d);
+  return set;
+}
 function streakDays(today) {
   let n = 0;
+  const act = activeDays();
   for (let i = 0; i < 120; i++) {
     const d = C.addDays(today, -i);
-    const has = (S.log[d] || []).length > 0;
-    if (has) { n++; continue; }
+    if (act.has(d)) { n++; continue; }
     if (i === 0) continue; // сегодня ещё может быть впереди
     const f = S.free[C.weekday(d)];
     if (f?.off || S.avail[d]?.off) continue; // выходной не рвёт серию
+    if (S.tired?.[d]?.rest) continue; // «сил нет - отдыхаю» тоже не рвёт
     break;
   }
   return n;
@@ -1649,7 +1658,7 @@ function renderBuddy(n) {
     <div class="rewards">${OUTFITS.map(([k, t, em, d]) => { const open = best >= d, on = l.outfit === k; return `<button type="button" class="rw${open ? "" : " off"}${on ? " on" : ""}" ${open ? `data-outfit-set="${k}"` : "disabled"} aria-pressed="${on}" aria-label="${t}, ${d} ${word(d, "день", "дня", "дней")}${open ? "" : " - пока закрыто"}"><span>${em}</span><small>${d} ${word(d, "день", "дня", "дней")}</small></button>`; }).join("")}</div>
     ${next ? `<div class="progress"><i style="width:${Math.round(Math.min(1, best / next[3]) * 100)}%;background:var(--accent)"></i></div><p class="small muted" style="margin:0">Ещё ${next[3] - best} ${word(next[3] - best, "день", "дня", "дней")} до ${next[2]} - ${esc(helperName())} получит ${next[1].toLowerCase()}. Награды - это наряды: нажми на открытую, чтобы надеть.</p>` : `<p class="small muted" style="margin:0">Все награды открыты 🏆</p>`}
     ${l.outfit ? `<button class="btn sm" data-outfit-set="" type="button" style="align-self:flex-start">Снять наряд</button>` : ""}
-    <p class="small muted" style="margin:0">Серия - дни подряд, когда сделан хотя бы один блок. Выходные не прерывают серию. Награды остаются навсегда.</p></div>`;
+    <p class="small muted" style="margin:0">Серия - дни подряд, когда ты {сделала|сделал} хоть что-то: дело из плана, карточки в тренажёре или задачу через чат. Выходные и дни «сил нет» не прерывают серию. Награды остаются навсегда.</p></div>`;
 }
 function charPic(k) { const save0 = look().char; look().char = k; const s = dressUp(mascot("happy", CHARS[k].name).replace("<svg ", '<svg width="64" height="64" '), "happy"); look().char = save0; return s; }
 function nameDialog() {
