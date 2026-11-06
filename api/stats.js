@@ -34,6 +34,8 @@ export default async function handler(req, res) {
     const back = base.filter(p => p.seen.some(d => d >= addDays(p.created, n)));
     return { из: base.length, вернулись: back.length, процент: base.length ? Math.round(back.length / base.length * 100) : null };
   };
+  let reports = [];
+  try { reports = ((await redis("LRANGE", "reports", 0, 49)) || []).map(x => { try { const r = JSON.parse(x); return { когда: new Date(Date.parse(r.at) + 3 * 3600000).toISOString().slice(0, 16).replace("T", " "), кто: r.name, предмет: r.subject, карточка: r.card, вопрос: r.q, ответ_ученика: r.given, что_не_так: r.text }; } catch { return null; } }).filter(Boolean); } catch {}
   people.sort((a, b) => (b.lastSeen || "").localeCompare(a.lastSeen || ""));
   res.status(200).json({
     сегодня: today,
@@ -44,6 +46,7 @@ export default async function handler(req, res) {
     вернулись_на_следующий_день: ret(signedUp, 1),
     вернулись_через_неделю: ret(signedUp, 7),
     тренажёр_пользовались: people.filter(p => p.тренажёр.ответов > 0).length,
+    жалобы_на_карточки: reports,
     тренажёр_всего_ответов: people.reduce((a, p) => a + p.тренажёр.ответов, 0),
     люди: people.map(({ seen, ...p }) => p),
   });

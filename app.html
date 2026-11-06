@@ -365,6 +365,7 @@ i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
 .egeblk{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 38px;gap:8px;align-items:center;font-size:14px}.egeblk small{text-align:right;font-weight:700;color:var(--muted)}
 .genderask{gap:8px;border:2px solid var(--accent-line)}
 .movedays{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.movedays .btn{justify-content:center}
+.egerep{align-self:center;font-size:13px}
 </style>
 </head>
 <body>
@@ -1656,15 +1657,42 @@ function renderEge() {
     foot = `<div class="egeans"><b>Правильный ответ:</b> ${esc(c.answer)}${c.explain ? `<span>${esc(c.explain)}</span>` : ""}</div>
       ${q.given ? `<p class="small muted" style="margin:0">Твой ответ: ${esc(q.given)}</p>` : ""}
       <div class="small" style="font-weight:700">Сверь {сама|сам}: ты {ответила|ответил} верно?</div>
-      <div class="row"><button class="btn primary" data-act="ege-self-yes" type="button">Да, верно</button><button class="btn" data-act="ege-self-no" type="button">Нет</button></div>`;
+      <div class="row"><button class="btn primary" data-act="ege-self-yes" type="button">Да, верно</button><button class="btn" data-act="ege-self-no" type="button">Нет</button></div>
+      ${egeReportBtn(c)}`;
   } else {
     foot = `<div class="egeans ${q.ok ? "ok" : "bad"}"><b>${q.ok ? "Верно! " : "Неверно. "}Ответ: ${esc(c.answer)}</b>${q.given && !q.ok ? `<span>Ты {написала|написал}: ${esc(q.given)}</span>` : ""}${c.explain ? `<span>${esc(c.explain)}</span>` : ""}</div>
-      <button class="btn primary" data-act="ege-next" type="button" style="justify-content:center">${q.i + 1 < q.cards.length ? "Дальше" : "Итог"}</button>`;
+      <button class="btn primary" data-act="ege-next" type="button" style="justify-content:center">${q.i + 1 < q.cards.length ? "Дальше" : "Итог"}</button>
+      ${egeReportBtn(c)}`;
   }
   return `<div class="egehead"><span>${esc(q.subject)} · ${esc(c.block)}</span><span>${q.i + 1} из ${q.cards.length}</span></div>
     <div class="egebar"><i style="width:${Math.round(q.i / q.cards.length * 100)}%"></i></div>
     <div class="card egecard"><div class="egetag">${[EGE_KINDS[c.kind], c.topic !== EGE_KINDS[c.kind] && (c.kind !== "term" || q.phase !== "ask") ? c.topic : ""].filter(Boolean).map(esc).join(" · ")}</div><p class="egeq">${esc(c.q)}</p>${opts}${foot}</div>
     ${q.phase === "ask" ? `<button class="btn ghost" data-act="ege-stop" type="button" style="align-self:center">Хватит на сегодня</button>` : ""}`;
+}
+function egeReportBtn(c) {
+  const done = ege?.reported?.has(c.id);
+  return `<button class="btn ghost sm egerep" data-act="ege-report" type="button" ${done ? "disabled" : ""}>${done ? "Спасибо, отправлено 💛" : "⚠️ Здесь ошибка"}</button>`;
+}
+function egeReportDialog() {
+  const c = ege.cards[ege.i];
+  openDialog("Что не так с карточкой?", `<p class="small muted" style="margin:0">${esc(c.q.slice(0, 140))}</p>
+    <div class="chips">${["Неверный ответ", "Непонятный вопрос", "Опечатка", "Не по программе"].map(t => `<button type="button" class="btn sm" data-rep-chip="${t}">${t}</button>`).join("")}</div>
+    <label class="field"><span>Опиши коротко (можно не писать)</span><textarea id="f-rep" rows="3" maxlength="500" placeholder="Например: правильно не 135, а 134, потому что…"></textarea></label>
+    <span class="small" id="f-rep-st" style="color:var(--warn)" hidden></span>`, {
+    submitLabel: "Отправить",
+    submit: () => { (async () => {
+      const text = val("f-rep"), st = dlgform.querySelector("#f-rep-st"), btn = dlgform.querySelector("button[value=ok]");
+      if (!text) { st.hidden = false; st.textContent = "Выбери вариант или напиши пару слов."; return; }
+      btn.disabled = true;
+      try {
+        const r = await fetch("/api/report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, card: c.id, subject: ege.subject, q: c.q, given: ege.given || "", text }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || "Не получилось отправить.");
+        (ege.reported ||= new Set()).add(c.id); dlg.close(); render();
+      } catch (e) { st.hidden = false; st.textContent = e.message || "Нет связи."; btn.disabled = false; }
+    })(); return false; },
+  });
+  dlgform.querySelectorAll("[data-rep-chip]").forEach(b => b.addEventListener("click", () => { const t = dlgform.querySelector("#f-rep"); t.value = b.dataset.repChip + (t.value ? ". " + t.value : ": "); t.focus(); }));
 }
 function egeCardHTML(n) {
   if (!egeIndex) { egeLoadIndex().then(() => { if (egeSubjects().length && view === "topics") render(); }); return ""; }
@@ -1743,6 +1771,7 @@ document.addEventListener("click", e => {
     case "ege-any": egeStart(); return;
     case "ege-again": egeStart(ege?.subject); return;
     case "ege-next": egeNext(); return;
+    case "ege-report": egeReportDialog(); return;
     case "ege-dunno": ege.given = ""; egeGrade(false); return;
     case "ege-self-yes": egeGrade(true); return;
     case "ege-self-no": egeGrade(false); return;
