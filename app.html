@@ -50,7 +50,7 @@ button{cursor:pointer}
 
 /* каркас */
 .shell{display:grid;grid-template-columns:minmax(0,1fr);min-height:100%}
-.main{padding-block:calc(18px + env(safe-area-inset-top,0px)) calc(var(--dockh,150px) + 24px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.main{padding-block:calc(18px + env(safe-area-inset-top,0px)) calc(var(--dockh,150px) + var(--walkh,0px) + 24px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 #view{display:flex;flex-direction:column;gap:14px;min-width:0}
 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
 .date{font-size:13px;color:var(--muted);font-weight:500}
@@ -105,6 +105,16 @@ h3{font-size:14px;font-weight:600;margin:0}
 @keyframes kzhop{0%,100%{transform:translateY(0)}40%{transform:translateY(-18px) rotate(-4deg)}70%{transform:translateY(0) scale(1.06,.94)}}
 @keyframes kzspin{0%{transform:rotate(0)}60%{transform:rotate(380deg) scale(1.05)}100%{transform:rotate(360deg)}}
 @keyframes kzsquish{0%,100%{transform:scale(1)}40%{transform:scale(1.12,.86)}70%{transform:scale(.95,1.06)}}
+#walker{position:absolute;bottom:calc(100% - 9px);left:0;width:46px;height:46px;z-index:2;transition:left var(--wt,0s) linear;-webkit-tap-highlight-color:transparent;cursor:pointer}
+#walker .wflip{width:100%;height:100%;transition:transform .15s}
+#walker.left .wflip{transform:scaleX(-1)}
+#walker svg{width:46px;height:46px;display:block;overflow:visible}
+#walker.walking .wflip>svg{animation:wstep .32s ease-in-out infinite}
+#walker.walking .kzb,#walker.walking .kzshadow{animation:none}
+#walker .wsay{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;background:var(--surface);color:var(--ink);font-size:12px;font-weight:700;white-space:nowrap;padding:5px 9px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.15);opacity:0;pointer-events:none;transition:opacity .2s}
+#walker .wsay.on{opacity:1}
+@keyframes wstep{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-5px) rotate(5deg)}}
+@media (min-width:1000px){#walker{display:none}}
 @keyframes kzbreath{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-2.5px) scale(1.015,.985)}}
 @keyframes kzshadow{0%,100%{transform:scaleX(1);opacity:1}50%{transform:scaleX(.94);opacity:.8}}
 @keyframes kzblink{0%,90%,96%,100%{transform:scaleY(1)}93%{transform:scaleY(.08)}}
@@ -132,7 +142,7 @@ html.tourlock,html.tourlock body{overflow:hidden;overscroll-behavior:none}
 .tglrow .rt{display:flex;flex-direction:column;flex:1;min-width:0}.tglrow .rt span{font-size:13px;color:var(--muted)}
 .tgl{flex:0 0 50px;height:30px;border-radius:99px;background:var(--line2);position:relative;transition:background .2s}
 .tgl::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
-.tglrow[aria-checked="true"] .tgl{background:var(--accent)}.tglrow[aria-checked="true"] .tgl::after{transform:translateX(20px)}
+.tglrow[aria-checked="true"] .tgl,.setrow[aria-checked="true"] .tgl{background:var(--accent)}.tglrow[aria-checked="true"] .tgl::after,.setrow[aria-checked="true"] .tgl::after{transform:translateX(20px)}
 .helpsec{background:var(--surface);border-radius:var(--r);padding:0 16px}
 .helpsec summary{cursor:pointer;list-style:none;padding:14px 0;font-weight:800;display:flex;justify-content:space-between;gap:10px}
 .helpsec summary::-webkit-details-marker{display:none}
@@ -468,7 +478,7 @@ img,svg{-webkit-user-drag:none;-webkit-touch-callout:none}
 </div>
 <div id="tip" class="tipbox" hidden></div>
 <div id="tour" hidden><div class="tour-hole"></div><div class="tour-box"><div class="tm"></div><div class="tour-body"><div class="tour-txt"></div><div class="tour-foot"><span class="tour-n"></span><button class="btn sm" data-tour="skip" type="button">Пропустить</button><button class="btn sm primary" data-tour="next" type="button">Дальше</button></div></div></div></div>
-<div class="dock" id="dock" hidden>
+<div class="dock" id="dock" hidden><div id="walker" hidden role="button" aria-label="Козя"><span class="wsay"></span><div class="wflip"></div></div>
   <form class="composer" data-composer id="composer-m"><input id="msg-m" type="text" autocomplete="off" maxlength="600" placeholder="Напиши, что у тебя сегодня…" aria-label="Сообщение помощнику"><button class="send" type="submit" aria-label="Отправить"><svg class="ico"><use href="#i-send"/></svg></button></form>
   <nav class="nav" id="nav" aria-label="Разделы"></nav>
 </div>
@@ -1625,6 +1635,7 @@ let tourRaf = 0;
 addEventListener("scroll", () => { if (tourI < 0 || tourRaf) return; tourRaf = requestAnimationFrame(() => { tourRaf = 0; tourPlace(); }); }, { passive: true });
 function afterRender(v) {
   document.documentElement.style.setProperty("--dockh", ($("#dock").hidden ? 0 : $("#dock").offsetHeight) + "px");
+  wkUpdate();
   const tips = S.tips || {}, busy = tourI >= 0 || dlg.open || !S.gender;
   if (v === "today" && !tips.tour && !session && !busy && !(S.tired[now().today] && !S.tired[now().today].rest)) { setTimeout(() => { if (view === "today" && tourI < 0 && !dlg.open) tourStart(); }, 500); }
   const tip = $("#tip"), txt = tips.tour && !tips.off && !busy && TIPS[v] && !tips[v] ? TIPS[v] : "";
@@ -1708,6 +1719,62 @@ setInterval(() => {
   kzAnim(m.querySelector("svg"), "kzhop");
 }, 25000);
 
+
+// ---------- маленькая Козя гуляет по нижнему меню ----------
+const WK = { x: null, key: "", roamT: 0, back: 0, sayT: 0 };
+const wkEl = () => document.getElementById("walker");
+const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+function wkTargetX() {
+  const dock = $("#dock"), a = document.querySelector('#nav [aria-current="page"]') || document.querySelector("#nav button");
+  if (!a) return 20;
+  const dr = dock.getBoundingClientRect(), r = a.getBoundingClientRect();
+  return Math.round(r.left - dr.left + r.width / 2 - 23);
+}
+function wkMove(x) {
+  const w = wkEl(); if (!w) return;
+  if (WK.x == null || reduceMotion()) { w.style.setProperty("--wt", "0s"); w.style.left = x + "px"; WK.x = x; return; }
+  const dist = Math.abs(x - WK.x); if (dist < 3) return;
+  w.classList.toggle("left", x < WK.x);
+  w.style.setProperty("--wt", (dist / 170).toFixed(2) + "s");
+  w.classList.add("walking");
+  w.style.left = x + "px"; WK.x = x;
+  clearTimeout(WK.stop); WK.stop = setTimeout(() => w.classList.remove("walking"), dist / 170 * 1000 + 30);
+}
+function wkUpdate() {
+  const w = wkEl(); if (!w || !S) return;
+  const on = S.look?.walker !== false && !$("#dock").hidden && innerWidth < 1000;
+  w.hidden = !on;
+  document.documentElement.style.setProperty("--walkh", on ? "30px" : "0px");
+  if (!on) return;
+  const rest = S.tired?.[now().today]?.rest;
+  const key = [S.look?.char, S.look?.outfit, rest ? "r" : "h"].join("|");
+  if (key !== WK.key) { WK.key = key; w.querySelector(".wflip").innerHTML = mascot(rest ? "rest" : "happy", helperName()); }
+  wkMove(wkTargetX());
+}
+function wkSay(t) {
+  const b = wkEl()?.querySelector(".wsay"); if (!b) return;
+  b.textContent = gx(t);
+  const W = $("#dock").getBoundingClientRect().width, bw = b.offsetWidth, cx = (WK.x || 0) + 23;
+  b.style.left = Math.max(8 - (WK.x || 0), Math.min(W - 8 - bw - (WK.x || 0), 23 - bw / 2)) + "px"; b.style.transform = "none";
+  b.classList.add("on");
+  clearTimeout(WK.sayT); WK.sayT = setTimeout(() => b.classList.remove("on"), 2200);
+}
+wkEl().addEventListener("click", e => {
+  e.stopPropagation();
+  const svg = wkEl().querySelector(".wflip>svg");
+  kzAnim(svg, "kzhop");
+  wkSay(kzPick(["Ме-е!", "Привет! 👋", "Хи-хи 🙈", "Я тут 🐐", "Щекотно! 😆", "Работаем! 💪", "Не забудь попить воды 💧", "Я гуляю 🐾"]));
+});
+// иногда прогуливается вдоль меню и возвращается к своей вкладке
+setInterval(() => {
+  const w = wkEl();
+  if (!w || w.hidden || document.hidden || tourI >= 0 || reduceMotion() || Math.random() < 0.45) return;
+  const dock = $("#dock").getBoundingClientRect();
+  wkMove(Math.round(16 + Math.random() * (dock.width - 78)));
+  clearTimeout(WK.back); WK.back = setTimeout(() => wkMove(wkTargetX()), 3500 + Math.random() * 2500);
+}, 14000);
+addEventListener("resize", () => { WK.x = null; wkUpdate(); });
+
 function genderAsk() {
   return `<div class="card genderask"><b>Как к тебе обращаться?</b><span class="small muted">Чтобы я писала «ты сделала» или «ты сделал».</span>
     <div class="row"><button class="btn" data-gender-set="f" type="button">В женском роде</button><button class="btn" data-gender-set="m" type="button">В мужском роде</button></div></div>`;
@@ -1734,6 +1801,7 @@ function renderSettings(n) {
   <div class="card setcard">
     ${row("🐐", "Помощник и награды", `${esc(helperName())} · ${got} из ${OUTFITS.length} наград${cur ? ` · серия ${cur} ${word(cur, "день", "дня", "дней")}` : ""}`, 'data-view="buddy"')}
     ${row("❓", "Как пользоваться", "тур по приложению и короткая справка", 'data-view="help"')}
+    <button class="setrow" type="button" role="switch" aria-checked="${S.look?.walker !== false}" data-act="walker-toggle"><span class="setic">🐾</span><span class="rt"><b>${esc(helperName())} гуляет по экрану</b><span>маленькая ${esc(helperName())} бегает по нижнему меню</span></span><span class="tgl"></span></button>
     <div class="setrow off"><span class="setic">🔔</span><span class="rt"><b>Напоминания</b><span>скоро</span></span></div>
   </div>
   <button class="btn ghostdanger" data-act="logout" type="button">${S.email ? "Выйти из аккаунта" : "Выйти из плана на этом телефоне"}</button>`;
@@ -2007,6 +2075,7 @@ document.addEventListener("click", e => {
   if (d.genCards) { genCards(d.genCards); return; }
   if (d.quizTopic) { startQuiz({ topicId: d.quizTopic, n: 5, mode: "topic" }); return; }
   switch (d.act) {
+    case "walker-toggle": change(() => { look().walker = look().walker === false; }); return;
     case "tour-again": change(() => { (S.tips ||= {}).tour = 0; }); backStack = []; view = "today"; history.replaceState(null, "", "#today"); render(); scrollTo(0, 0); return;
     case "tips-toggle": change(() => { const on = !!S.tips?.off; S.tips = on ? { tour: S.tips?.tour ?? 1 } : { ...(S.tips || {}), off: 1 }; }); return;
     case "new-task": taskDialog(null, { at: d.at }); return;
