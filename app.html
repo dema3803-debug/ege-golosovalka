@@ -145,6 +145,8 @@ html.tourlock,html.tourlock body{overflow:hidden;overscroll-behavior:none}
 .tgl{flex:0 0 50px;height:30px;border-radius:99px;background:var(--line2);position:relative;transition:background .2s}
 .tgl::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
 .tglrow[aria-checked="true"] .tgl,.setrow[aria-checked="true"] .tgl{background:var(--accent)}.tglrow[aria-checked="true"] .tgl::after,.setrow[aria-checked="true"] .tgl::after{transform:translateX(20px)}
+.ki{width:1.2em;height:1.2em;vertical-align:-.24em;flex:none;display:inline-block}
+.btn .ki{width:18px;height:18px}.setic .ki{width:21px;height:21px}.iconbtn .ki,.stx .ki{width:14px;height:14px;vertical-align:middle}.helpsec summary .ki{width:22px;height:22px;margin-right:4px}.ems .ki{width:14px;height:14px}
 .gamepick{all:unset;cursor:pointer;box-sizing:border-box;display:flex;flex-direction:column;gap:3px;padding:14px 16px;border-radius:16px;background:var(--raised);border:1px solid var(--line2)}
 .gamepick span{font-size:13px;color:var(--muted)}
 .pairs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -501,6 +503,7 @@ img,svg{-webkit-user-drag:none;-webkit-touch-callout:none}
 
 <script type="module">
 import * as C from "/core.js";
+import { ki } from "/icons.js";
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 // личная ссылка: запоминаем, чтобы иконка на телефоне открывала свой план
@@ -539,7 +542,7 @@ const gx = t => String(t ?? "").replace(/\{([^{}|<>`$]{1,40})\|([^{}|<>`$]{1,40}
 let flashTimer = 0, flashSticky = false;
 function flash(t, sticky = false) {
   const s = $("#status"); clearTimeout(flashTimer);
-  s.innerHTML = t ? `<span>${esc(gx(t))}</span><button class="stx" type="button" aria-label="Закрыть">✕</button>` : ""; s.hidden = !t; flashSticky = !!t && sticky;
+  s.innerHTML = t ? `<span>${esc(gx(t))}</span><button class="stx" type="button" aria-label="Закрыть">${ki("close")}</button>` : ""; s.hidden = !t; flashSticky = !!t && sticky;
   if (t && !sticky) flashTimer = setTimeout(() => { s.hidden = true; }, 4000);
 }
 document.getElementById("status").addEventListener("click", e => { if (e.target.closest(".stx") || !flashSticky) { e.stopPropagation(); flash(""); } });
@@ -921,7 +924,7 @@ function renderToday(d, n) {
     }
     h += `</div>`;
   }
-  h += `<div class="quick"><button class="btn" data-act="tired" type="button">Сил нет</button><button class="btn" data-act="learned" type="button">{Изучила|Изучил} тему</button><button class="btn" data-act="new-task" type="button">+ Задача</button></div>`;
+  h += `<div class="quick"><button class="btn" data-act="tired" type="button">${ki("tired")}Сил нет</button><button class="btn" data-act="learned" type="button">${ki("books")}{Изучила|Изучил} тему</button><button class="btn" data-act="new-task" type="button">+ Задача</button></div>`;
   return h;
 }
 
@@ -977,7 +980,7 @@ function renderDay(d, n) {
     h += `<div class="blocks">${all.map(b => blockHTML(b, d.date)).join("")}</div>`;
   }
   h += `</div>`;
-  h += `<div class="row"><button class="btn" data-act="new-task" type="button">${icon("i-plus")}Задача</button><button class="btn" data-act="learned" type="button">📚 {Изучила|Изучил} тему</button>${tired ? "" : `<button class="btn" data-act="tired" type="button">🪫 Сил нет</button>`}</div>`;
+  h += `<div class="row"><button class="btn" data-act="new-task" type="button">${icon("i-plus")}Задача</button><button class="btn" data-act="learned" type="button">${ki("books")}{Изучила|Изучил} тему</button>${tired ? "" : `<button class="btn" data-act="tired" type="button">${ki("tired")}Сил нет</button>`}</div>`;
   h += tasksCard();
   return h;
 }
@@ -1042,20 +1045,20 @@ function renderTopics(n) {
   const doneToday = new Set((S.log[n.today] || []).filter(x => x.kind === "review").map(x => x.ref));
   const steps = t => `<div class="steps" aria-label="Пройдено кругов: ${t.step} из ${C.INTERVALS.length}">${C.INTERVALS.map((_, i) => `<i class="${i < t.step ? "on" : ""}"></i>`).join("")}</div>`;
   const cardsOf = id => S.cards.filter(c => c.topicId === id);
-  const cardRow = c => `<div class="kc"><b>${esc(c.q)}</b><button class="iconbtn" data-del-card="${c.id}" type="button" aria-label="Удалить карточку" style="grid-row:1/3">✕</button><span>${esc(c.a)}${c.right + c.wrong ? ` · ${Math.round(c.right)} ✓ ${Math.round(c.wrong)} ✗` : ""}</span></div>`;
+  const cardRow = c => `<div class="kc"><b>${esc(c.q)}</b><button class="iconbtn" data-del-card="${c.id}" type="button" aria-label="Удалить карточку" style="grid-row:1/3">${ki("close")}</button><span>${esc(c.a)}${c.right + c.wrong ? ` · ${Math.round(c.right)} ✓ ${Math.round(c.wrong)} ✗` : ""}</span></div>`;
   const topicItem = t => {
     const cs = cardsOf(t.id), due = t.next <= n.today && !doneToday.has(t.id);
     return `<details class="topic" data-topic="${t.id}" ${openTopics.has(t.id) ? "open" : ""}><summary><div><div class="t" style="font-weight:500">${esc(t.title)}</div>
       <div class="meta small muted">${esc(t.subject || "")} · ${due ? "<b style=\"color:var(--accent)\">повторить сегодня</b>" : "следующее повторение " + C.humanDate(t.next)} · ${cs.length} ${word(cs.length, "карточка", "карточки", "карточек")}</div>${steps(t)}</div><span class="muted">▾</span></summary>
       ${due ? `<div class="row" style="margin-top:10px"><button class="btn soft sm" data-quiz-topic="${t.id}" type="button">Проверь меня</button><button class="btn sm" data-grade="easy" data-ref="${t.id}" type="button">Легко</button><button class="btn sm" data-grade="hard" data-ref="${t.id}" type="button">С трудом</button><button class="btn sm" data-grade="forgot" data-ref="${t.id}" type="button">Забыла</button></div>` : cs.length ? `<div class="row" style="margin-top:10px"><button class="btn sm" data-quiz-topic="${t.id}" type="button">Проверь меня</button></div>` : ""}
       <div class="cardlist">${cs.map(cardRow).join("")}</div>
-      <div class="row" style="margin-top:8px"><button class="btn sm" data-add-cards="${t.id}" type="button">${icon("i-plus")}Карточки</button><button class="btn sm" data-gen-cards="${t.id}" type="button">✨ Придумай карточки</button>${cs.length >= 3 ? `<button class="btn sm" data-play-topic="${t.id}" type="button">🎮 Играть</button>` : ""}${cs.length ? `<button class="btn sm" data-share-topic="${t.id}" type="button">🔗 Поделиться</button>` : ""}<button class="btn sm danger" data-del-topic="${t.id}" type="button">Удалить тему</button></div></details>`;
+      <div class="row" style="margin-top:8px"><button class="btn sm" data-add-cards="${t.id}" type="button">${icon("i-plus")}Карточки</button><button class="btn sm" data-gen-cards="${t.id}" type="button">${ki("sparkle")}Придумай карточки</button>${cs.length >= 3 ? `<button class="btn sm" data-play-topic="${t.id}" type="button">${ki("game")}Играть</button>` : ""}${cs.length ? `<button class="btn sm" data-share-topic="${t.id}" type="button">${ki("link")}Поделиться</button>` : ""}<button class="btn sm danger" data-del-topic="${t.id}" type="button">Удалить тему</button></div></details>`;
   };
   const sorted = [...S.topics].sort((a, b) => a.next.localeCompare(b.next));
   const loose = S.cards.filter(c => !c.topicId || !S.topics.some(t => t.id === c.topicId));
   let h = egeCardHTML(n) + `<div class="card"><div class="cardhead"><h2>База знаний</h2><span class="small muted">${S.cards.length} ${word(S.cards.length, "карточка", "карточки", "карточек")}</span></div>
     <p class="small muted" style="margin:0">Темы повторяются через ${C.INTERVALS.join(", ")} дней. Внутри темы - карточки «вопрос → ответ»: по ним я тебя спрашиваю, когда пора повторять или когда сил нет.</p>
-    <div class="row"><button class="btn primary" data-act="quiz-any" type="button">Проверь меня · 5 вопросов</button>${S.cards.length >= 3 ? `<button class="btn" data-play-topic="" type="button">🎮 Игры</button>` : ""}<button class="btn" data-act="learned" type="button">${icon("i-plus")}Тема</button><button class="btn" data-add-cards="" type="button">${icon("i-plus")}Карточки без темы</button></div></div>`;
+    <div class="row"><button class="btn primary" data-act="quiz-any" type="button">Проверь меня · 5 вопросов</button>${S.cards.length >= 3 ? `<button class="btn" data-play-topic="" type="button">${ki("game")}Игры</button>` : ""}<button class="btn" data-act="learned" type="button">${icon("i-plus")}Тема</button><button class="btn" data-add-cards="" type="button">${icon("i-plus")}Карточки без темы</button></div></div>`;
   h += materialsCard();
   h += `<div class="card"><div class="cardhead"><h2>Темы</h2><span class="small muted">${S.topics.length}</span></div>${sorted.length ? sorted.map(topicItem).join("") : `<p class="empty">Пока тем нет. {Изучила|Изучил} тему - нажми «+ Тема».</p>`}</div>`;
   if (loose.length) h += `<div class="card"><div class="cardhead"><h2>Карточки без темы</h2><span class="small muted">${loose.length}</span></div><div class="cardlist">${loose.map(cardRow).join("")}</div></div>`;
@@ -1078,7 +1081,7 @@ function addCardsDialog(topicId) {
 }
 async function genCards(topicId) {
   const t = S.topics.find(x => x.id === topicId); if (!t) return;
-  openDialog(`✨ Карточки: ${esc(t.title)}`, `<p class="small muted" style="margin:0">Придумываю вопросы по теме…</p>`, { submit: () => false, submitLabel: "Подождите" });
+  openDialog(`${ki("sparkle")} Карточки: ${esc(t.title)}`, `<p class="small muted" style="margin:0">Придумываю вопросы по теме…</p>`, { submit: () => false, submitLabel: "Подождите" });
   let cards = [];
   try {
     const r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, mode: "cards", topic: t.title, subject: t.subject, n: 6 }) });
@@ -1086,7 +1089,7 @@ async function genCards(topicId) {
   } catch {}
   if (!dlg.open) return;
   if (!cards.length) { openDialog("Не получилось", `<p class="small muted" style="margin:0">Помощник сейчас не смог придумать карточки. Попробуй ещё раз через минуту или добавь их {сама|сам}.</p>`, { submit: () => {}, submitLabel: "Понятно" }); return; }
-  openDialog(`✨ Карточки: ${esc(t.title)}`, `<p class="small muted" style="margin:0">Проверь факты и сними галочки с лишнего - помощник иногда ошибается.</p>
+  openDialog(`${ki("sparkle")} Карточки: ${esc(t.title)}`, `<p class="small muted" style="margin:0">Проверь факты и сними галочки с лишнего - помощник иногда ошибается.</p>
     <div class="genlist">${cards.map((c, i) => `<label><input type="checkbox" data-gen="${i}" checked><span><b>${esc(c.q)}</b><br><span class="muted">${esc(c.a)}</span></span></label>`).join("")}</div>`, {
     submitLabel: "Добавить выбранные",
     submit: () => {
@@ -1120,7 +1123,7 @@ const dlg = $("#dlg"), dlgform = $("#dlgform");
 let dlgSubmit = null, dlgAct = {};
 function openDialog(title, body, { submit, actions = {}, submitLabel = "Сохранить" }) {
   dlgSubmit = submit; dlgAct = actions;
-  dlgform.innerHTML = gx(`<div class="cardhead"><h2>${title}</h2><button class="iconbtn" value="cancel" formnovalidate type="submit" aria-label="Закрыть">✕</button></div>${body}
+  dlgform.innerHTML = gx(`<div class="cardhead"><h2>${title}</h2><button class="iconbtn" value="cancel" formnovalidate type="submit" aria-label="Закрыть">${ki("close")}</button></div>${body}
     <div class="dlgfoot"><span class="row">${Object.entries(actions).map(([k, a]) => `<button class="btn sm ${a.cls || ""}" type="button" data-dlg="${k}">${a.label}</button>`).join("")}</span>
     <span class="row"><button class="btn" value="cancel" formnovalidate type="submit">Отмена</button><button class="btn primary" value="ok" type="submit">${submitLabel}</button></span></div>`);
   dlg.showModal();
@@ -1164,7 +1167,7 @@ function taskDialog(t, preset = {}) {
     <div class="grid2"><label class="field"><span>Срок (необязательно)</span><input type="date" id="f-due" value="${esc(t.due || "")}"></label>
       <label class="field"><span>До скольки</span><input type="time" id="f-duetime" value="${esc(t.dueTime || "")}"></label></div>
     <div class="field"><span>Когда делать (необязательно) - день, время можно не указывать</span><div class="grid2"><input type="date" id="f-pindate" aria-label="День" value="${esc(t.pin?.date || t.on || "")}"><input type="time" id="f-pinfrom" aria-label="Начало" value="${esc(t.pin?.from || "")}"></div></div>
-    ${!isNew ? `<div class="small muted">Сделано ${t.done} из ${t.sessions}</div>` : `<button class="btn sm" type="button" id="f-to-habit" style="align-self:flex-start">🔁 Это повторяется каждую неделю</button>`}${isNew ? "" : matsHTML({ t: "task", id: t.id })}`, {
+    ${!isNew ? `<div class="small muted">Сделано ${t.done} из ${t.sessions}</div>` : `<button class="btn sm" type="button" id="f-to-habit" style="align-self:flex-start">${ki("repeat")}Это повторяется каждую неделю</button>`}${isNew ? "" : matsHTML({ t: "task", id: t.id })}`, {
     submit: () => {
       const title = val("f-title"); if (!title) return false;
       const sessions = Math.max(1, Math.min(20, parseInt(val("f-sess")) || 1));
@@ -1176,8 +1179,8 @@ function taskDialog(t, preset = {}) {
       });
     },
     actions: isNew ? {} : {
-      attach: { label: "📎", run: () => setTimeout(() => materialDialog({ ref: { t: "task", id: t.id }, subject: t.subject }), 0) },
-      move: { label: "📅 На другой день", run: () => setTimeout(() => moveDialog(t.id), 0) },
+      attach: { label: ki("clip"), run: () => setTimeout(() => materialDialog({ ref: { t: "task", id: t.id }, subject: t.subject }), 0) },
+      move: { label: ki("calendar") + "На другой день", run: () => setTimeout(() => moveDialog(t.id), 0) },
       skip: { label: "Не сегодня", run: () => change(() => { const x = S.tasks.find(y => y.id === t.id); (x.skip ||= []).push(n.today); if (x.pin?.date === n.today) x.pin = null; if (x.on === n.today) x.on = null; }) },
       done: { label: "Готово целиком", run: () => change(() => { const x = S.tasks.find(y => y.id === t.id); x.done = x.sessions; x.doneAt = n.today; }) },
       del: { label: "Удалить", cls: "danger", run: () => change(() => { S.tasks = S.tasks.filter(y => y.id !== t.id); }) },
@@ -1204,7 +1207,7 @@ function lessonDialog(l) {
       });
     },
     actions: isNew ? {} : {
-      attach: { label: "📎", run: () => setTimeout(() => materialDialog({ ref: { t: "lesson", id: l.id }, subject: l.subject }), 0) },
+      attach: { label: ki("clip"), run: () => setTimeout(() => materialDialog({ ref: { t: "lesson", id: l.id }, subject: l.subject }), 0) },
       cancelToday: { label: "Отменить сегодня", run: () => change(() => { const d = now().today; if (!S.cancelled.some(c => c.lessonId === l.id && c.date === d)) S.cancelled.push({ lessonId: l.id, date: d }); }) },
       del: { label: "Удалить совсем", cls: "danger", run: () => change(() => { S.lessons = S.lessons.filter(x => x.id !== l.id); }) },
     },
@@ -1226,7 +1229,7 @@ function eventDialog(e) {
         if (isNew) S.extraLessons.push(target);
       });
     },
-    actions: isNew ? {} : { attach: { label: "📎", run: () => setTimeout(() => materialDialog({ ref: { t: "event", id: e.id }, subject: e.subject }), 0) }, del: { label: "Удалить", cls: "danger", run: () => change(() => { S.extraLessons = S.extraLessons.filter(x => x.id !== e.id); }) } },
+    actions: isNew ? {} : { attach: { label: ki("clip"), run: () => setTimeout(() => materialDialog({ ref: { t: "event", id: e.id }, subject: e.subject }), 0) }, del: { label: "Удалить", cls: "danger", run: () => change(() => { S.extraLessons = S.extraLessons.filter(x => x.id !== e.id); }) } },
   });
 }
 // ---------- импорт расписания онлайн-школы ----------
@@ -1373,10 +1376,11 @@ function importPreview(f) {
 }
 
 // ---------- важные даты: пробники, олимпиады, ЕГЭ ----------
-const EXAM_TYPES = { probnik: ["Пробник", "📝"], olympiad: ["Олимпиада", "🏆"], ege: ["ЕГЭ", "🎓"], essay: ["Итоговое сочинение", "✍️"], test: ["Зачёт или контрольная", "📋"], other: ["Другое", "📌"] };
+const EXAM_TYPES = { probnik: ["Пробник", "📝", "doc"], olympiad: ["Олимпиада", "🏆", "trophy"], ege: ["ЕГЭ", "🎓", "cap"], essay: ["Итоговое сочинение", "✍️", "pencil"], test: ["Зачёт или контрольная", "📋", "check"], other: ["Другое", "📌", "target"] };
 const PREP_DEFAULT = { probnik: 3, olympiad: 4, ege: 8, essay: 3, test: 2, other: 0 };
 let calMonth = null;
-const examEmoji = e => (EXAM_TYPES[e.type] || EXAM_TYPES.other)[1];
+const examEmoji = e => ki((EXAM_TYPES[e.type] || EXAM_TYPES.other)[2]);
+const examEmojiText = e => (EXAM_TYPES[e.type] || EXAM_TYPES.other)[1];
 const daysLeft = (from, to) => Math.round((Date.parse(to + "T00:00:00Z") - Date.parse(from + "T00:00:00Z")) / 86400000);
 const leftText = k => k === 0 ? "сегодня" : k === 1 ? "завтра" : `через ${k} ${word(k, "день", "дня", "дней")}`;
 function upcomingExams(today) { return (S.exams || []).filter(e => e.date >= today).sort((a, b) => (a.date + (a.from || "")).localeCompare(b.date + (b.from || ""))); }
@@ -1439,7 +1443,7 @@ function examDialog(e, preset = {}) {
       });
     },
     actions: isNew ? {} : {
-      attach: { label: "📎 Материал", run: () => setTimeout(() => materialDialog({ ref: { t: "exam", id: e.id }, subject: e.subject }), 0) },
+      attach: { label: ki("clip") + "Материал", run: () => setTimeout(() => materialDialog({ ref: { t: "exam", id: e.id }, subject: e.subject }), 0) },
       del: { label: "Удалить", cls: "danger", run: () => change(() => { S.exams = S.exams.filter(x => x.id !== e.id); S.tasks = S.tasks.filter(x => !(x.examId === e.id && x.done < x.sessions)); }) },
     },
   });
@@ -1461,10 +1465,10 @@ function matRefLabel(r) {
   return f ? f.title : "";
 }
 const matUrl = m => m.kind === "file" ? `/api/files?u=${encodeURIComponent(U)}&id=${m.file.id}` : m.url;
-const matIcon = m => m.kind === "link" ? "🔗" : /pdf/.test(m.file?.mime) ? "📄" : "🖼️";
+const matIcon = m => ki(m.kind === "link" ? "link" : /pdf/.test(m.file?.mime) ? "doc" : "photo");
 function matRow(m, { showRef = true } = {}) {
   const ref = showRef ? matRefLabel(m.ref) : "";
-  return `<div class="li matli"><a class="matlink" href="${esc(matUrl(m))}" target="_blank" rel="noopener"><span class="em">${matIcon(m)}</span><span><span class="t">${esc(m.title)}</span><span class="meta">${[m.subject, ref && "к: " + ref].filter(Boolean).map(esc).join(" · ") || (m.kind === "link" ? esc(m.url.replace(/^https?:\/\//, "").slice(0, 40)) : "файл")}</span></span></a><button class="iconbtn" data-del-mat="${m.id}" type="button" aria-label="Удалить материал">✕</button></div>`;
+  return `<div class="li matli"><a class="matlink" href="${esc(matUrl(m))}" target="_blank" rel="noopener"><span class="em">${matIcon(m)}</span><span><span class="t">${esc(m.title)}</span><span class="meta">${[m.subject, ref && "к: " + ref].filter(Boolean).map(esc).join(" · ") || (m.kind === "link" ? esc(m.url.replace(/^https?:\/\//, "").slice(0, 40)) : "файл")}</span></span></a><button class="iconbtn" data-del-mat="${m.id}" type="button" aria-label="Удалить материал">${ki("close")}</button></div>`;
 }
 function matsHTML(ref) {
   if (!ref.id) return "";
@@ -1483,7 +1487,7 @@ function materialDialog(preset = {}) {
     ...S.tasks.filter(t => t.done < t.sessions).map(t => [`task|${t.id}`, `Задача: ${t.title}`]),
     ...S.lessons.map(l => [`lesson|${l.id}`, `Занятие: ${l.title}`]),
     ...S.extraLessons.filter(x => x.date >= n.today).map(x => [`event|${x.id}`, `Событие: ${x.title}, ${C.humanDate(x.date)}`]),
-    ...upcomingExams(n.today).map(x => [`exam|${x.id}`, `${examEmoji(x)} ${x.title}, ${C.humanDate(x.date)}`])];
+    ...upcomingExams(n.today).map(x => [`exam|${x.id}`, `${examEmojiText(x)} ${x.title}, ${C.humanDate(x.date)}`])];
   const cur = r ? `${r.t}|${r.id}` : "";
   openDialog("Новый материал", `
     <label class="field"><span>Ссылка</span><input type="text" id="f-url" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="https://… (вебинар, разбор, статья)"></label>
@@ -1544,6 +1548,7 @@ const OUTFITS = [
   ["bow", "Бантик", "🎀", 3], ["flower", "Цветок", "🌸", 5], ["glasses", "Очки", "👓", 7], ["phones", "Наушники", "🎧", 10],
   ["crown", "Корона", "👑", 14], ["scarf", "Шарфик", "🧣", 21], ["stars", "Блёстки", "✨", 30], ["cap", "Шапочка выпускника", "🎓", 45],
 ];
+const OUT_ICON = { bow: "bow", flower: "flower", glasses: "glasses", phones: "phones", crown: "crown", scarf: "scarf", stars: "sparkle", cap: "cap", pioneer: "rocket", friend: "hearts" };
 const SPECIAL = [["pioneer", "Медаль первопроходца", "🚀", "первые 100", () => !!BADGES.pioneer], ["friend", "Шарик дружбы", "💞", "за друга", () => BADGES.friends > 0 || !!BADGES.invited]];
 const look = () => (S.look ||= {});
 const helperName = () => (S.look?.name || "").trim() || CHARS[S.look?.char || "kozya"]?.name || "Козя";
@@ -1672,21 +1677,21 @@ function afterRender(v) {
   }
 }
 function renderHelp() {
-  const sec = (title, body, open) => `<details class="helpsec"${open ? " open" : ""}><summary>${title}</summary><div class="hb">${body}</div></details>`;
+  const sec = (title, body, open) => `<details class="helpsec"${open ? " open" : ""}><summary><span>${title}</span></summary><div class="hb">${body}</div></details>`;
   return `<div class="card" style="flex-direction:row;align-items:center;gap:12px"><div class="mascot" style="flex:0 0 72px">${mascot("happy", helperName())}</div><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><span>Покажу всё по шагам прямо на экране.</span><div class="row"><button class="btn primary sm" data-act="tour-again" type="button">▶ Пройти тур заново</button></div></div></div>
   <button class="tglrow" type="button" role="switch" aria-checked="${!S.tips?.off}" data-act="tips-toggle"><span class="rt"><b>Подсказки на экранах</b><span>${S.tips?.off ? "выключены" : "Козя подскажет на каждом экране один раз"}</span></span><span class="tgl"></span></button>
-  ${sec("📱 Поставить на телефон", `<b>iPhone (Safari):</b><ol><li>Нажми <b>«Поделиться»</b> внизу экрана.</li><li><b>«На экран Домой»</b> → <b>«Добавить»</b>.</li></ol><b>Android (Chrome):</b><ol><li>Нажми <b>⋮</b> справа вверху.</li><li><b>«Добавить на главный экран»</b>.</li></ol>`)}
-  ${sec("✅ Задачи и план", `<ol><li>Открой <b>«Неделя»</b> → <b>«+ Задача»</b>.</li><li>Напиши, что сделать, срок и сколько сессий по ${S.sessionMin || 25} минут.</li><li><b>«Готово»</b> - я сама разложу её по свободному времени.</li></ol>Нажми на задачу в плане: <b>«📅 На другой день»</b>, <b>«Не сегодня»</b>, <b>📎</b> - прикрепить материал.`)}
-  ${sec("⏱ Таймер", `Нажми <b>«Начать»</b> или <b>▶</b> у задачи. ${S.sessionMin || 25} минут занимаешься, потом 5 минут отдыха. Можно <b>«Пауза»</b> или <b>«{Сделала|Сделал} раньше»</b>.`)}
-  ${sec("🗓 Расписание из онлайн-школы", `<ol><li>⚙︎ → <b>«Расписание и свободное время»</b>.</li><li><b>«Загрузить расписание»</b> - скриншот, текст или файл .ics.</li><li><b>«Разобрать»</b>, проверь список → <b>«Добавить в план»</b>.</li></ol>Если скриншот читается плохо: зажми текст на фото, скопируй и вставь в поле для текста.`)}
-  ${sec(`💬 Как писать мне`, `Обычными словами: «к среде домашка по истории», «репетитора в четверг не будет», «в субботу {свободна|свободен} только с обеда», «проверь меня по экономике». Я сама поменяю план.`)}
-  ${sec("🪫 Сил нет", `Нажми <b>«Сил нет»</b> на главном экране. Дам одно маленькое дело или <b>«Не сегодня»</b> - перенесу всё на другие дни. Вернуть: <b>«Обычный план»</b>.`)}
-  ${sec("🎓 Тренажёр ЕГЭ", `<b>«Знания»</b> → выбери предмет. 10 карточек в формате ЕГЭ. Ответ - цифры, как на экзамене. Ошибки вернутся скорее, верные - позже. {Нашла|Нашёл} ошибку в карточке - <b>«Здесь ошибка»</b>.`)}
-  ${sec("🎮 Игры и обмен карточками", `В «Знаниях» открой тему: <b>«🎮 Играть»</b> - «Найди пары» на время или «На скорость» за 60 секунд. Игры тоже идут в серию. <b>«🔗 Поделиться»</b> - ссылка на карточки темы: одноклассник откроет её и добавит набор себе.`)}
-  ${sec("📚 Темы и повторение", `Изученную тему добавь в <b>«Знания»</b> → <b>«+ Тема»</b>. Нажми <b>«✨ Придумай карточки»</b> - я составлю вопросы и напомню повторить через 1, 3, 7 дней.`)}
-  ${sec("📅 Важные даты", `<b>«Неделя»</b> → <b>«Важные даты»</b> → <b>«+ Добавить»</b>: пробники, олимпиады, ЕГЭ. Я заранее поставлю подготовку. После пробника впиши баллы.`)}
-  ${sec("🎀 Награды", `За дни подряд с занятиями я получаю наряды: 3, 5, 7, 10, 14, 21, 30 и 45 дней. Через 14 дней подряд появится Шоколадка, моя сестрёнка. Надеть наряд: ⚙︎ → <b>«Помощник и награды»</b>.`)}
-  ${sec("🛟 Если что-то не так", `<ul><li>Зависло - закрой приложение и открой снова.</li><li>Ошибка сети - проверь интернет и выключи VPN.</li><li>Не помогло - напиши тому, кто дал тебе ссылку, и приложи скриншот.</li></ul>`)}`;
+  ${sec(`${ki("phone")} `+"Поставить на телефон", `<b>iPhone (Safari):</b><ol><li>Нажми <b>«Поделиться»</b> внизу экрана.</li><li><b>«На экран Домой»</b> → <b>«Добавить»</b>.</li></ol><b>Android (Chrome):</b><ol><li>Нажми <b>⋮</b> справа вверху.</li><li><b>«Добавить на главный экран»</b>.</li></ol>`)}
+  ${sec(`${ki("check")} `+"Задачи и план", `<ol><li>Открой <b>«Неделя»</b> → <b>«+ Задача»</b>.</li><li>Напиши, что сделать, срок и сколько сессий по ${S.sessionMin || 25} минут.</li><li><b>«Готово»</b> - я сама разложу её по свободному времени.</li></ol>Нажми на задачу в плане: <b>«📅 На другой день»</b>, <b>«Не сегодня»</b>, <b>📎</b> - прикрепить материал.`)}
+  ${sec(`${ki("timer")} `+"Таймер", `Нажми <b>«Начать»</b> или <b>▶</b> у задачи. ${S.sessionMin || 25} минут занимаешься, потом 5 минут отдыха. Можно <b>«Пауза»</b> или <b>«{Сделала|Сделал} раньше»</b>.`)}
+  ${sec(`${ki("calendar")} `+"Расписание из онлайн-школы", `<ol><li>⚙︎ → <b>«Расписание и свободное время»</b>.</li><li><b>«Загрузить расписание»</b> - скриншот, текст или файл .ics.</li><li><b>«Разобрать»</b>, проверь список → <b>«Добавить в план»</b>.</li></ol>Если скриншот читается плохо: зажми текст на фото, скопируй и вставь в поле для текста.`)}
+  ${sec(`${ki("chat")} Как писать мне`, `Обычными словами: «к среде домашка по истории», «репетитора в четверг не будет», «в субботу {свободна|свободен} только с обеда», «проверь меня по экономике». Я сама поменяю план.`)}
+  ${sec(`${ki("tired")} `+"Сил нет", `Нажми <b>«Сил нет»</b> на главном экране. Дам одно маленькое дело или <b>«Не сегодня»</b> - перенесу всё на другие дни. Вернуть: <b>«Обычный план»</b>.`)}
+  ${sec(`${ki("cap")} `+"Тренажёр ЕГЭ", `<b>«Знания»</b> → выбери предмет. 10 карточек в формате ЕГЭ. Ответ - цифры, как на экзамене. Ошибки вернутся скорее, верные - позже. {Нашла|Нашёл} ошибку в карточке - <b>«Здесь ошибка»</b>.`)}
+  ${sec(`${ki("game")} `+"Игры и обмен карточками", `В «Знаниях» открой тему: <b>«${ki("game")}Играть»</b> - «Найди пары» на время или «На скорость» за 60 секунд. Игры тоже идут в серию. <b>«${ki("link")}Поделиться»</b> - ссылка на карточки темы: одноклассник откроет её и добавит набор себе.`)}
+  ${sec(`${ki("books")} `+"Темы и повторение", `Изученную тему добавь в <b>«Знания»</b> → <b>«+ Тема»</b>. Нажми <b>«${ki("sparkle")}Придумай карточки»</b> - я составлю вопросы и напомню повторить через 1, 3, 7 дней.`)}
+  ${sec(`${ki("calendar")} `+"Важные даты", `<b>«Неделя»</b> → <b>«Важные даты»</b> → <b>«+ Добавить»</b>: пробники, олимпиады, ЕГЭ. Я заранее поставлю подготовку. После пробника впиши баллы.`)}
+  ${sec(`${ki("bow")} `+"Награды", `За дни подряд с занятиями я получаю наряды: 3, 5, 7, 10, 14, 21, 30 и 45 дней. Через 14 дней подряд появится Шоколадка, моя сестрёнка. Надеть наряд: ⚙︎ → <b>«Помощник и награды»</b>.`)}
+  ${sec(`${ki("lifebuoy")} `+"Если что-то не так", `<ul><li>Зависло - закрой приложение и открой снова.</li><li>Ошибка сети - проверь интернет и выключи VPN.</li><li>Не помогло - напиши тому, кто дал тебе ссылку, и приложи скриншот.</li></ul>`)}`;
 }
 
 // «не влезает до срока»: одна плашка на задачу (одинаковые названия склеены), можно открыть задачу или скрыть до завтра
@@ -1694,7 +1699,7 @@ function warnHTML(d, full) {
   const hidden = new Set(S.hideWarn?.[d.date] || []), groups = new Map();
   for (const u of d.unplaced) { if (hidden.has(u.ref)) continue; const k = u.title.trim().toLowerCase(); const g = groups.get(k) || { ...u, refs: [], count: 0 }; g.refs.push(u.ref); g.count += u.count || 1; groups.set(k, g); }
   return [...groups.values()].map(g => `<div class="warnbox warnrow"><span>Не влезает до срока: <b>${esc(g.title)}</b>${full ? ` (${g.count} × ${S.sessionMin} мин)` : ""}${g.refs.length > 1 ? ` - таких задач ${g.refs.length}` : ""}. Сдвинь срок или освободи время.</span>
-    <span class="row"><button class="btn sm" data-edit-task="${g.refs[0]}" type="button">Изменить</button><button class="stx" data-warn-hide="${d.date}|${g.refs.join(",")}" type="button" aria-label="Скрыть">✕</button></span></div>`).join("");
+    <span class="row"><button class="btn sm" data-edit-task="${g.refs[0]}" type="button">Изменить</button><button class="stx" data-warn-hide="${d.date}|${g.refs.join(",")}" type="button" aria-label="Скрыть">${ki("close")}</button></span></div>`).join("");
 }
 
 // ---------- Козя болтает: фразы иногда сама и реакция на нажатие ----------
@@ -1807,15 +1812,15 @@ addEventListener("resize", () => { WK.x = null; wkUpdate(); });
 // ---------- обмен наборами карточек ----------
 async function shareTopic(topicId) {
   const t = S.topics.find(x => x.id === topicId); if (!t) return;
-  openDialog("🔗 Поделиться карточками", `<p class="small muted" style="margin:0">Делаю ссылку…</p>`, { submit: () => false, submitLabel: "Подожди" });
+  openDialog(ki("link") + " Поделиться карточками", `<p class="small muted" style="margin:0">Делаю ссылку…</p>`, { submit: () => false, submitLabel: "Подожди" });
   let j = {};
   try { const r = await fetch("/api/share", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, topicId }) }); j = await r.json(); if (!r.ok) throw new Error(j.error); }
   catch (e) { dlg.close(); flash(e.message || "Не получилось сделать ссылку. Проверь интернет."); return; }
   dlg.close();
   const link = `${location.origin}/app#share-${j.id}`, n = S.cards.filter(c => c.topicId === t.id).length;
-  openDialog("🔗 Поделиться карточками", `<p style="margin:0">Набор «<b>${esc(t.title)}</b>», ${n} ${word(n, "карточка", "карточки", "карточек")}. Отправь ссылку однокласснику: откроет и добавит себе в Козю.</p>
+  openDialog(ki("link") + " Поделиться карточками", `<p style="margin:0">Набор «<b>${esc(t.title)}</b>», ${n} ${word(n, "карточка", "карточки", "карточек")}. Отправь ссылку однокласснику: откроет и добавит себе в Козю.</p>
     <label class="field"><span>Ссылка</span><input type="text" id="f-link" readonly value="${esc(link)}"></label>
-    <div class="row"><button class="btn primary sm" type="button" id="f-copy">📋 Скопировать</button>${navigator.share ? `<button class="btn sm" type="button" id="f-send">📤 Отправить</button>` : ""}</div>
+    <div class="row"><button class="btn primary sm" type="button" id="f-copy">${ki("copy")}Скопировать</button>${navigator.share ? `<button class="btn sm" type="button" id="f-send">${ki("send")}Отправить</button>` : ""}</div>
     <span class="small muted" id="f-copied" hidden>Скопировано ✓</span>`, { submit: () => true, submitLabel: "Готово" });
   dlgform.querySelector("#f-copy").addEventListener("click", async () => {
     const inp = dlgform.querySelector("#f-link");
@@ -1831,7 +1836,7 @@ async function shareImportAsk() {
   try { const r = await fetch("/api/share?id=" + encodeURIComponent(id)); set = await r.json(); if (!r.ok) throw new Error(set.error); }
   catch (e) { flash(e.message || "Не получилось открыть набор карточек."); return; }
   const n = set.cards.length;
-  openDialog("📥 Набор карточек", `<p style="margin:0">«<b>${esc(set.title)}</b>»${set.subject ? ` · ${esc(set.subject)}` : ""} · ${n} ${word(n, "карточка", "карточки", "карточек")}${set.by ? `<br><span class="small muted">Поделился(ась): ${esc(set.by)}</span>` : ""}</p>
+  openDialog(ki("books") + " Набор карточек", `<p style="margin:0">«<b>${esc(set.title)}</b>»${set.subject ? ` · ${esc(set.subject)}` : ""} · ${n} ${word(n, "карточка", "карточки", "карточек")}${set.by ? `<br><span class="small muted">Поделился(ась): ${esc(set.by)}</span>` : ""}</p>
     <div class="cardlist">${set.cards.slice(0, 5).map(c => `<div class="kc"><b>${esc(c.q)}</b><span>${esc(c.a)}</span></div>`).join("")}${n > 5 ? `<p class="small muted" style="margin:0">и ещё ${n - 5}</p>` : ""}</div>`, {
     submitLabel: "Добавить себе",
     submit: () => {
@@ -1856,9 +1861,9 @@ function gameChoose(topicId) {
   const cs = gameCards(topicId);
   if (cs.length < 3) { flash("Для игры нужно хотя бы 3 карточки."); return; }
   const best = S.games?.[topicId || "all"] || {};
-  openDialog("🎮 Во что играем?", `<div style="display:flex;flex-direction:column;gap:10px">
-    <button class="gamepick" type="button" data-pick="pairs"><b>🧩 Найди пары</b><span>Соедини вопросы с ответами как можно быстрее${best.pairs ? ` · рекорд ${best.pairs} сек` : ""}</span></button>
-    <button class="gamepick" type="button" data-pick="speed"><b>⚡ На скорость</b><span>60 секунд, выбирай верный ответ из четырёх${best.speed ? ` · рекорд ${best.speed}` : ""}</span></button></div>`, { submit: () => { setTimeout(() => gameStart(topicId, Math.random() < 0.5 ? "pairs" : "speed"), 0); return true; }, submitLabel: "🎲 Любая" });
+  openDialog(ki("game") + " Во что играем?", `<div style="display:flex;flex-direction:column;gap:10px">
+    <button class="gamepick" type="button" data-pick="pairs"><b>${ki("puzzle")} Найди пары</b><span>Соедини вопросы с ответами как можно быстрее${best.pairs ? ` · рекорд ${best.pairs} сек` : ""}</span></button>
+    <button class="gamepick" type="button" data-pick="speed"><b>${ki("bolt")} На скорость</b><span>60 секунд, выбирай верный ответ из четырёх${best.speed ? ` · рекорд ${best.speed}` : ""}</span></button></div>`, { submit: () => { setTimeout(() => gameStart(topicId, Math.random() < 0.5 ? "pairs" : "speed"), 0); return true; }, submitLabel: ki("dice") + "Любая" });
   dlgform.querySelectorAll("[data-pick]").forEach(b => b.addEventListener("click", () => { dlg.close(); gameStart(topicId, b.dataset.pick); }));
 }
 function gameStart(topicId, mode) {
@@ -1926,18 +1931,18 @@ function renderGame() {
     const txt = g.mode === "pairs" ? `${g.result} сек` : `${g.result} ${word(g.result, "верный ответ", "верных ответа", "верных ответов")}`;
     const say = g.record ? "Новый рекорд! 🏆" : g.mode === "pairs" ? (g.miss ? `Ошибок: ${g.miss}. Ещё разок?` : "Без единой ошибки! ✨") : (g.wrong ? `Ошибок: ${g.wrong}. Ещё разок?` : "Ни одной ошибки! ✨");
     return `<div class="card egedone"><div class="mascot" style="width:150px;align-self:center">${mascot("happy")}</div>
-      <h2 style="text-align:center">${g.mode === "pairs" ? "🧩" : "⚡"} ${txt}</h2><p class="small muted" style="margin:0;text-align:center">${esc(title)} · ${say}</p>
+      <h2 style="text-align:center">${ki(g.mode === "pairs" ? "puzzle" : "bolt")} ${txt}</h2><p class="small muted" style="margin:0;text-align:center">${esc(title)} · ${say}</p>
       <button class="btn primary" data-act="game-again" type="button" style="justify-content:center">Ещё раз</button>
-      <button class="btn" data-act="game-other" type="button" style="justify-content:center">${g.mode === "pairs" ? "⚡ Сыграть на скорость" : "🧩 Найти пары"}</button>
+      <button class="btn" data-act="game-other" type="button" style="justify-content:center">${g.mode === "pairs" ? ki("bolt") + "Сыграть на скорость" : ki("puzzle") + "Найти пары"}</button>
       <button class="btn ghost" data-back="" type="button" style="justify-content:center">Готово</button></div>`;
   }
   if (g.mode === "pairs") {
-    return `<div class="egehead"><span>🧩 ${esc(title)}</span><span id="game-time">${Math.floor((Date.now() - g.start) / 1000)} сек</span></div>
+    return `<div class="egehead"><span>${ki("puzzle")} ${esc(title)}</span><span id="game-time">${Math.floor((Date.now() - g.start) / 1000)} сек</span></div>
       <p class="small muted" style="margin:0">Нажми на вопрос, потом на его ответ. Найдено ${g.done.size} из ${g.pairs}.</p>
       <div class="pairs">${g.tiles.map((t, i) => `<button type="button" class="ptile${t.side === "a" ? " pa" : ""}${g.done.has(t.k) ? " ok" : ""}${g.sel === i ? " sel" : ""}${g.bad?.includes(i) ? " bad" : ""}" data-pair-tile="${i}" ${g.done.has(t.k) ? "disabled" : ""}>${esc(clipTxt(t.t, 70))}</button>`).join("")}</div>`;
   }
   const left = Math.max(0, g.len - (Date.now() - g.start));
-  return `<div class="egehead"><span>⚡ ${esc(title)}</span><span><b>${g.score}</b> · <span id="game-time">${Math.ceil(left / 1000)} сек</span></span></div>
+  return `<div class="egehead"><span>${ki("bolt")} ${esc(title)}</span><span><b>${g.score}</b> · <span id="game-time">${Math.ceil(left / 1000)} сек</span></span></div>
     <div class="egebar"><i id="game-bar" style="width:${left / g.len * 100}%"></i></div>
     <div class="card egecard"><p class="egeq">${esc(g.cur.c.q)}</p>
     <div class="speedopts">${g.cur.opts.map((o, k) => `<button type="button" class="sopt${g.last ? (k === g.last.right ? " ok" : k === g.last.k ? " bad" : "") : ""}" data-speed-opt="${k}">${esc(clipTxt(o, 90))}</button>`).join("")}</div></div>`;
@@ -1948,7 +1953,7 @@ function renderGame() {
 function habitDialog(h, preset = {}) {
   const isNew = !h;
   h ||= { title: preset.title || "", subject: preset.subject || S.subjects[0]?.name || "", days: [], sessions: 1 };
-  openDialog(isNew ? "🔁 Повторяющееся дело" : "🔁 " + esc(h.title), `
+  openDialog(ki("repeat") + " " + (isNew ? "Повторяющееся дело" : esc(h.title)), `
     <label class="field"><span>Что делать</span><input type="text" id="f-title" required maxlength="100" value="${esc(h.title)}" placeholder="ДЗ по русскому, словарные слова"></label>
     <div class="field"><span>В какие дни недели</span><div class="days">${C.DAYS.map((d, i) => `<button type="button" class="daybtn" data-d="${i}" aria-pressed="${h.days.includes(i)}">${d}</button>`).join("")}</div></div>
     <div class="grid2"><label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(h.subject)}</select></label>
@@ -1973,17 +1978,17 @@ function habitDialog(h, preset = {}) {
 
 // ---------- пригласить друга ----------
 async function inviteDialog() {
-  openDialog("💌 Пригласить друга", `<p class="small muted" style="margin:0">Делаю ссылку…</p>`, { submit: () => false, submitLabel: "Подожди" });
+  openDialog(ki("invite") + " Пригласить друга", `<p class="small muted" style="margin:0">Делаю ссылку…</p>`, { submit: () => false, submitLabel: "Подожди" });
   let j = {};
   try { const r = await fetch("/api/invite", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U }) }); j = await r.json(); if (!r.ok) throw new Error(j.error); }
   catch (e) { dlg.close(); flash(e.message || "Не получилось сделать ссылку. Проверь интернет."); return; }
   dlg.close();
   const link = `${location.origin}/start?ref=${j.code}`;
-  openDialog("💌 Пригласить друга", `<div class="mascot" style="width:110px;align-self:center">${mascot("happy")}</div>
-    <p style="margin:0">Отправь ссылку другу или подруге. Когда по ней зарегистрируются, вы оба получите 💞 <b>Шарик дружбы</b>.</p>
+  openDialog(ki("invite") + " Пригласить друга", `<div class="mascot" style="width:110px;align-self:center">${mascot("happy")}</div>
+    <p style="margin:0">Отправь ссылку другу или подруге. Когда по ней зарегистрируются, вы оба получите ${ki("hearts")} <b>Шарик дружбы</b>.</p>
     <label class="field"><span>Ссылка</span><input type="text" id="f-link" readonly value="${esc(link)}"></label>
-    <div class="row"><button class="btn primary sm" type="button" id="f-copy">📋 Скопировать</button>${navigator.share ? `<button class="btn sm" type="button" id="f-send">📤 Отправить</button>` : ""}</div>
-    <span class="small muted" id="f-copied" hidden>Скопировано ✓</span>${j.friends ? `<p class="small muted" style="margin:0">По твоим ссылкам уже пришло: ${j.friends} 🎉</p>` : ""}`, { submit: () => true, submitLabel: "Готово" });
+    <div class="row"><button class="btn primary sm" type="button" id="f-copy">${ki("copy")}Скопировать</button>${navigator.share ? `<button class="btn sm" type="button" id="f-send">${ki("send")}Отправить</button>` : ""}</div>
+    <span class="small muted" id="f-copied" hidden>Скопировано ✓</span>${j.friends ? `<p class="small muted" style="margin:0">По твоим ссылкам уже пришло: ${j.friends} ${ki("party")}</p>` : ""}`, { submit: () => true, submitLabel: "Готово" });
   dlgform.querySelector("#f-copy").addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(link); } catch { const inp = dlgform.querySelector("#f-link"); inp.select(); try { document.execCommand("copy"); } catch {} }
     dlgform.querySelector("#f-copied").hidden = false;
@@ -2015,7 +2020,7 @@ function deleteAccountDialog() {
 }
 
 function policyNote() {
-  return `<div class="card" style="gap:8px"><b>🔒 Мы обновили правила работы с данными</b><span class="small muted">Подробно описали, какие данные хранит Козя и кому передаёт, и добавили удаление аккаунта в настройках. <a href="/privacy" target="_blank">Политика</a> · <a href="/consent" target="_blank">Согласие</a></span><div><button class="btn sm" data-tip-ok="policy" type="button">Понятно</button></div></div>`;
+  return `<div class="card" style="gap:8px"><b>${ki("lock")} Мы обновили правила работы с данными</b><span class="small muted">Подробно описали, какие данные хранит Козя и кому передаёт, и добавили удаление аккаунта в настройках. <a href="/privacy" target="_blank">Политика</a> · <a href="/consent" target="_blank">Согласие</a></span><div><button class="btn sm" data-tip-ok="policy" type="button">Понятно</button></div></div>`;
 }
 function genderAsk() {
   return `<div class="card genderask"><b>Как к тебе обращаться?</b><span class="small muted">Чтобы я писала «ты сделала» или «ты сделал».</span>
@@ -2027,12 +2032,12 @@ function renderSettings(n) {
   const got = OUTFITS.filter(o => o[3] <= best).length;
   return `<h3 class="setcap">Аккаунт</h3>
   <div class="card setcard">
-    ${row("👤", esc(S.name || "Без имени"), S.email ? esc(S.email) : "почта не привязана", 'data-act="set-name"')}
-    ${S.email ? row("🔑", "Сменить пароль", "", 'data-act="set-pass"') : row("✉️", "Привязать почту и пароль", "чтобы входить с любого телефона", 'data-act="set-pass"')}
-    <div class="setrow" style="cursor:default;flex-wrap:wrap"><span class="setic">💬</span><span class="rt"><b>Обращение</b></span>
+    ${row(ki("user"), esc(S.name || "Без имени"), S.email ? esc(S.email) : "почта не привязана", 'data-act="set-name"')}
+    ${S.email ? row(ki("key"), "Сменить пароль", "", 'data-act="set-pass"') : row(ki("mail"), "Привязать почту и пароль", "чтобы входить с любого телефона", 'data-act="set-pass"')}
+    <div class="setrow" style="cursor:default;flex-wrap:wrap"><span class="setic">${ki("chat")}</span><span class="rt"><b>Обращение</b></span>
       <div class="seg" role="radiogroup" aria-label="Обращение" style="grid-template-columns:repeat(2,minmax(0,1fr));flex-basis:100%">${[["f", "В женском роде"], ["m", "В мужском роде"]].map(([k, t]) => `<button type="button" role="radio" aria-checked="${(S.gender || "f") === k}" data-gender-set="${k}">${t}</button>`).join("")}</div></div>
-    ${row("🎓", "Предметы и цели", esc(S.subjects.map(s => s.name).join(" · ") || "не выбраны"), 'data-act="set-subj"')}
-    ${row("🗓️", "Расписание и свободное время", "занятия, импорт из школы, сколько заниматься", 'data-view="setup"')}
+    ${row(ki("cap"), "Предметы и цели", esc(S.subjects.map(s => s.name).join(" · ") || "не выбраны"), 'data-act="set-subj"')}
+    ${row(ki("calendar"), "Расписание и свободное время", "занятия, импорт из школы, сколько заниматься", 'data-view="setup"')}
   </div>
   <h3 class="setcap">Внешний вид</h3>
   <div class="card setcard" style="gap:12px">
@@ -2041,10 +2046,10 @@ function renderSettings(n) {
   </div>
   <h3 class="setcap">Персонализация</h3>
   <div class="card setcard">
-    ${row("🐐", "Помощник и награды", `${esc(helperName())} · ${got} из ${OUTFITS.length} наград${cur ? ` · серия ${cur} ${word(cur, "день", "дня", "дней")}` : ""}`, 'data-view="buddy"')}
-    ${row("❓", "Как пользоваться", "тур по приложению и короткая справка", 'data-view="help"')}
-    <button class="setrow" type="button" role="switch" aria-checked="${S.look?.walker !== false}" data-act="walker-toggle"><span class="setic">🐾</span><span class="rt"><b>${esc(helperName())} гуляет по экрану</b><span>маленькая ${esc(helperName())} бегает по нижнему меню</span></span><span class="tgl"></span></button>
-    <div class="setrow off"><span class="setic">🔔</span><span class="rt"><b>Напоминания</b><span>скоро</span></span></div>
+    ${row(ki("goat"), "Помощник и награды", `${esc(helperName())} · ${got} из ${OUTFITS.length} наград${cur ? ` · серия ${cur} ${word(cur, "день", "дня", "дней")}` : ""}`, 'data-view="buddy"')}
+    ${row(ki("help"), "Как пользоваться", "тур по приложению и короткая справка", 'data-view="help"')}
+    <button class="setrow" type="button" role="switch" aria-checked="${S.look?.walker !== false}" data-act="walker-toggle"><span class="setic">${ki("paw")}</span><span class="rt"><b>${esc(helperName())} гуляет по экрану</b><span>маленькая ${esc(helperName())} бегает по нижнему меню</span></span><span class="tgl"></span></button>
+    <div class="setrow off"><span class="setic">${ki("bell")}</span><span class="rt"><b>Напоминания</b><span>скоро</span></span></div>
   </div>
   <button class="btn ghostdanger" data-act="logout" type="button">${S.email ? "Выйти из аккаунта" : "Выйти из плана на этом телефоне"}</button>
   <p class="small muted" style="margin:0;text-align:center"><a href="/privacy" target="_blank">Политика обработки данных</a> · <a href="/consent" target="_blank">Согласие</a></p>
@@ -2055,19 +2060,19 @@ function renderBuddy(n) {
   const next = OUTFITS.find(o => o[3] > best);
   const chars = Object.entries(CHARS).map(([k, c]) => {
     const open = best >= c.need, on = (l.char || "kozya") === k;
-    return `<button type="button" class="chbox${on ? " on" : ""}" ${open ? `data-char-set="${k}"` : "disabled"} aria-pressed="${on}">${open ? charPic(k) : `<span class="lock">🔒</span>`}<b>${c.name}</b><small>${on ? "выбрана" : open ? c.about || "" : `серия ${c.need} дней`}</small></button>`;
-  }).join("") + `<div class="chbox soon"><span class="lock">✨</span><b>Свой персонаж</b><small>скоро</small></div>`;
+    return `<button type="button" class="chbox${on ? " on" : ""}" ${open ? `data-char-set="${k}"` : "disabled"} aria-pressed="${on}">${open ? charPic(k) : `<span class="lock">${ki("lock")}</span>`}<b>${c.name}</b><small>${on ? "выбрана" : open ? c.about || "" : `серия ${c.need} дней`}</small></button>`;
+  }).join("") + `<div class="chbox soon"><span class="lock">${ki("sparkle")}</span><b>Свой персонаж</b><small>скоро</small></div>`;
   return `<div class="card"><h2>Кто тебе помогает</h2><div class="chars">${chars}</div>
     <label class="field"><span>Как зовут помощника</span><input type="text" id="buddy-name" maxlength="20" value="${esc(l.name || "")}" placeholder="${esc(CHARS[l.char || "kozya"].name)}"></label></div>
   <div class="card"><div class="cardhead"><h2>Награды за серию</h2><span class="small muted">${cur ? `сейчас ${cur} ${word(cur, "день", "дня", "дней")} подряд` : "серии пока нет"}</span></div>
-    <div class="rewards">${OUTFITS.map(([k, t, em, d]) => { const open = best >= d, on = l.outfit === k; return `<button type="button" class="rw${open ? "" : " off"}${on ? " on" : ""}" ${open ? `data-outfit-set="${k}"` : "disabled"} aria-pressed="${on}" aria-label="${t}, ${d} ${word(d, "день", "дня", "дней")}${open ? "" : " - пока закрыто"}"><span>${em}</span><small>${d} ${word(d, "день", "дня", "дней")}</small></button>`; }).join("")}</div>
-    ${next ? `<div class="progress"><i style="width:${Math.round(Math.min(1, best / next[3]) * 100)}%;background:var(--accent)"></i></div><p class="small muted" style="margin:0">Ещё ${next[3] - best} ${word(next[3] - best, "день", "дня", "дней")} до ${next[2]} - ${esc(helperName())} получит ${next[1].toLowerCase()}. Награды - это наряды: нажми на открытую, чтобы надеть.</p>` : `<p class="small muted" style="margin:0">Все награды открыты 🏆</p>`}
+    <div class="rewards">${OUTFITS.map(([k, t, em, d]) => { const open = best >= d, on = l.outfit === k; return `<button type="button" class="rw${open ? "" : " off"}${on ? " on" : ""}" ${open ? `data-outfit-set="${k}"` : "disabled"} aria-pressed="${on}" aria-label="${t}, ${d} ${word(d, "день", "дня", "дней")}${open ? "" : " - пока закрыто"}"><span>${ki(OUT_ICON[k]) || em}</span><small>${d} ${word(d, "день", "дня", "дней")}</small></button>`; }).join("")}</div>
+    ${next ? `<div class="progress"><i style="width:${Math.round(Math.min(1, best / next[3]) * 100)}%;background:var(--accent)"></i></div><p class="small muted" style="margin:0">Ещё ${next[3] - best} ${word(next[3] - best, "день", "дня", "дней")} до ${ki(OUT_ICON[next[0]]) || next[2]} - ${esc(helperName())} получит ${next[1].toLowerCase()}. Награды - это наряды: нажми на открытую, чтобы надеть.</p>` : `<p class="small muted" style="margin:0">Все награды открыты 🏆</p>`}
     ${l.outfit ? `<button class="btn sm" data-outfit-set="" type="button" style="align-self:flex-start">Снять наряд</button>` : ""}
     <p class="small muted" style="margin:0">Серия - дни подряд, когда ты {сделала|сделал} хоть что-то: дело из плана, карточки в тренажёре или задачу через чат. Выходные и дни «сил нет» не прерывают серию. Награды остаются навсегда.</p></div>
   <div class="card"><div class="cardhead"><h2>Особые награды</h2></div>
-    <div class="rewards">${SPECIAL.map(([k, t, em, cond, has]) => { const open = has(), on = l.outfit === k; return `<button type="button" class="rw${open ? "" : " off"}${on ? " on" : ""}" ${open ? `data-outfit-set="${k}"` : "disabled"} aria-pressed="${on}" aria-label="${t}${open ? "" : " - пока закрыто"}"><span>${em}</span><small>${cond}</small></button>`; }).join("")}</div>
-    <p class="small muted" style="margin:0">🚀 <b>Медаль первопроходца</b> - для первых 100 пользователей Кози${BADGES.pioneer ? ". Она у тебя есть!" : "."}<br>💞 <b>Шарик дружбы</b> - позови друга: когда он зарегистрируется по твоей ссылке, шарик получите вы оба.${BADGES.friends ? ` Друзей пришло: ${BADGES.friends}.` : ""}</p>
-    <button class="btn primary" data-act="invite" type="button" style="justify-content:center">💌 Пригласить друга</button></div>`;
+    <div class="rewards">${SPECIAL.map(([k, t, em, cond, has]) => { const open = has(), on = l.outfit === k; return `<button type="button" class="rw${open ? "" : " off"}${on ? " on" : ""}" ${open ? `data-outfit-set="${k}"` : "disabled"} aria-pressed="${on}" aria-label="${t}${open ? "" : " - пока закрыто"}"><span>${ki(OUT_ICON[k]) || em}</span><small>${cond}</small></button>`; }).join("")}</div>
+    <p class="small muted" style="margin:0">${ki("rocket")} <b>Медаль первопроходца</b> - для первых 100 пользователей Кози${BADGES.pioneer ? ". Она у тебя есть!" : "."}<br>${ki("hearts")} <b>Шарик дружбы</b> - позови друга: когда он зарегистрируется по твоей ссылке, шарик получите вы оба.${BADGES.friends ? ` Друзей пришло: ${BADGES.friends}.` : ""}</p>
+    <button class="btn primary" data-act="invite" type="button" style="justify-content:center">${ki("invite")}Пригласить друга</button></div>`;
 }
 function charPic(k) { const save0 = look().char; look().char = k; const s = dressUp(mascot("happy", CHARS[k].name).replace("<svg ", '<svg width="64" height="64" '), "happy"); look().char = save0; return s; }
 function nameDialog() {
@@ -2226,7 +2231,7 @@ function renderEge() {
 }
 function egeReportBtn(c) {
   const done = ege?.reported?.has(c.id);
-  return `<button class="btn ghost sm egerep" data-act="ege-report" type="button" ${done ? "disabled" : ""}>${done ? "Спасибо, отправлено 💛" : "⚠️ Здесь ошибка"}</button>`;
+  return `<button class="btn ghost sm egerep" data-act="ege-report" type="button" ${done ? "disabled" : ""}>${done ? "Спасибо, отправлено 💛" : ki("warn") + "Здесь ошибка"}</button>`;
 }
 function egeReportDialog() {
   const c = ege.cards[ege.i];
@@ -2457,8 +2462,8 @@ let installHidden = false; try { installHidden = localStorage.getItem("ege-insta
 function showInstall() {
   const el = $("#install");
   if (standalone || installHidden || !U) { el.hidden = true; return; }
-  if (installEvt) el.innerHTML = `<img src="/icons/icon-192.png" alt=""><div class="tx">Поставь Козю на телефон<span>Иконка на экране, открывается как приложение</span></div><button class="btn sm primary" data-act="install" type="button">Установить</button><button class="iconbtn" data-act="install-hide" type="button" aria-label="Скрыть">✕</button>`;
-  else if (isIOS) el.innerHTML = `<img src="/icons/icon-192.png" alt=""><div class="tx">Поставь Козю на экран «Домой»<span>Нажми «Поделиться» внизу Safari → «На экран „Домой“»</span></div><button class="iconbtn" data-act="install-hide" type="button" aria-label="Скрыть">✕</button>`;
+  if (installEvt) el.innerHTML = `<img src="/icons/icon-192.png" alt=""><div class="tx">Поставь Козю на телефон<span>Иконка на экране, открывается как приложение</span></div><button class="btn sm primary" data-act="install" type="button">Установить</button><button class="iconbtn" data-act="install-hide" type="button" aria-label="Скрыть">${ki("close")}</button>`;
+  else if (isIOS) el.innerHTML = `<img src="/icons/icon-192.png" alt=""><div class="tx">Поставь Козю на экран «Домой»<span>Нажми «Поделиться» внизу Safari → «На экран „Домой“»</span></div><button class="iconbtn" data-act="install-hide" type="button" aria-label="Скрыть">${ki("close")}</button>`;
   else { el.hidden = true; return; }
   el.hidden = false;
 }

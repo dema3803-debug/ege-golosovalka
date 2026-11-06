@@ -1,7 +1,7 @@
 // Сервис-воркер приложения: чтобы оно ставилось на телефон и открывалось при плохом интернете.
 // Страницы и скрипты — сначала из сети (свежая версия), при отсутствии сети — из кэша.
-const CACHE = "kozya-v1";
-const SHELL = ["/app", "/core.js", "/manifest.json", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png"];
+const CACHE = "kozya-v2";
+const SHELL = ["/app", "/core.js", "/icons.js", "/manifest.json", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

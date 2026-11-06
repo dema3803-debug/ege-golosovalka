@@ -13,7 +13,7 @@ const TYPES = {
   ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".txt": "text/plain; charset=utf-8", ".webmanifest": "application/manifest+json",
 };
 const PAGES = { "/poll": "index.html", "/app": "app.html", "/plan": "plan.html", "/start": "plan.html", "/privacy": "privacy.html", "/stats": "stats.html", "/consent": "consent.html" };
-const PUBLIC = new Set(["index.html", "app.html", "plan.html", "privacy.html", "stats.html", "consent.html", "core.js", "sw.js", "manifest.json"]);
+const PUBLIC = new Set(["index.html", "app.html", "plan.html", "privacy.html", "stats.html", "consent.html", "core.js", "icons.js", "sw.js", "manifest.json"]);
 const handlers = new Map();
 
 async function handler(name) {
