@@ -87,6 +87,9 @@ h3{font-size:14px;font-weight:600;margin:0}
 .stat{background:#FFFFFF;border-radius:18px;padding:10px 14px;min-width:0}
 .stat span{display:block;font-size:13px;color:#6B5A63;font-weight:700}
 .stat b{font-size:21px;font-weight:800}
+.statbtn{border:0;text-align:left;cursor:pointer;color:#1B1620;font-family:inherit}
+.statbtn:hover{background:#FDF2F6}
+.statbtn i{display:block;font-style:normal;font-size:12px;font-weight:700;color:#B8325E;margin-top:2px}
 .streak{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:999px;padding:8px 12px;font-weight:800;font-size:15px;white-space:nowrap}
 .startbtn{border:0;background:var(--primary);color:var(--primary-ink);border-radius:22px;padding:14px 16px 14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%}
 .startbtn .t1{display:block;font-size:18px;font-weight:800;line-height:1.25}
@@ -643,18 +646,23 @@ function renderToday(d, n) {
   todayBlocks = live0;
   const doneN = (S.log[d.date] || []).length, totalN = live0.filter(b => b.type !== "lesson").length + doneN;
   const nxt = !d.off ? nextUp(live0) : null;
-  const gap = S.subjects.filter(x => x.target && x.current).sort((a, b) => (b.target - b.current) - (a.target - a.current))[0];
+  const reviewedToday = new Set((S.log[d.date] || []).filter(x => x.kind === "review").map(x => x.ref));
+  const dueTopics = S.topics.filter(t => t.next && t.next <= d.date && !reviewedToday.has(t.id)).length;
+  const dayHash = [...d.date].reduce((a, c) => a + c.charCodeAt(0), 0);
+  const oneOf = list => list[dayHash % list.length];
   let mood = "happy", moodLabel = "в настроении", say1;
   if (session) { mood = "focus"; moodLabel = "занимается"; say1 = "Мы в сессии! Возвращайся к таймеру."; }
   else if (d.off) { mood = "rest"; moodLabel = "отдыхает"; say1 = "Сегодня выходной! Я тоже валяюсь. Завтра продолжим."; }
   else if (tiredT && tiredT.rest) { mood = "rest"; moodLabel = "отдыхает"; say1 = "Отдыхай. Всё несделанное я перенесла — ничего не потеряется."; }
-  else if (nxt) say1 = doneN ? `Уже ${doneN}! Дальше — ${nxt.title}.` : `Готова? Начнём: ${nxt.title} — ${S.sessionMin} минут, потом перерыв!`;
+  else if (nxt) say1 = doneN
+    ? oneOf(["Так держать! Ещё немного — и можно отдыхать.", "Хорошо идёшь! Я рядом, если что — пиши.", "Умница, продолжаем в том же темпе!"])
+    : oneOf(["Готова? Я засеку время и напомню про перерыв.", "Начнём потихоньку — первые 25 минут самые трудные.", "Привет! Жми «Начать», а я буду рядом."]);
   else if (totalN) { say1 = "Всё на сегодня сделано! Ты умница."; moodLabel = "гордится"; }
   else say1 = "Задач пока нет. Напиши мне, что нужно сделать, — разложу по времени.";
   h += `<div class="hero"><div class="herohead"><b>Козя</b><span class="mood">${moodLabel}</span></div>
     <div class="bubble">${esc(say1)}</div><div class="mascot">${mascot(mood)}</div>
     <div class="stats"><div class="stat"><span>Сегодня</span><b>${doneN} из ${totalN}</b></div>
-    ${gap ? `<div class="stat"><span>${esc(gap.name.replace(" язык", ""))} до цели</span><b>+${gap.target - gap.current} ${word(gap.target - gap.current, "балл", "балла", "баллов")}</b></div>` : `<div class="stat"><span>Сессия</span><b>${S.sessionMin} мин</b></div>`}</div></div>`;
+    <button class="stat statbtn" data-act="quiz-any" type="button"><span>Закрепить</span><b>${dueTopics ? `${dueTopics} ${word(dueTopics, "тема", "темы", "тем")}` : "5 вопросов"}</b><i>Проверь меня →</i></button></div></div>`;
   if (session) h += `<div class="minibar"><span>${session.phase === "work" ? esc(session.title) : "Перерыв"} · <span class="tm" id="mini-time">${fmt(leftMs())}</span></span><button class="btn sm" data-view="session" type="button">Открыть</button></div>`;
   else if (nxt) h += `<button class="startbtn" data-start="${nxt.type}|${nxt.ref}" type="button"><span><span class="t1">${nxt.type === "review" ? "Проверить" : "Начать"}: ${esc(nxt.title)}</span><span class="t2">${nxt.type === "review" ? "Козя задаст 5 вопросов" : `${S.sessionMin} минут · потом 5 минут отдыха`}</span></span><span class="play"><svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span></button>`;
   if (C.tiredStreak(S, d.date) >= 3 && (S.capFactor || 1) >= 1 && !S.lightenAsked?.[d.date]) {
