@@ -1,3 +1,4 @@
+import { aiOverLimit } from "./_limits.js";
 import { hasDb, redis } from "./_redis.js";
 import { validU, loadState, saveState, readBody } from "./_store.js";
 import { chat } from "./_giga.js";
@@ -18,6 +19,7 @@ export default async function handler(req, res) {
 
   const state = await loadState(b.u);
   if (!state) return res.status(404).json({ error: "План не найден" });
+  if (await aiOverLimit(b.u)) return res.status(429).json({ error: "На сегодня я наговорилась 😴 Завтра продолжим. А план можно поправить руками." });
 
   const prompt = buildPrompt(state, today, now);
   const history = (state.chat || []).slice(-6).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.role === "user" ? m.text : JSON.stringify({ reply: m.text, actions: [] }) }));

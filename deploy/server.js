@@ -12,8 +12,8 @@ const TYPES = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json; charset=utf-8",
   ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".txt": "text/plain; charset=utf-8", ".webmanifest": "application/manifest+json",
 };
-const PAGES = { "/": "index.html", "/app": "app.html", "/plan": "plan.html" };
-const PUBLIC = new Set(["index.html", "app.html", "plan.html", "core.js", "sw.js", "manifest.json"]);
+const PAGES = { "/": "index.html", "/app": "app.html", "/plan": "plan.html", "/start": "plan.html", "/privacy": "privacy.html" };
+const PUBLIC = new Set(["index.html", "app.html", "plan.html", "privacy.html", "core.js", "sw.js", "manifest.json"]);
 const handlers = new Map();
 
 async function handler(name) {

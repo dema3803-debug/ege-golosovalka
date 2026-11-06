@@ -1,3 +1,4 @@
+import { aiOverLimit } from "./_limits.js";
 import { hasDb } from "./_redis.js";
 import { validU, loadState, readBody } from "./_store.js";
 import { chat } from "./_giga.js";
@@ -10,6 +11,7 @@ export default async function handler(req, res) {
   if (!hasDb()) return res.status(503).json({ error: "База не подключена" });
   const b = readBody(req) || {};
   if (!validU(b.u) || !(await loadState(b.u))) return res.status(400).json({ error: "Неверная ссылка" });
+  if (await aiOverLimit(b.u)) return res.status(429).json({ error: "На сегодня я наговорилась 😴 Завтра продолжим. А план можно поправить руками." });
   const clip = (s, n) => String(s ?? "").slice(0, n);
   try {
     if (b.mode === "check") {
