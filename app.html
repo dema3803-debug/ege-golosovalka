@@ -1526,7 +1526,7 @@ function passDialog() {
 }
 
 // ---------- тренажёр ЕГЭ: база карточек по кодификатору ----------
-const EGE_KINDS = { term: "Понятие", judg: "Выбери верные", odd: "Найди лишние", match: "Соответствие", open: "Часть 2" };
+const EGE_KINDS = { term: "Ответ словом", judg: "Выбери верные", odd: "Найди лишние", match: "Соответствие", order: "Хронология", open: "Развёрнутый ответ" };
 let egeIndex = null, egeBases = {}, ege = null;
 async function egeLoadIndex() {
   if (egeIndex) return egeIndex;
@@ -1577,7 +1577,7 @@ const egeNorm = s => String(s || "").toLowerCase().replace(/ё/g, "е").replace(
 function egeCheck(c, input) {
   const v = String(input || "").trim();
   if (c.kind === "judg" || c.kind === "odd") { const d = [...new Set(v.replace(/\D/g, ""))].sort().join(""); return d === [...c.answer].sort().join(""); }
-  if (c.kind === "match") return v.replace(/\D/g, "") === c.answer;
+  if (c.kind === "match" || c.kind === "order") return v.replace(/\D/g, "") === c.answer;
   if (c.kind === "term") { const x = egeNorm(v); return (c.accept || [c.answer]).some(a => { const y = egeNorm(a); return x === y || (y.length > 3 && x.includes(y)); }); }
   return null; // open — сверяет сама
 }
@@ -1618,11 +1618,11 @@ function renderEge() {
   const opts = c.kind === "match"
     ? `<div class="egematch"><ol class="egel">${c.left.map(x => `<li>${esc(x)}</li>`).join("")}</ol><ol class="eger">${c.options.map((x, i) => `<li><b>${i + 1}</b> ${esc(x)}</li>`).join("")}</ol></div>`
     : c.options ? `<div class="egeopts">${c.options.map((x, i) => `<button type="button" class="egeopt${String(q.given || "").includes(String(i + 1)) ? " on" : ""}" data-ege-opt="${i + 1}" ${q.phase !== "ask" ? "disabled" : ""}><b>${i + 1}</b><span>${esc(x)}</span></button>`).join("")}</div>` : "";
-  const digits = c.kind === "judg" || c.kind === "odd" || c.kind === "match";
+  const digits = c.kind === "judg" || c.kind === "odd" || c.kind === "match" || c.kind === "order";
   let foot = "";
   if (q.phase === "ask") {
     foot = `<form class="egeform" data-ege-form>
-      <label class="field"><span>${c.kind === "match" ? "Ответ — цифры по порядку букв А, Б, В…" : digits ? "Ответ — цифры (можно нажимать на варианты)" : c.kind === "open" ? "Твой ответ (можно кратко)" : "Твой ответ"}</span>
+      <label class="field"><span>${c.kind === "match" ? "Ответ — цифры по порядку букв А, Б, В…" : c.kind === "order" ? "Ответ — цифры в нужном порядке (нажимай на события по очереди)" : digits && c.options ? "Ответ — цифры (можно нажимать на варианты)" : digits ? "Ответ — цифры" : c.kind === "open" ? "Твой ответ (можно кратко)" : "Твой ответ"}</span>
       ${c.kind === "open" ? `<textarea id="ege-in" rows="3" maxlength="600"></textarea>` : `<input id="ege-in" type="text" autocomplete="off" ${digits ? 'inputmode="numeric"' : ""} maxlength="200" value="${esc(q.given || "")}">`}</label>
       <div class="row"><button class="btn primary" type="submit">${c.kind === "open" ? "Показать ответ" : "Проверить"}</button><button class="btn" data-act="ege-dunno" type="button">Не знаю</button></div></form>`;
   } else if (q.phase === "self") {
@@ -1636,7 +1636,7 @@ function renderEge() {
   }
   return `<div class="egehead"><span>${esc(q.subject)} · ${esc(c.block)}</span><span>${q.i + 1} из ${q.cards.length}</span></div>
     <div class="egebar"><i style="width:${Math.round(q.i / q.cards.length * 100)}%"></i></div>
-    <div class="card egecard"><div class="egetag">${EGE_KINDS[c.kind] || ""} · ${esc(c.topic)}</div><p class="egeq">${esc(c.q)}</p>${opts}${foot}</div>
+    <div class="card egecard"><div class="egetag">${[EGE_KINDS[c.kind], c.topic !== EGE_KINDS[c.kind] ? c.topic : ""].filter(Boolean).map(esc).join(" · ")}</div><p class="egeq">${esc(c.q)}</p>${opts}${foot}</div>
     ${q.phase === "ask" ? `<button class="btn ghost" data-act="ege-stop" type="button" style="align-self:center">Хватит на сегодня</button>` : ""}`;
 }
 function egeCardHTML(n) {
@@ -1694,7 +1694,7 @@ document.addEventListener("click", e => {
   if (d.calMove) { const [y, m] = (calMonth || n.today.slice(0, 7)).split("-").map(Number), k = y * 12 + m - 1 + +d.calMove; calMonth = `${Math.floor(k / 12)}-${String(k % 12 + 1).padStart(2, "0")}`; render(); return; }
   if (d.egeStart) { egeStart(d.egeStart); return; }
   if (d.egeOpt && ege && ege.phase === "ask") { const inp = document.getElementById("ege-in"); let v = (inp ? inp.value : ege.given || "").replace(/\D/g, ""); const c = ege.cards[ege.i];
-    if (c.kind === "match") v += d.egeOpt; else v = v.includes(d.egeOpt) ? v.replace(d.egeOpt, "") : [...v + d.egeOpt].sort().join("");
+    if (c.kind === "match" || c.kind === "order") { if (!v.includes(d.egeOpt) || c.kind === "match") v += d.egeOpt; else v = v.replace(d.egeOpt, ""); } else v = v.includes(d.egeOpt) ? v.replace(d.egeOpt, "") : [...v + d.egeOpt].sort().join("");
     ege.given = v; render(); return; }
   if ("back" in d) { if (view === "ege") ege = null; view = backStack.pop() || (view === "buddy" ? "settings" : "today"); history.replaceState(null, "", "#" + view); render(); scrollTo(0, 0); return; }
   if (d.delMat) { deleteMaterial(d.delMat); return; }
