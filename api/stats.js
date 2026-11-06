@@ -23,7 +23,9 @@ export default async function handler(req, res) {
       const created = emails[u]?.created || s.created || seen[0] || null;
       const eg = Object.values(s.ege || {}), egR = eg.reduce((a, x) => a + (x.r || 0), 0), egW = eg.reduce((a, x) => a + (x.w || 0), 0);
       const egeDays = new Set(eg.map(x => x.last).filter(Boolean)).size;
-      people.push({ name: s.name || "", email: emails[u]?.email || "", created, lastSeen: seen.at(-1) || null, daysActive: seen.length, doneBlocks: done, messages: (s.chat || []).filter(m => m.role === "user").length, topics: (s.topics || []).length, cards: (s.cards || []).length,
+      const games = Object.values(s.played || {}).reduce((a, n) => a + (Number(n) || 0), 0);
+      const friends = Number(await redis("HGET", "refs", u)) || 0;
+      people.push({ name: s.name || "", игр: games, привёл_друзей: friends, задач: (s.tasks || []).length, повторяющихся: (s.habits || []).length, email: emails[u]?.email || "", created, lastSeen: seen.at(-1) || null, daysActive: seen.length, doneBlocks: done, messages: (s.chat || []).filter(m => m.role === "user").length, topics: (s.topics || []).length, cards: (s.cards || []).length,
         тренажёр: { карточек_изучено: eg.length, ответов: egR + egW, верно: egR, процент: egR + egW ? Math.round(egR / (egR + egW) * 100) : null, дней_с_тренажёром: egeDays }, seen });
     }
     cursor = String(next);
@@ -37,6 +39,10 @@ export default async function handler(req, res) {
   let reports = [];
   try { reports = ((await redis("LRANGE", "reports", 0, 49)) || []).map(x => { try { const r = JSON.parse(x); return { когда: new Date(Date.parse(r.at) + 3 * 3600000).toISOString().slice(0, 16).replace("T", " "), кто: r.name, предмет: r.subject, карточка: r.card, вопрос: r.q, ответ_ученика: r.given, что_не_так: r.text }; } catch { return null; } }).filter(Boolean); } catch {}
   people.sort((a, b) => (b.lastSeen || "").localeCompare(a.lastSeen || ""));
+  const days = [];
+  for (let i = 29; i >= 0; i--) { const d = addDays(today, -i); days.push({ день: d, заходили: people.filter(p => p.seen.includes(d)).length, новых: signedUp.filter(p => p.created === d).length }); }
+  const sumH = async key => { try { return ((await redis("HVALS", key)) || []).reduce((a, x) => a + (Number(x) || 0), 0); } catch { return 0; } };
+  let pioneers = 0; try { pioneers = Number(await redis("HLEN", "pioneers")) || 0; } catch {}
   res.status(200).json({
     сегодня: today,
     всего_планов: people.length,
@@ -48,6 +54,12 @@ export default async function handler(req, res) {
     тренажёр_пользовались: people.filter(p => p.тренажёр.ответов > 0).length,
     жалобы_на_карточки: reports,
     тренажёр_всего_ответов: people.reduce((a, p) => a + p.тренажёр.ответов, 0),
+    по_дням: days,
+    первопроходцев: pioneers,
+    пришли_по_приглашению: await sumH("refs"),
+    ссылок_на_карточки: await sumH("share:made"),
+    открыли_ссылки_на_карточки: await sumH("share:opens"),
+    игр_всего: people.reduce((a, p) => a + p.игр, 0),
     люди: people.map(({ seen, ...p }) => p),
   });
 }

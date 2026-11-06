@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Козя · статистика</title>
+<style>
+:root{--bg:#FBEFF3;--card:#FFFFFF;--ink:#1B1620;--muted:#6B5A63;--line:#F1DDE5;--accent:#B8325E;--pink:#E2557A;--soft:#FBE3EB;--ok:#14825f;--warn:#B35418}
+@media (prefers-color-scheme:dark){:root{--bg:#17121A;--card:#221A25;--ink:#F5EEF2;--muted:#BBA9B4;--line:#3A2E40;--accent:#F28AAB;--pink:#F28AAB;--soft:#3D2232;--ok:#47C99C;--warn:#F0965D;color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "Nunito","Segoe UI",system-ui,-apple-system,sans-serif;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:26px;margin:0;font-weight:800}
+h2{font-size:17px;margin:0;font-weight:800}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.muted{color:var(--muted)}.small{font-size:13px}
+.card{background:var(--card);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--card);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:2px}
+.kpi b{font-size:30px;font-weight:900;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi span{font-size:13px;color:var(--muted)}
+.kpi i{font-style:normal;font-size:12px;color:var(--muted)}
+button,input{font:inherit;color:inherit}
+.btn{border:0;border-radius:999px;padding:9px 16px;background:var(--ink);color:var(--bg);font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+input{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;width:100%}
+.bar{height:12px;border-radius:99px;background:var(--soft);overflow:hidden}.bar i{display:block;height:100%;background:var(--pink);border-radius:99px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:900px;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+th{color:var(--muted);font-weight:700;font-size:12px;position:sticky;top:0;background:var(--card)}
+td.num,th.num{text-align:right}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted)}
+.rep{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:3px}
+.rep:first-of-type{border-top:0;padding-top:0}
+#err{color:var(--warn)}
+svg text{fill:var(--muted);font-size:10px}
+</style></head><body><div class="wrap">
+<div class="top"><div><h1>🐐 Козя · статистика</h1><div class="small muted" id="when">&nbsp;</div></div>
+<div style="display:flex;gap:8px"><button class="btn" id="reload" hidden>Обновить</button><button class="btn ghost" id="logout" hidden>Выйти</button></div></div>
+
+<form class="card" id="login" hidden><h2>Вход</h2>
+<p class="small muted" style="margin:0">Введи ключ администратора. Его можно посмотреть на сервере командой <b>grep ADMIN_KEY /etc/kozya.env</b>. Ключ запомнится на этом устройстве.</p>
+<input type="password" id="key" placeholder="Ключ" autocomplete="current-password" required>
+<button class="btn" type="submit">Войти</button><span class="small" id="err"></span></form>
+
+<div id="out" hidden style="display:flex;flex-direction:column;gap:14px">
+<div class="card"><div class="top"><h2>Цель: 50 пользователей</h2><b id="goaln"></b></div><div class="bar"><i id="goalbar"></i></div><span class="small muted" id="goaltxt"></span></div>
+<div class="kpis" id="kpis"></div>
+<div class="card"><div class="top"><h2>Заходы за 30 дней</h2><div class="legend"><span><span class="dot" style="background:var(--pink)"></span>заходили</span><span><span class="dot" style="background:var(--ink)"></span>новые</span></div></div><div class="scroll"><div id="chart"></div></div></div>
+<div class="card"><h2>Люди</h2><p class="small muted" style="margin:0">Сверху те, кто заходил недавно. Таблицу можно листать вбок.</p><div class="scroll"><table id="people"></table></div></div>
+<div class="card"><h2>Жалобы на карточки тренажёра</h2><div id="reports"></div></div>
+</div>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmtD = d => d ? d.slice(8, 10) + "." + d.slice(5, 7) : "-";
+let KEY = ""; try { KEY = localStorage.getItem("kozya-admin") || ""; } catch {}
+async function load() {
+  $("#when").textContent = "Загружаю…";
+  let r, j;
+  try { r = await fetch("/api/stats?key=" + encodeURIComponent(KEY), { cache: "no-store" }); j = await r.json(); }
+  catch { $("#when").textContent = "Нет связи с сервером. Проверь интернет или выключи VPN."; return; }
+  if (r.status === 403) { try { localStorage.removeItem("kozya-admin"); } catch {} KEY = ""; showLogin("Неверный ключ"); return; }
+  if (!r.ok) { $("#when").textContent = j.error || "Ошибка сервера"; return; }
+  render(j);
+}
+function showLogin(msg) { $("#login").hidden = false; $("#out").hidden = true; $("#reload").hidden = $("#logout").hidden = true; $("#err").textContent = msg || ""; $("#when").innerHTML = "&nbsp;"; }
+function render(j) {
+  $("#login").hidden = true; $("#out").hidden = false; $("#reload").hidden = $("#logout").hidden = false;
+  $("#when").textContent = `Обновлено ${new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })} · сегодня ${fmtD(j.сегодня)}`;
+  const n = j.зарегистрировались_сами, act7 = j.заходили_за_7_дней;
+  $("#goaln").textContent = `${n} из 50`; $("#goalbar").style.width = Math.min(100, n / 50 * 100) + "%";
+  $("#goaltxt").textContent = `Активных за неделю: ${act7}. Цель месяца: 20 человек занимаются хотя бы 3 дня в неделю.`;
+  const pct = x => x.процент == null ? "-" : x.процент + "%";
+  const kp = [
+    [n, "зарегистрировались"], [j.заходили_сегодня, "заходили сегодня"], [act7, "заходили за 7 дней"],
+    [pct(j.вернулись_на_следующий_день), "вернулись на след. день", `из ${j.вернулись_на_следующий_день.из}`],
+    [pct(j.вернулись_через_неделю), "вернулись через неделю", `из ${j.вернулись_через_неделю.из}`],
+    [j.тренажёр_пользовались, "пользуются тренажёром", `${j.тренажёр_всего_ответов} ответов`],
+    [j.игр_всего ?? 0, "игр сыграно"], [j.пришли_по_приглашению ?? 0, "пришли по приглашению"],
+    [j.ссылок_на_карточки ?? 0, "поделились карточками", `открыли ${j.открыли_ссылки_на_карточки ?? 0} раз`],
+    [`${j.первопроходцев ?? 0}/100`, "первопроходцев"],
+  ];
+  $("#kpis").innerHTML = kp.map(([v, t, sub]) => `<div class="kpi"><b>${esc(v)}</b><span>${esc(t)}</span>${sub ? `<i>${esc(sub)}</i>` : ""}</div>`).join("");
+  // график
+  const D = j.по_дням || [], W = Math.max(600, D.length * 26), H = 170, max = Math.max(1, ...D.map(d => d.заходили));
+  const bw = W / D.length;
+  $("#chart").innerHTML = `<svg style="width:100%;min-width:600px;height:auto;display:block" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="Заходы по дням">
+    ${[0.5, 1].map(f => `<line x1="0" x2="${W}" y1="${H - f * (H - 20)}" y2="${H - f * (H - 20)}" stroke="currentColor" stroke-opacity=".12"/><text x="2" y="${H - f * (H - 20) - 3}">${Math.round(max * f)}</text>`).join("")}
+    ${D.map((d, i) => { const h = d.заходили / max * (H - 20), hn = d.новых / max * (H - 20), x = i * bw + bw * 0.18, w = bw * 0.64;
+      return `<rect x="${x}" y="${H - h}" width="${w}" height="${h}" rx="4" fill="var(--pink)"><title>${fmtD(d.день)}: заходили ${d.заходили}, новых ${d.новых}</title></rect>${d.новых ? `<rect x="${x + w * 0.25}" y="${H - hn}" width="${w * 0.5}" height="${hn}" rx="3" fill="var(--ink)"/>` : ""}${d.заходили ? `<text x="${x + w / 2}" y="${H - h - 4}" text-anchor="middle">${d.заходили}</text>` : ""}${i % 3 === 0 || i === D.length - 1 ? `<text x="${x + w / 2}" y="${H + 15}" text-anchor="middle">${fmtD(d.день)}</text>` : ""}`; }).join("")}
+  </svg>`;
+  $("#chart").parentElement.scrollLeft = 1e6; // на телефоне сразу видны последние дни
+  // люди
+  const cols = [["Имя", p => esc(p.name || "-")], ["Почта", p => esc(p.email || "-")], ["С какого числа", p => fmtD(p.created)], ["Последний заход", p => fmtD(p.lastSeen)],
+    ["Дней заходил(а)", p => p.daysActive, 1], ["Дел сделано", p => p.doneBlocks, 1], ["Задач", p => p.задач ?? "-", 1], ["Тренажёр, ответов", p => p.тренажёр.ответов, 1], ["Верно", p => p.тренажёр.процент == null ? "-" : p.тренажёр.процент + "%", 1],
+    ["Игр", p => p.игр ?? 0, 1], ["Тем", p => p.topics, 1], ["Карточек", p => p.cards, 1], ["Сообщений Козе", p => p.messages, 1], ["Привёл друзей", p => p.привёл_друзей ?? 0, 1]];
+  $("#people").innerHTML = `<tr>${cols.map(c => `<th class="${c[2] ? "num" : ""}">${c[0]}</th>`).join("")}</tr>` +
+    j.люди.filter(p => p.email).map(p => `<tr>${cols.map(c => `<td class="${c[2] ? "num" : ""}">${c[1](p)}</td>`).join("")}</tr>`).join("");
+  const R = j.жалобы_на_карточки || [];
+  $("#reports").innerHTML = R.length ? R.map(r => `<div class="rep"><b>${esc(r.что_не_так || "без текста")}</b><span class="small muted">${esc(r.когда)} · ${esc(r.кто)} · ${esc(r.предмет)} · ${esc(r.карточка)}</span><span class="small">${esc(r.вопрос)}${r.ответ_ученика ? ` · ответ: ${esc(r.ответ_ученика)}` : ""}</span></div>`).join("") : `<span class="small muted">Жалоб нет 🎉</span>`;
+}
+$("#login").addEventListener("submit", e => { e.preventDefault(); KEY = $("#key").value.trim(); try { localStorage.setItem("kozya-admin", KEY); } catch {} load(); });
+$("#reload").addEventListener("click", load);
+$("#logout").addEventListener("click", () => { try { localStorage.removeItem("kozya-admin"); } catch {} KEY = ""; showLogin(); });
+KEY ? load() : showLogin();
+setInterval(() => { if (KEY && !document.hidden) load(); }, 120000);
+</script></body></html>
