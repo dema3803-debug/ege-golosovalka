@@ -548,8 +548,8 @@ document.getElementById("status").addEventListener("click", e => { if (e.target.
 async function load() {
   if (!U) {
     $("#date").textContent = ""; $("#hello").textContent = "Привет!";
-    const login = location.hash === "#login";
-    $("#view").innerHTML = `<div class="hero"><div class="bubble">${login ? "С возвращением! Введи почту и пароль - и продолжим." : "Я Козя! Помогу готовиться к ЕГЭ без завалов: соберу план и буду напоминать, что делать."}</div><div class="mascot">${mascot("happy")}</div></div>
+    const login = location.hash === "#login", deleted = location.hash === "#deleted";
+    $("#view").innerHTML = `<div class="hero"><div class="bubble">${deleted ? "Аккаунт удалён, все твои данные стёрты. Будет нужна помощь с ЕГЭ - я тут 🐐" : login ? "С возвращением! Введи почту и пароль - и продолжим." : "Я Козя! Помогу готовиться к ЕГЭ без завалов: соберу план и буду напоминать, что делать."}</div><div class="mascot">${mascot("happy")}</div></div>
       ${login ? "" : `<a class="btn primary" href="/start" style="justify-content:center;text-decoration:none">Начать - собрать мой план</a>`}
       <form class="card" id="loginform"><b>Уже есть план? Войди</b>
       <label class="field"><span>Почта</span><input type="email" id="l-email" autocomplete="email" inputmode="email" required></label>
@@ -749,7 +749,7 @@ function render() {
   document.body.classList.toggle("insession", view === "session");
   const plan = C.buildPlan(S, n.today, 7, n.min);
   const v = view === "chat" && matchMedia("(min-width:1000px)").matches ? "today" : view;
-  $("#view").innerHTML = gx((v === "today" && !S.gender ? genderAsk() : "") + (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "ege" ? renderEge() : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "help" ? renderHelp() : v === "game" ? renderGame() : v === "setup" ? renderSetup() : renderChatView(n)));
+  $("#view").innerHTML = gx((v === "today" && !S.gender ? genderAsk() : "") + (v === "today" && S.gender && !S.tips?.policy ? policyNote() : "") + (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "ege" ? renderEge() : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "help" ? renderHelp() : v === "game" ? renderGame() : v === "setup" ? renderSetup() : renderChatView(n)));
   $("#chat-desk").innerHTML = gx(chatHTML(n, 60));
   const cd = $("#chat-desk"); cd.scrollTop = cd.scrollHeight;
   afterRender(v);
@@ -1990,6 +1990,32 @@ async function inviteDialog() {
   dlgform.querySelector("#f-send")?.addEventListener("click", () => navigator.share({ title: "Козя", text: "Я готовлюсь к ЕГЭ с Козей 🐐 Она сама раскладывает план по дням. Присоединяйся:", url: link }).catch(() => {}));
 }
 
+
+// ---------- удалить аккаунт и все данные (отзыв согласия) ----------
+function deleteAccountDialog() {
+  openDialog("Удалить аккаунт?", `<div class="mascot" style="width:110px;align-self:center">${mascot("plead")}</div>
+    <p style="margin:0">Удалятся <b>все</b> твои данные: план, задачи, темы, карточки, переписка с ${esc(helperName())}, файлы, награды и серия. Восстановить их будет нельзя.</p>
+    ${S.email ? `<label class="field"><span>Для подтверждения введи пароль</span><input type="password" id="f-delpass" autocomplete="current-password" required></label>`
+      : `<label class="field"><span>Для подтверждения напиши слово УДАЛИТЬ</span><input type="text" id="f-delpass" autocomplete="off" required></label>`}
+    <span class="small" id="f-delerr" style="color:var(--warn)" hidden></span>`, {
+    submitLabel: "Удалить навсегда",
+    submit: () => {
+      const btn = dlgform.querySelector("button[value=ok]"), err = dlgform.querySelector("#f-delerr");
+      btn.disabled = true; btn.textContent = "Удаляю…"; err.hidden = true;
+      fetch("/api/account", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, action: "delete", password: val("f-delpass") }) })
+        .then(r => r.json().then(j => ({ r, j }))).then(({ r, j }) => {
+          if (!r.ok) throw new Error(j.error || "Не получилось удалить.");
+          try { localStorage.removeItem("ege-u"); localStorage.removeItem("ege-state-" + U); localStorage.removeItem("ege-session-" + U); } catch {}
+          location.replace("/app#deleted");
+        }).catch(e => { err.textContent = e.message || "Нет связи. Попробуй ещё раз."; err.hidden = false; btn.disabled = false; btn.textContent = "Удалить навсегда"; });
+      return false;
+    },
+  });
+}
+
+function policyNote() {
+  return `<div class="card" style="gap:8px"><b>🔒 Мы обновили правила работы с данными</b><span class="small muted">Подробно описали, какие данные хранит Козя и кому передаёт, и добавили удаление аккаунта в настройках. <a href="/privacy" target="_blank">Политика</a> · <a href="/consent" target="_blank">Согласие</a></span><div><button class="btn sm" data-tip-ok="policy" type="button">Понятно</button></div></div>`;
+}
 function genderAsk() {
   return `<div class="card genderask"><b>Как к тебе обращаться?</b><span class="small muted">Чтобы я писала «ты сделала» или «ты сделал».</span>
     <div class="row"><button class="btn" data-gender-set="f" type="button">В женском роде</button><button class="btn" data-gender-set="m" type="button">В мужском роде</button></div></div>`;
@@ -2019,7 +2045,9 @@ function renderSettings(n) {
     <button class="setrow" type="button" role="switch" aria-checked="${S.look?.walker !== false}" data-act="walker-toggle"><span class="setic">🐾</span><span class="rt"><b>${esc(helperName())} гуляет по экрану</b><span>маленькая ${esc(helperName())} бегает по нижнему меню</span></span><span class="tgl"></span></button>
     <div class="setrow off"><span class="setic">🔔</span><span class="rt"><b>Напоминания</b><span>скоро</span></span></div>
   </div>
-  <button class="btn ghostdanger" data-act="logout" type="button">${S.email ? "Выйти из аккаунта" : "Выйти из плана на этом телефоне"}</button>`;
+  <button class="btn ghostdanger" data-act="logout" type="button">${S.email ? "Выйти из аккаунта" : "Выйти из плана на этом телефоне"}</button>
+  <p class="small muted" style="margin:0;text-align:center"><a href="/privacy" target="_blank">Политика обработки данных</a> · <a href="/consent" target="_blank">Согласие</a></p>
+  <button class="linkbtn" data-act="delete-account" type="button" style="align-self:center;color:var(--warn)">Удалить аккаунт и все данные</button>`;
 }
 function renderBuddy(n) {
   const l = look(), best = bestStreak(n.today), cur = streakDays(n.today);
@@ -2301,6 +2329,7 @@ document.addEventListener("click", e => {
   switch (d.act) {
     case "new-habit": habitDialog(null); return;
     case "invite": inviteDialog(); return;
+    case "delete-account": deleteAccountDialog(); return;
     case "game-again": gameStart(game?.topicId ?? "", game?.mode || "pairs"); return;
     case "game-other": gameStart(game?.topicId ?? "", game?.mode === "pairs" ? "speed" : "pairs"); return;
     case "walker-toggle": change(() => { look().walker = look().walker === false; }); return;

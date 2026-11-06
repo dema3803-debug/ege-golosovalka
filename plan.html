@@ -202,8 +202,13 @@ img,svg{-webkit-user-drag:none;-webkit-touch-callout:none}
       <label class="chip" style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="radio" name="a-gender" value="m"> В мужском роде</label></div></div>
     <label class="field"><span>Почта</span><input type="email" id="a-email" autocomplete="email" inputmode="email" placeholder="you@mail.ru"></label>
     <label class="field"><span>Пароль - минимум 8 символов</span><input type="password" id="a-pass" autocomplete="new-password" minlength="8"></label>
+    <div class="field"><span>Сколько тебе лет?</span><div style="display:flex;gap:8px;flex-wrap:wrap" role="radiogroup" aria-label="Возраст">
+      <label class="chip" style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="radio" name="a-age" value="14+"> 14 или больше</label>
+      <label class="chip" style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="radio" name="a-age" value="<14"> Меньше 14</label></div></div>
+    <label id="a-parent-row" hidden style="display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.4"><input type="checkbox" id="a-parent" style="width:20px;height:20px;flex:none;margin-top:1px">
+      <span>Я родитель (законный представитель) и даю согласие за ребёнка. Если тебе меньше 14, позови родителя: эту галочку ставит он.</span></label>
     <label style="display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.4"><input type="checkbox" id="a-consent" style="width:20px;height:20px;flex:none;margin-top:1px">
-      <span>Соглашаюсь на обработку моих данных по <a href="/privacy" target="_blank">политике конфиденциальности</a>. Если мне нет 18 лет - родители в курсе.</span></label>
+      <span>Даю <a href="/consent" target="_blank">согласие на обработку персональных данных</a>. С <a href="/privacy" target="_blank">политикой обработки данных</a> ознакомлен(а).</span></label>
     <p class="hint">Уже есть план? <a href="/app#login">Войти</a></p>
   </div>
   <button id="send" class="submit" type="button">Отправить анкету</button>
@@ -348,18 +353,22 @@ async function send(){
   }catch(e){ flash("Не получилось отправить. Проверь интернет и нажми «Отправить» ещё раз - ответы не потеряются.") }
   sending=false; b.disabled=false; b.textContent="Отправить анкету";
 }
+document.addEventListener("change",e=>{if(e.target.name==="a-age"){const r=document.getElementById("a-parent-row");if(r)r.hidden=e.target.value!=="<14"}});
 async function signup(){
   const email=$("#a-email").value.trim(), password=$("#a-pass").value, consent=$("#a-consent").checked, gender=(document.querySelector('input[name="a-gender"]:checked')||{}).value||"";
+  const age=(document.querySelector('input[name="a-age"]:checked')||{}).value||"", parent=$("#a-parent").checked;
   const need=(t,el)=>{flash(t);el.scrollIntoView({behavior:"smooth",block:"center"});el.focus()};
   if(!gender) return need("Выбери, как к тебе обращаться.",document.querySelector('input[name="a-gender"]'));
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return need("Впиши почту - по ней ты будешь входить.",$("#a-email"));
   if(password.length<8) return need("Пароль - минимум 8 символов.",$("#a-pass"));
+  if(!age) return need("Отметь, сколько тебе лет.",document.querySelector('input[name="a-age"]'));
+  if(age==="<14"&&!parent) return need("Если тебе меньше 14, согласие должен дать родитель: пусть он поставит галочку.",$("#a-parent"));
   if(!consent) return need("Поставь галочку согласия - без неё план не сохранить.",$("#a-consent"));
   sending=true; const b=$("#send"); b.disabled=true; b.textContent="Козя собирает план…";
   const readable={...F, choices:Object.fromEntries(Object.entries(F.choices).map(([k,v])=>[k,v.map(i=>CHOICE[k].o[i])])),
     lessons:F.lessons.map(l=>({...l,days:l.days.map(d=>DAYS[d])})), free:F.free.map((f,i)=>({day:DAYS[i],...f}))};
   try{
-    const r=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({form:readable,email,password,consent,gender,ref:(()=>{try{const r=new URLSearchParams(location.search).get("ref");if(r)localStorage.setItem("kozya-ref",r);return r||localStorage.getItem("kozya-ref")||""}catch{return ""}})()})});
+    const r=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({form:readable,email,password,consent,gender,age,parent,ref:(()=>{try{const r=new URLSearchParams(location.search).get("ref");if(r)localStorage.setItem("kozya-ref",r);return r||localStorage.getItem("kozya-ref")||""}catch{return ""}})()})});
     const j=await r.json().catch(()=>({}));
     if(!r.ok||!j.u){flash(j.error||"Не получилось. Попробуй ещё раз - ответы не потеряются.")}
     else{try{localStorage.setItem("ege-u",j.u);localStorage.removeItem("ege-plan-draft")}catch(e){} location.replace("/app?u="+j.u+"&new=1"); return}

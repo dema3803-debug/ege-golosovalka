@@ -37,5 +37,6 @@ export default async function handler(req, res) {
   const set = { title: clip(t.title, 80), subject: clip(t.subject, 40), by: clip(s.name, 40), cards, created: new Date().toISOString() };
   await redis("SET", "share:" + id, JSON.stringify(set), "EX", YEAR);
   await redis("HINCRBY", "share:made", b.u, 1);
+  await redis("SADD", "shares:" + b.u, id); // чтобы удалить при удалении аккаунта
   res.status(200).json({ id });
 }
