@@ -108,6 +108,7 @@ async function runImport(state, text, images) {
     catch (e) { if (attachments.length) throw e; r = await chat([{ role: "system", content: sys }, user], { model: "GigaChat-2", temperature: 0, maxTokens: 3000, timeout: 60000 }); }
     const found = normalize(parse(r.text), subjects, today);
     console.log(`import: ${Date.now() - t0} мс, скриншотов ${images.length}, найдено ${found.lessons.length}/${found.events.length}/${found.deadlines.length}`);
+    if (!found.lessons.length && !found.events.length && !found.deadlines.length) console.log(`import: ответ модели (${r.base}): ${String(r.text).replace(/\s+/g, " ").slice(0, 400)}`);
     return found;
   } catch (e) {
     console.error(`import: ошибка через ${Date.now() - t0} мс:`, e.message);
