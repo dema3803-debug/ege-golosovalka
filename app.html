@@ -63,6 +63,7 @@ h3{font-size:14px;font-weight:600;margin:0}
 .small{font-size:13px}
 .status{font-size:13px;padding:10px 8px 10px 12px;border-radius:10px;background:var(--warn-soft);color:var(--ink);display:flex;align-items:center;gap:8px}
 .status span{flex:1;min-width:0}
+.warnrow{display:flex;flex-direction:column;gap:8px}.warnrow .row{justify-content:flex-end;gap:6px}
 .stx{all:unset;cursor:pointer;flex:0 0 28px;height:28px;display:grid;place-items:center;border-radius:50%;color:var(--muted);font-size:14px}
 
 /* кнопки */
@@ -844,7 +845,7 @@ function renderToday(d, n) {
     h += `<div class="warnbox row" style="justify-content:space-between"><span>Ты устаёшь уже несколько дней подряд. Похоже, нагрузка великовата. Облегчить план?</span>
       <span class="row"><button class="btn sm primary" data-act="lighten" type="button">Да, облегчить</button><button class="btn sm" data-act="nolighten" type="button">Нет</button></span></div>`;
   }
-  for (const u of d.unplaced) h += `<div class="warnbox">Не влезает до срока: <b>${esc(u.title)}</b>. Сдвинь срок или освободи время.</div>`;
+  h += warnHTML(d, false);
   const rest = live0.map((b, i) => ({ ...b, _i: i })).filter(b => b.type !== "lesson" && b !== nxt && !(nxt && b.ref === nxt.ref && b.start === nxt.start)).slice(0, 3);
   if (!d.off) {
     h += examsCard(n);
@@ -908,7 +909,7 @@ function renderDay(d, n) {
   else if (d.off) h += `<p class="empty">Никакой подготовки. Отдыхай - завтра будет проще.</p>`;
   if (!d.off && !tired) {
     for (const nt of d.notes) h += `<div class="note">${esc(nt.title)} - время не указано. <button class="more" data-edit-lesson="${nt.id}" type="button">Указать</button></div>`;
-    for (const u of d.unplaced) h += `<div class="warnbox">Не влезает до срока: <b>${esc(u.title)}</b> (${u.count} × ${S.sessionMin} мин). Сдвинь срок или освободи время.</div>`;
+    h += warnHTML(d, true);
     if (!all.length) h += `<p class="empty">Задач на сегодня нет. Напиши помощнику или добавь задачу.</p>`;
     h += `<div class="blocks">${all.map(b => blockHTML(b, d.date)).join("")}</div>`;
   }
@@ -1617,6 +1618,13 @@ function renderHelp() {
   ${sec("🛟 Если что-то не так", `<ul><li>Зависло - закрой приложение и открой снова.</li><li>Ошибка сети - проверь интернет и выключи VPN.</li><li>Не помогло - напиши тому, кто дал тебе ссылку, и приложи скриншот.</li></ul>`)}`;
 }
 
+// «не влезает до срока»: одна плашка на задачу (одинаковые названия склеены), можно открыть задачу или скрыть до завтра
+function warnHTML(d, full) {
+  const hidden = new Set(S.hideWarn?.[d.date] || []), groups = new Map();
+  for (const u of d.unplaced) { if (hidden.has(u.ref)) continue; const k = u.title.trim().toLowerCase(); const g = groups.get(k) || { ...u, refs: [], count: 0 }; g.refs.push(u.ref); g.count += u.count || 1; groups.set(k, g); }
+  return [...groups.values()].map(g => `<div class="warnbox warnrow"><span>Не влезает до срока: <b>${esc(g.title)}</b>${full ? ` (${g.count} × ${S.sessionMin} мин)` : ""}${g.refs.length > 1 ? ` - таких задач ${g.refs.length}` : ""}. Сдвинь срок или освободи время.</span>
+    <span class="row"><button class="btn sm" data-edit-task="${g.refs[0]}" type="button">Изменить</button><button class="stx" data-warn-hide="${d.date}|${g.refs.join(",")}" type="button" aria-label="Скрыть">✕</button></span></div>`).join("");
+}
 function genderAsk() {
   return `<div class="card genderask"><b>Как к тебе обращаться?</b><span class="small muted">Чтобы я писала «ты сделала» или «ты сделал».</span>
     <div class="row"><button class="btn" data-gender-set="f" type="button">В женском роде</button><button class="btn" data-gender-set="m" type="button">В мужском роде</button></div></div>`;
@@ -1900,6 +1908,7 @@ document.addEventListener("click", e => {
     if (c.kind === "match" || c.kind === "order") { if (!v.includes(d.egeOpt) || c.kind === "match") v += d.egeOpt; else v = v.replace(d.egeOpt, ""); } else v = v.includes(d.egeOpt) ? v.replace(d.egeOpt, "") : [...v + d.egeOpt].sort().join("");
     ege.given = v; render(); return; }
   if ("back" in d) { if (view === "ege") ege = null; view = backStack.pop() || (view === "buddy" ? "settings" : "today"); history.replaceState(null, "", "#" + view); render(); scrollTo(0, 0); return; }
+  if (d.warnHide) { const [date, refs] = d.warnHide.split("|"); change(() => { const hw = {}; for (const [k, v] of Object.entries(S.hideWarn || {})) if (k >= n.today) hw[k] = v; hw[date] = [...new Set([...(hw[date] || []), ...refs.split(",")])]; S.hideWarn = hw; }); return; }
   if (d.tipOk) { change(() => { (S.tips ||= {})[d.tipOk] = 1; }); return; }
   if (d.delMat) { deleteMaterial(d.delMat); return; }
   if (d.genderSet) { change(() => { S.gender = d.genderSet; }); flash(d.genderSet === "m" ? "Готово! Буду писать «ты сделал» 👍" : "Готово! Буду писать «ты сделала» 👍"); setTimeout(() => flash(""), 2500); return; }
