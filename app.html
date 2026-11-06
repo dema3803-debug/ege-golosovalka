@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#FBEFF3">
-<script>try{const l=JSON.parse(localStorage.getItem("ege-look")||"{}");if(l.theme)document.documentElement.dataset.theme=l.theme;if(l.accent&&l.accent!=="pink")document.documentElement.dataset.accent=l.accent}catch(e){}</script>
+<script>try{const l=JSON.parse(localStorage.getItem("ege-look")||"{}");if(l.theme!=="auto")document.documentElement.dataset.theme=l.theme==="dark"?"dark":"light";if(l.accent&&l.accent!=="pink")document.documentElement.dataset.accent=l.accent}catch(e){}</script>
 <title>Козя - мой план ЕГЭ</title>
 <link rel="manifest" id="manifest-link" href="/manifest.json">
 <link rel="icon" type="image/png" href="/icons/favicon-64.png">
@@ -1549,9 +1549,10 @@ const look = () => (S.look ||= {});
 const helperName = () => (S.look?.name || "").trim() || CHARS[S.look?.char || "kozya"]?.name || "Козя";
 function applyLook(l = S?.look || {}) {
   const r = document.documentElement;
-  l.theme === "light" || l.theme === "dark" ? r.setAttribute("data-theme", l.theme) : r.removeAttribute("data-theme");
+  const th = l.theme === "dark" ? "dark" : l.theme === "auto" ? null : "light"; // по умолчанию светлая тема
+  th ? r.setAttribute("data-theme", th) : r.removeAttribute("data-theme");
   l.accent && l.accent !== "pink" ? r.setAttribute("data-accent", l.accent) : r.removeAttribute("data-accent");
-  try { localStorage.setItem("ege-look", JSON.stringify({ theme: l.theme || "", accent: l.accent || "" })); } catch {}
+  try { localStorage.setItem("ege-look", JSON.stringify({ theme: th || "auto", accent: l.accent || "" })); } catch {}
 }
 function outfitSVG(id) {
   const P = "#E2557A";
@@ -2035,7 +2036,7 @@ function renderSettings(n) {
   </div>
   <h3 class="setcap">Внешний вид</h3>
   <div class="card setcard" style="gap:12px">
-    <b>Тема</b><div class="seg" role="radiogroup" aria-label="Тема">${[["light", "Светлая"], ["dark", "Тёмная"], ["", "Как в телефоне"]].map(([k, t]) => `<button type="button" role="radio" aria-checked="${(l.theme || "") === k}" data-theme-set="${k}">${t}</button>`).join("")}</div>
+    <b>Тема</b><div class="seg" role="radiogroup" aria-label="Тема">${[["light", "Светлая"], ["dark", "Тёмная"], ["auto", "Как в телефоне"]].map(([k, t]) => `<button type="button" role="radio" aria-checked="${(l.theme === "dark" || l.theme === "auto" ? l.theme : "light") === k}" data-theme-set="${k}">${t}</button>`).join("")}</div>
     <b>Цвет</b><div class="swatches" role="radiogroup" aria-label="Цвет">${ACCENTS.map(([k, t, c]) => `<button type="button" role="radio" aria-checked="${(l.accent || "pink") === k}" aria-label="${t}" data-accent-set="${k}" style="background:${c}"></button>`).join("")}</div>
   </div>
   <h3 class="setcap">Персонализация</h3>
