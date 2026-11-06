@@ -27,7 +27,7 @@ export function emptyState() {
     free: DAYS.map(() => ({ off: false, from: "15:00", to: "21:00" })),
     sessionMin: 25, dailyCapMin: 240, capFactor: 1,
     lessons: [], extraLessons: [], cancelled: [], avail: {},
-    tasks: [], habits: [], topics: [], tired: {}, log: {}, chat: [], cards: [],
+    tasks: [], habits: [], topics: [], tired: {}, log: {}, chat: [], cards: [], exams: [], materials: [],
   };
 }
 
@@ -52,6 +52,8 @@ export function lessonsOn(state, date) {
     out.push({ ...l, from: toMin(l.from), to: toMin(l.to) });
   }
   for (const l of state.extraLessons) if (l.date === date) out.push({ ...l, from: toMin(l.from), to: toMin(l.to) });
+  // важные даты (пробник, олимпиада, ЕГЭ…) со временем — тоже заняты
+  for (const e of state.exams || []) if (e.date === date && e.from) out.push({ ...e, kind: "exam", from: toMin(e.from), to: e.to ? toMin(e.to) : Math.min(toMin(e.from) + 180, 1439) });
   return out;
 }
 

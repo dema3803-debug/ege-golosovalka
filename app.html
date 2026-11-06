@@ -270,6 +270,25 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 }
 @media (max-width:420px){.week-free{grid-template-columns:36px 1fr 1fr}.week-free label{grid-column:2/-1}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.examcard{all:unset;box-sizing:border-box;cursor:pointer;background:var(--surface);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:8px}
+.examcard:focus-visible{outline:2px solid var(--accent)}
+.exrow{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center}
+.em{font-size:20px;line-height:1;text-align:center}
+.exrow .tx b{display:block;font-weight:700;overflow-wrap:anywhere}.exrow .tx span{font-size:13px;color:var(--muted)}
+.left{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}.left.soon{color:var(--accent)}
+.calhead{display:flex;justify-content:space-between;align-items:center}
+.calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.calgrid .wdn{font-size:12px;font-weight:700;color:var(--muted);text-align:center;padding:2px 0}
+.cd{all:unset;box-sizing:border-box;cursor:pointer;aspect-ratio:1/1.05;border-radius:12px;background:var(--raised);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:14px;min-width:0}
+.cd b{font-weight:700}.cd.past{opacity:.55}.cd.today{outline:2px solid var(--accent);outline-offset:-2px}.cd.has{background:var(--accent-soft)}
+.cd:focus-visible{outline:2px solid var(--ink)}
+.cd .ems{font-size:12px;line-height:1;min-height:12px;display:flex;gap:1px;align-items:center}
+i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
+.exli{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.exli .t{display:block;font-weight:700;overflow-wrap:anywhere}.exli .meta{display:block;font-size:13px;color:var(--muted)}
+.matlink{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:center;color:inherit;text-decoration:none;min-width:0}
+.matlink .t{display:block;font-weight:700;overflow-wrap:anywhere;color:var(--accent)}.matlink .meta{display:block;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.dlgfoot .row{flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -317,7 +336,7 @@ let U = new URLSearchParams(location.search).get("u");
 if (/[?&]new=1/.test(location.search)) history.replaceState(null, "", "/app?u=" + U + location.hash);
 try { if (U) localStorage.setItem("ege-u", U); else if (location.hash !== "#login") { U = localStorage.getItem("ege-u"); if (U) history.replaceState(null, "", "/app?u=" + U + location.hash); } } catch {}
 if (U) document.getElementById("manifest-link")?.setAttribute("href", "/api/manifest?u=" + encodeURIComponent(U));
-const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"]];
+const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"], ["calendar", "Важные даты", "i-week"]];
 let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
 let quiz = null; const openTopics = new Set();
 if (!VIEWS.some(v => v[0] === view) && view !== "session" && view !== "day") view = "today";
@@ -381,7 +400,7 @@ async function load() {
     const j = await r.json();
     if (r.status === 410 && j.movedTo) { showMoved(j.movedTo); return; }
     if (!r.ok) { flash(j.error || "Не удалось загрузить план."); return; }
-    S = j.state; S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; flash(""); $("#dock").hidden = false; render();
+    S = j.state; S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; S.exams ||= []; S.materials ||= []; flash(""); $("#dock").hidden = false; render();
     try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {}
   } catch {
     let cached = null; try { cached = JSON.parse(localStorage.getItem("ege-state-" + U) || "null"); } catch {}
@@ -522,7 +541,7 @@ function render() {
   $("#hello").textContent = S.name ? `Привет, ${S.name}!` : "Мой план";
   const sd = streakDays(n.today);
   $("#streak").innerHTML = true ? `<div class="streak" title="Дней подряд с занятиями"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0702B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-3.5 2-5 1 1.5 2 2 3-5z"/></svg>${sd} ${word(sd, "день", "дня", "дней")}</div>` : "";
-  const navHTML = VIEWS.filter(v => v[0] !== "setup").map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id || (id === "today" && view === "day") ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
+  const navHTML = VIEWS.filter(v => v[0] !== "setup" && v[0] !== "calendar").map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id || (id === "today" && view === "day") ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
   $("#nav").innerHTML = navHTML;
   $("#toptabs").innerHTML = VIEWS.filter(v => v[0] !== "chat").map(([id, label]) => `<button type="button" data-view="${id}" ${view === id ? 'aria-current="page"' : ""}>${label}</button>`).join("");
   $("#composer-m").hidden = view !== "chat";
@@ -531,7 +550,7 @@ function render() {
   document.querySelector(".top").hidden = view === "session" || !!tiredNow;
   const plan = C.buildPlan(S, n.today, 7, n.min);
   const v = view === "chat" && matchMedia("(min-width:1000px)").matches ? "today" : view;
-  $("#view").innerHTML = v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n);
+  $("#view").innerHTML = v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "topics" ? renderTopics(n) : v === "setup" ? renderSetup() : renderChatView(n);
   $("#chat-desk").innerHTML = chatHTML(n, 60);
   const cd = $("#chat-desk"); cd.scrollTop = cd.scrollHeight;
   if (v === "chat") scrollTo(0, document.body.scrollHeight);
@@ -692,6 +711,7 @@ function renderToday(d, n) {
   for (const u of d.unplaced) h += `<div class="warnbox">Не влезает до срока: <b>${esc(u.title)}</b>. Сдвинь срок или освободи время.</div>`;
   const rest = live0.map((b, i) => ({ ...b, _i: i })).filter(b => b.type !== "lesson" && b !== nxt && !(nxt && b.ref === nxt.ref && b.start === nxt.start)).slice(0, 3);
   if (!d.off) {
+    h += examsCard(n);
     h += `<div style="display:flex;flex-direction:column;gap:8px"><div class="nexthead"><h2>Дальше сегодня</h2><button class="linkbtn" data-view="day" type="button">Весь план</button></div>`;
     if (!rest.length) h += `<p class="empty">${nxt ? "После этого — свободно." : "Пусто. Напиши Козе, что нужно сделать."}</p>`;
     for (const b of rest) {
@@ -795,7 +815,7 @@ function tasksCard() {
 }
 
 function renderWeek(plan) {
-  return `<div class="row"><button class="btn" data-act="new-task" type="button">${icon("i-plus")}Задача</button><button class="btn" data-act="new-event" type="button">${icon("i-plus")}Разовое событие</button><button class="btn" data-view="setup" type="button">${icon("i-set")}Расписание</button></div>
+  return `<div class="row"><button class="btn" data-act="new-task" type="button">${icon("i-plus")}Задача</button><button class="btn" data-act="new-event" type="button">${icon("i-plus")}Разовое событие</button><button class="btn" data-view="calendar" type="button">${icon("i-week")}Важные даты</button><button class="btn" data-view="setup" type="button">${icon("i-set")}Расписание</button></div>
   <div class="week">${plan.map(d => {
     const items = C.mergeBlocks(d.blocks.filter(b => b.type !== "done"));
     const doneN = (S.log[d.date] || []).length;
@@ -836,6 +856,7 @@ function renderTopics(n) {
   let h = `<div class="card"><div class="cardhead"><h2>База знаний</h2><span class="small muted">${S.cards.length} ${word(S.cards.length, "карточка", "карточки", "карточек")}</span></div>
     <p class="small muted" style="margin:0">Темы повторяются через ${C.INTERVALS.join(", ")} дней. Внутри темы — карточки «вопрос → ответ»: по ним я тебя спрашиваю, когда пора повторять или когда сил нет.</p>
     <div class="row"><button class="btn primary" data-act="quiz-any" type="button">Проверь меня · 5 вопросов</button><button class="btn" data-act="learned" type="button">${icon("i-plus")}Тема</button><button class="btn" data-add-cards="" type="button">${icon("i-plus")}Карточки без темы</button></div></div>`;
+  h += materialsCard();
   h += `<div class="card"><div class="cardhead"><h2>Темы</h2><span class="small muted">${S.topics.length}</span></div>${sorted.length ? sorted.map(topicItem).join("") : `<p class="empty">Пока тем нет. Изучила тему — нажми «+ Тема».</p>`}</div>`;
   if (loose.length) h += `<div class="card"><div class="cardhead"><h2>Карточки без темы</h2><span class="small muted">${loose.length}</span></div><div class="cardlist">${loose.map(cardRow).join("")}</div></div>`;
   return h;
@@ -926,7 +947,7 @@ function taskDialog(t, preset = {}) {
     <div class="grid2"><label class="field"><span>Срок (необязательно)</span><input type="date" id="f-due" value="${esc(t.due || "")}"></label>
       <label class="field"><span>До скольки</span><input type="time" id="f-duetime" value="${esc(t.dueTime || "")}"></label></div>
     <div class="field"><span>Сделать в конкретное время (необязательно)</span><div class="grid2"><input type="date" id="f-pindate" aria-label="День" value="${esc(t.pin?.date || "")}"><input type="time" id="f-pinfrom" aria-label="Начало" value="${esc(t.pin?.from || "")}"></div></div>
-    ${!isNew ? `<div class="small muted">Сделано ${t.done} из ${t.sessions}</div>` : ""}`, {
+    ${!isNew ? `<div class="small muted">Сделано ${t.done} из ${t.sessions}</div>` : ""}${isNew ? "" : matsHTML({ t: "task", id: t.id })}`, {
     submit: () => {
       const title = val("f-title"); if (!title) return false;
       const sessions = Math.max(1, Math.min(20, parseInt(val("f-sess")) || 1));
@@ -938,6 +959,7 @@ function taskDialog(t, preset = {}) {
       });
     },
     actions: isNew ? {} : {
+      attach: { label: "📎", run: () => setTimeout(() => materialDialog({ ref: { t: "task", id: t.id }, subject: t.subject }), 0) },
       skip: { label: "Не сегодня", run: () => change(() => { const x = S.tasks.find(y => y.id === t.id); (x.skip ||= []).push(n.today); if (x.pin?.date === n.today) x.pin = null; }) },
       done: { label: "Готово целиком", run: () => change(() => { const x = S.tasks.find(y => y.id === t.id); x.done = x.sessions; x.doneAt = n.today; }) },
       del: { label: "Удалить", cls: "danger", run: () => change(() => { S.tasks = S.tasks.filter(y => y.id !== t.id); }) },
@@ -951,7 +973,7 @@ function lessonDialog(l) {
     <label class="field"><span>Название</span><input type="text" id="f-title" required maxlength="80" value="${esc(l.title)}" placeholder="Репетитор по истории"></label>
     <label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(l.subject)}</select></label>
     <div class="field"><span>Дни</span><div class="days">${C.DAYS.map((d, i) => `<button type="button" class="daybtn" data-d="${i}" aria-pressed="${l.days.includes(i)}">${d}</button>`).join("")}</div></div>
-    <div class="grid2"><label class="field"><span>Начало</span><input type="time" id="f-from" value="${esc(l.from)}"></label><label class="field"><span>Конец</span><input type="time" id="f-to" value="${esc(l.to)}"></label></div>`, {
+    <div class="grid2"><label class="field"><span>Начало</span><input type="time" id="f-from" value="${esc(l.from)}"></label><label class="field"><span>Конец</span><input type="time" id="f-to" value="${esc(l.to)}"></label></div>${isNew ? "" : matsHTML({ t: "lesson", id: l.id })}`, {
     submit: () => {
       const title = val("f-title"); if (!title) return false;
       const days = [...dlgform.querySelectorAll(".daybtn[aria-pressed=true]")].map(b => +b.dataset.d);
@@ -964,6 +986,7 @@ function lessonDialog(l) {
       });
     },
     actions: isNew ? {} : {
+      attach: { label: "📎", run: () => setTimeout(() => materialDialog({ ref: { t: "lesson", id: l.id }, subject: l.subject }), 0) },
       cancelToday: { label: "Отменить сегодня", run: () => change(() => { const d = now().today; if (!S.cancelled.some(c => c.lessonId === l.id && c.date === d)) S.cancelled.push({ lessonId: l.id, date: d }); }) },
       del: { label: "Удалить совсем", cls: "danger", run: () => change(() => { S.lessons = S.lessons.filter(x => x.id !== l.id); }) },
     },
@@ -975,7 +998,7 @@ function eventDialog(e) {
   openDialog(isNew ? "Разовое событие" : "Событие", `
     <label class="field"><span>Что</span><input type="text" id="f-title" required maxlength="80" value="${esc(e.title)}" placeholder="Зачёт по обществу, кружок, поездка"></label>
     <div class="grid2"><label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(e.subject)}</select></label><label class="field"><span>Дата</span><input type="date" id="f-date" required value="${esc(e.date)}"></label></div>
-    <div class="grid2"><label class="field"><span>Начало</span><input type="time" id="f-from" required value="${esc(e.from)}"></label><label class="field"><span>Конец</span><input type="time" id="f-to" value="${esc(e.to)}"></label></div>`, {
+    <div class="grid2"><label class="field"><span>Начало</span><input type="time" id="f-from" required value="${esc(e.from)}"></label><label class="field"><span>Конец</span><input type="time" id="f-to" value="${esc(e.to)}"></label></div>${isNew ? "" : matsHTML({ t: "event", id: e.id })}`, {
     submit: () => {
       const title = val("f-title"), date = val("f-date"), from = val("f-from"); if (!title || !date || !from) return false;
       const to = val("f-to") || C.toHHMM(Math.min(C.toMin(from) + 60, 1439));
@@ -985,7 +1008,7 @@ function eventDialog(e) {
         if (isNew) S.extraLessons.push(target);
       });
     },
-    actions: isNew ? {} : { del: { label: "Удалить", cls: "danger", run: () => change(() => { S.extraLessons = S.extraLessons.filter(x => x.id !== e.id); }) } },
+    actions: isNew ? {} : { attach: { label: "📎", run: () => setTimeout(() => materialDialog({ ref: { t: "event", id: e.id }, subject: e.subject }), 0) }, del: { label: "Удалить", cls: "danger", run: () => change(() => { S.extraLessons = S.extraLessons.filter(x => x.id !== e.id); }) } },
   });
 }
 // ---------- импорт расписания онлайн-школы ----------
@@ -1117,6 +1140,171 @@ function importPreview(f) {
   });
 }
 
+// ---------- важные даты: пробники, олимпиады, ЕГЭ ----------
+const EXAM_TYPES = { probnik: ["Пробник", "📝"], olympiad: ["Олимпиада", "🏆"], ege: ["ЕГЭ", "🎓"], essay: ["Итоговое сочинение", "✍️"], test: ["Зачёт или контрольная", "📋"], other: ["Другое", "📌"] };
+const PREP_DEFAULT = { probnik: 3, olympiad: 4, ege: 8, essay: 3, test: 2, other: 0 };
+let calMonth = null;
+const examEmoji = e => (EXAM_TYPES[e.type] || EXAM_TYPES.other)[1];
+const daysLeft = (from, to) => Math.round((Date.parse(to + "T00:00:00Z") - Date.parse(from + "T00:00:00Z")) / 86400000);
+const leftText = k => k === 0 ? "сегодня" : k === 1 ? "завтра" : `через ${k} ${word(k, "день", "дня", "дней")}`;
+function upcomingExams(today) { return (S.exams || []).filter(e => e.date >= today).sort((a, b) => (a.date + (a.from || "")).localeCompare(b.date + (b.from || ""))); }
+function examsCard(n) {
+  const up = upcomingExams(n.today).filter(e => daysLeft(n.today, e.date) <= 60).slice(0, 3);
+  if (!up.length) return "";
+  return `<button class="card examcard" data-view="calendar" type="button"><div class="cardhead"><h2>Важные даты</h2><span class="linkbtn">Календарь →</span></div>
+    ${up.map(e => `<div class="exrow"><span class="em">${examEmoji(e)}</span><span class="tx"><b>${esc(e.title)}</b><span>${C.humanDate(e.date)}${e.from ? " · " + e.from : ""}</span></span><span class="left${daysLeft(n.today, e.date) <= 3 ? " soon" : ""}">${leftText(daysLeft(n.today, e.date))}</span></div>`).join("")}</button>`;
+}
+function renderCalendar(n) {
+  calMonth ||= n.today.slice(0, 7);
+  const [y, m] = calMonth.split("-").map(Number);
+  const first = `${calMonth}-01`, dim = new Date(Date.UTC(y, m, 0)).getUTCDate(), lead = C.weekday(first);
+  const MONTHS = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+  const by = {}; for (const e of S.exams || []) (by[e.date] ||= []).push(e);
+  const dl = {}; for (const t of S.tasks) if (t.due && t.done < t.sessions) (dl[t.due] ||= []).push(t);
+  let cells = "";
+  for (let i = 0; i < lead; i++) cells += `<span></span>`;
+  for (let d = 1; d <= dim; d++) {
+    const date = `${calMonth}-${String(d).padStart(2, "0")}`, ev = by[date] || [];
+    cells += `<button type="button" class="cd${date === n.today ? " today" : ""}${ev.length ? " has" : ""}${date < n.today ? " past" : ""}" data-cal-day="${date}" aria-label="${C.humanDate(date)}${ev.length ? ": " + ev.map(e => e.title).join(", ") : ""}"><b>${d}</b><span class="ems">${ev.slice(0, 2).map(examEmoji).join("")}${dl[date] ? `<i class="dl"></i>` : ""}</span></button>`;
+  }
+  const up = upcomingExams(n.today), past = (S.exams || []).filter(e => e.date < n.today).sort((a, b) => b.date.localeCompare(a.date));
+  const row = e => `<button class="li exli" data-edit-exam="${e.id}" type="button"><span class="em">${examEmoji(e)}</span><span><span class="t">${esc(e.title)}</span><span class="meta">${C.humanDate(e.date)}${e.from ? " · " + e.from : ""}${e.subject ? " · " + esc(e.subject) : ""}${e.score != null && e.score !== "" ? ` · <b>${esc(e.score)} ${word(+e.score, "балл", "балла", "баллов")}</b>` : ""}</span></span><span class="left">${e.date >= n.today ? leftText(daysLeft(n.today, e.date)) : e.score != null && e.score !== "" ? "" : "внести балл"}</span></button>`;
+  return `<div class="card"><div class="cardhead"><h2>Важные даты</h2><button class="btn sm primary" data-act="new-exam" type="button">${icon("i-plus")}Добавить</button></div>
+    <p class="small muted" style="margin:0">Пробники, олимпиады, сочинение, ЕГЭ. Козя заранее добавит подготовку в план, а в сам день освободит время.</p>
+    <div class="calhead"><button class="iconbtn" data-cal-move="-1" type="button" aria-label="Прошлый месяц">‹</button><b>${MONTHS[m - 1]} ${y}</b><button class="iconbtn" data-cal-move="1" type="button" aria-label="Следующий месяц">›</button></div>
+    <div class="calgrid">${C.DAYS.map(d => `<span class="wdn">${d}</span>`).join("")}${cells}</div>
+    <div class="small muted"><i class="dl" style="display:inline-block;vertical-align:middle"></i> — дедлайн задачи</div></div>
+  <div class="card"><div class="cardhead"><h2>Скоро</h2><span class="small muted">${up.length}</span></div>${up.length ? `<div class="list">${up.map(row).join("")}</div>` : `<p class="empty">Пока ничего. Добавь ближайший пробник или олимпиаду.</p>`}</div>
+  ${past.length ? `<div class="card"><div class="cardhead"><h2>Прошли</h2><span class="small muted">${past.length}</span></div><p class="small muted" style="margin:0">Впиши баллы — потом покажу, как растут результаты.</p><div class="list">${past.map(row).join("")}</div></div>` : ""}`;
+}
+function examDialog(e, preset = {}) {
+  const n = now(), isNew = !e;
+  e ||= { type: preset.type || "probnik", title: "", subject: S.subjects[0]?.name || "", date: preset.date || C.addDays(n.today, 14), from: "", to: "", score: "" };
+  const prepTask = !isNew && S.tasks.find(t => t.examId === e.id);
+  openDialog(isNew ? "Важная дата" : `${examEmoji(e)} ${esc(e.title)}`, `
+    <div class="grid2"><label class="field"><span>Что это</span><select id="f-type">${Object.entries(EXAM_TYPES).map(([k, [l, em]]) => `<option value="${k}" ${k === e.type ? "selected" : ""}>${em} ${l}</option>`).join("")}</select></label>
+      <label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(e.subject)}</select></label></div>
+    <label class="field"><span>Название (можно не писать)</span><input type="text" id="f-title" maxlength="80" value="${esc(e.title)}" placeholder="Например, пробник Умскула"></label>
+    <div class="grid2"><label class="field"><span>Дата</span><input type="date" id="f-date" required value="${esc(e.date)}"></label><label class="field"><span>Начало (если известно)</span><input type="time" id="f-from" value="${esc(e.from || "")}"></label></div>
+    ${isNew ? `<div style="display:flex;gap:10px;align-items:center;background:var(--raised);border-radius:14px;padding:10px 12px"><input type="checkbox" id="f-prep" checked aria-label="Добавить подготовку в план" style="width:22px;height:22px;flex:none;accent-color:var(--accent)"><label for="f-prep" style="flex:1;min-width:0;font-weight:600;line-height:1.3">Добавить подготовку в план<span class="small muted" style="display:block;font-weight:500">сессий по ${S.sessionMin} мин до этой даты</span></label><input type="number" id="f-prepn" min="1" max="20" value="${PREP_DEFAULT[e.type] || 3}" aria-label="Сколько сессий" style="width:64px;flex:none;text-align:center"></div>`
+      : prepTask ? `<p class="small muted" style="margin:0">Подготовка в плане: сделано ${prepTask.done} из ${prepTask.sessions}</p>` : ""}
+    ${!isNew && e.date <= n.today ? `<label class="field"><span>Результат, баллов</span><input type="number" id="f-score" min="0" max="1000" value="${esc(e.score ?? "")}"></label>` : ""}
+    ${matsHTML({ t: "exam", id: e.id })}`, {
+    submit: () => {
+      const date = val("f-date"); if (!date) return false;
+      const type = val("f-type"), subject = val("f-subj");
+      const title = val("f-title") || `${EXAM_TYPES[type][0]}${subject && type !== "other" ? " по " + subjDat(subject) : ""}`;
+      change(() => {
+        const t = isNew ? { id: C.uid("ev"), created: n.today } : S.exams.find(x => x.id === e.id);
+        Object.assign(t, { type, title, subject, date, from: val("f-from") || "" });
+        if (!isNew && dlgform.querySelector("#f-score")) t.score = val("f-score");
+        if (isNew) {
+          S.exams.push(t);
+          const k = parseInt(val("f-prepn")) || 0;
+          if (dlgform.querySelector("#f-prep")?.checked && k > 0 && date > n.today)
+            S.tasks.push({ id: C.uid("t"), title: `Подготовка: ${title}`, subject, kind: "ege", sessions: Math.min(20, k), done: 0, due: date > C.addDays(n.today, 1) ? C.addDays(date, -1) : date, dueTime: null, created: n.today, examId: t.id });
+        } else { const pt = S.tasks.find(x => x.examId === t.id && x.done < x.sessions); if (pt && date > n.today) pt.due = C.addDays(date, -1); }
+      });
+    },
+    actions: isNew ? {} : {
+      attach: { label: "📎 Материал", run: () => setTimeout(() => materialDialog({ ref: { t: "exam", id: e.id }, subject: e.subject }), 0) },
+      del: { label: "Удалить", cls: "danger", run: () => change(() => { S.exams = S.exams.filter(x => x.id !== e.id); S.tasks = S.tasks.filter(x => !(x.examId === e.id && x.done < x.sessions)); }) },
+    },
+  });
+}
+function subjDat(s) { // «по истории», «по обществознанию»
+  const w = s.toLowerCase().replace(/ \(.*\)$/, "");
+  if (/язык$/.test(w)) return w.replace(/ий язык$/, "ому языку").replace(/ой язык$/, "ому языку");
+  if (/ия$/.test(w)) return w.replace(/ия$/, "ии");
+  if (/ика$/.test(w)) return w.replace(/ика$/, "ике");
+  if (/ание$/.test(w)) return w.replace(/ание$/, "анию");
+  if (/ура$/.test(w)) return w.replace(/ура$/, "уре");
+  return w;
+}
+
+// ---------- материалы: ссылки, фото конспектов, PDF ----------
+function matRefLabel(r) {
+  if (!r) return "";
+  const f = r.t === "topic" ? S.topics.find(x => x.id === r.id) : r.t === "task" ? S.tasks.find(x => x.id === r.id) : r.t === "lesson" ? S.lessons.find(x => x.id === r.id) : r.t === "event" ? S.extraLessons.find(x => x.id === r.id) : r.t === "exam" ? (S.exams || []).find(x => x.id === r.id) : null;
+  return f ? f.title : "";
+}
+const matUrl = m => m.kind === "file" ? `/api/files?u=${encodeURIComponent(U)}&id=${m.file.id}` : m.url;
+const matIcon = m => m.kind === "link" ? "🔗" : /pdf/.test(m.file?.mime) ? "📄" : "🖼️";
+function matRow(m, { showRef = true } = {}) {
+  const ref = showRef ? matRefLabel(m.ref) : "";
+  return `<div class="li matli"><a class="matlink" href="${esc(matUrl(m))}" target="_blank" rel="noopener"><span class="em">${matIcon(m)}</span><span><span class="t">${esc(m.title)}</span><span class="meta">${[m.subject, ref && "к: " + ref].filter(Boolean).map(esc).join(" · ") || (m.kind === "link" ? esc(m.url.replace(/^https?:\/\//, "").slice(0, 40)) : "файл")}</span></span></a><button class="iconbtn" data-del-mat="${m.id}" type="button" aria-label="Удалить материал">✕</button></div>`;
+}
+function matsHTML(ref) {
+  if (!ref.id) return "";
+  const list = (S.materials || []).filter(m => m.ref && m.ref.t === ref.t && m.ref.id === ref.id);
+  return list.length ? `<div class="field"><span>Материалы</span><div class="list">${list.map(m => `<a class="matlink" href="${esc(matUrl(m))}" target="_blank" rel="noopener" style="padding:6px 0"><span class="em">${matIcon(m)}</span><span class="t">${esc(m.title)}</span></a>`).join("")}</div></div>` : "";
+}
+function materialsCard() {
+  const list = [...(S.materials || [])].sort((a, b) => (a.subject || "").localeCompare(b.subject || "") || b.created.localeCompare(a.created));
+  return `<div class="card"><div class="cardhead"><h2>Материалы</h2><button class="btn sm" data-act="new-mat" type="button">${icon("i-plus")}Добавить</button></div>
+    ${list.length ? `<div class="list">${list.map(m => matRow(m)).join("")}</div>` : `<p class="empty">Ссылки на вебинары и разборы, фото конспектов, PDF с теорией — всё в одном месте. Можно прикрепить к теме, задаче или занятию.</p>`}</div>`;
+}
+function materialDialog(preset = {}) {
+  const n = now(), r = preset.ref;
+  const opts = [["", "Ни к чему — просто по предмету"],
+    ...S.topics.map(t => [`topic|${t.id}`, `Тема: ${t.title}`]),
+    ...S.tasks.filter(t => t.done < t.sessions).map(t => [`task|${t.id}`, `Задача: ${t.title}`]),
+    ...S.lessons.map(l => [`lesson|${l.id}`, `Занятие: ${l.title}`]),
+    ...S.extraLessons.filter(x => x.date >= n.today).map(x => [`event|${x.id}`, `Событие: ${x.title}, ${C.humanDate(x.date)}`]),
+    ...upcomingExams(n.today).map(x => [`exam|${x.id}`, `${examEmoji(x)} ${x.title}, ${C.humanDate(x.date)}`])];
+  const cur = r ? `${r.t}|${r.id}` : "";
+  openDialog("Новый материал", `
+    <label class="field"><span>Ссылка</span><input type="text" id="f-url" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="https://… (вебинар, разбор, статья)"></label>
+    <label class="field"><span>или фото / PDF</span><input type="file" id="f-file" accept="image/*,application/pdf"></label>
+    <label class="field"><span>Название</span><input type="text" id="f-title" maxlength="80" placeholder="Конспект: право"></label>
+    <div class="grid2"><label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(preset.subject || S.subjects[0]?.name)}</select></label>
+      <label class="field"><span>К чему</span><select id="f-ref">${opts.map(([v, l]) => `<option value="${esc(v)}" ${v === cur ? "selected" : ""}>${esc(l.length > 48 ? l.slice(0, 47) + "…" : l)}</option>`).join("")}</select></label></div>
+    <span class="small" id="f-mat-status" hidden></span>`, {
+    submitLabel: "Прикрепить",
+    submit: () => { saveMaterial(); return false; },
+  });
+  dlgform.querySelector("#f-ref").addEventListener("change", ev => {
+    const [t, id] = ev.target.value.split("|"); if (!t) return;
+    const src = { topic: S.topics, task: S.tasks, lesson: S.lessons, event: S.extraLessons, exam: S.exams || [] }[t]?.find(x => x.id === id);
+    const sel = dlgform.querySelector("#f-subj"); if (src?.subject && [...sel.options].some(o => o.value === src.subject)) sel.value = src.subject;
+  });
+}
+async function saveMaterial() {
+  const st = dlgform.querySelector("#f-mat-status"), btn = dlgform.querySelector("button[value=ok]");
+  const show = t => { st.hidden = false; st.textContent = t; st.style.color = "var(--warn)"; };
+  let url = val("f-url"); const file = dlgform.querySelector("#f-file").files[0];
+  if (!url && !file) return show("Вставь ссылку или выбери файл.");
+  if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
+  if (url) { try { new URL(url); } catch { return show("Ссылка не похожа на адрес сайта."); } }
+  const refV = val("f-ref"), [rt, rid] = refV ? refV.split("|") : [];
+  const m = { id: C.uid("m"), title: val("f-title") || (file ? file.name.replace(/\.[^.]+$/, "").slice(0, 80) : new URL(url).hostname.replace(/^www\./, "")), subject: val("f-subj"), ref: rt ? { t: rt, id: rid } : null, created: now().today };
+  if (file) {
+    btn.disabled = true; btn.textContent = "Загружаю…";
+    try {
+      const isImg = file.type.startsWith("image/");
+      const data = isImg ? await shrinkImage(file) : await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
+      const mime = isImg ? "image/jpeg" : file.type || "application/pdf";
+      const r = await fetch("/api/files", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, name: file.name, mime, data }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || "Не получилось загрузить файл.");
+      m.kind = "file"; m.file = { id: j.id, mime, name: file.name.slice(0, 120), size: j.size };
+    } catch (e) { btn.disabled = false; btn.textContent = "Прикрепить"; return show(e.message || "Нет связи."); }
+  } else { m.kind = "link"; m.url = url; }
+  dlg.close();
+  change(() => { (S.materials ||= []).push(m); });
+  flash("Материал прикреплён 📎"); setTimeout(() => flash(""), 2500);
+}
+async function deleteMaterial(id) {
+  const m = (S.materials || []).find(x => x.id === id); if (!m) return;
+  openDialog("Удалить материал?", `<p style="margin:0">«${esc(m.title)}» исчезнет из плана${m.kind === "file" ? ", а файл — с сервера" : ""}.</p>`, {
+    submitLabel: "Удалить",
+    submit: () => {
+      if (m.kind === "file") fetch(`/api/files?u=${encodeURIComponent(U)}&id=${m.file.id}`, { method: "DELETE" }).catch(() => {});
+      change(() => { S.materials = S.materials.filter(x => x.id !== id); });
+    },
+  });
+}
+
 function dayDialog(date) {
   const ov = S.avail[date] || {}, base = S.free[C.weekday(date)];
   openDialog(`${C.DAYS_FULL[C.weekday(date)]}, ${C.humanDate(date)}`, `
@@ -1151,7 +1339,11 @@ document.addEventListener("click", e => {
   if (d.undo !== undefined) { change(() => C.undoDone(S, n.today, +d.undo)); return; }
   if (d.grade) { change(() => C.gradeReview(S, n.today, d.ref, d.grade, d.start ? +d.start : n.min)); return; }
   if (d.editTask) { taskDialog(S.tasks.find(x => x.id === d.editTask)); return; }
-  if (d.editLesson) { const l = S.lessons.find(x => x.id === d.editLesson); if (l) lessonDialog(l); return; }
+  if (d.editLesson) { const l = S.lessons.find(x => x.id === d.editLesson); if (l) lessonDialog(l); else { const x = S.extraLessons.find(y => y.id === d.editLesson); if (x) eventDialog(x); else { const ex = (S.exams || []).find(y => y.id === d.editLesson); if (ex) examDialog(ex); } } return; }
+  if (d.editExam) { const x = (S.exams || []).find(y => y.id === d.editExam); if (x) examDialog(x); return; }
+  if (d.calDay) { const x = (S.exams || []).find(y => y.date === d.calDay); x ? examDialog(x) : examDialog(null, { date: d.calDay }); return; }
+  if (d.calMove) { const [y, m] = (calMonth || n.today.slice(0, 7)).split("-").map(Number), k = y * 12 + m - 1 + +d.calMove; calMonth = `${Math.floor(k / 12)}-${String(k % 12 + 1).padStart(2, "0")}`; render(); return; }
+  if (d.delMat) { deleteMaterial(d.delMat); return; }
   if (d.editEvent) { const x = S.extraLessons.find(y => y.id === d.editEvent); if (x) eventDialog(x); return; }
   if (d.editDay) { dayDialog(d.editDay); return; }
   if (d.delTopic) { change(() => { S.topics = S.topics.filter(x => x.id !== d.delTopic); S.cards = S.cards.filter(c => c.topicId !== d.delTopic); }); return; }
@@ -1162,6 +1354,8 @@ document.addEventListener("click", e => {
   switch (d.act) {
     case "new-task": taskDialog(null, { at: d.at }); return;
     case "import": importDialog(); return;
+    case "new-exam": examDialog(null); return;
+    case "new-mat": materialDialog(); return;
     case "new-lesson": lessonDialog(null); return;
     case "new-event": eventDialog(null); return;
     case "learned": learnedDialog(); return;
@@ -1230,7 +1424,7 @@ document.addEventListener("submit", async e => {
       thinking = false;
       if (r.status === 410 && j.movedTo) { showMoved(j.movedTo); return; }
       if (!r.ok) { S.chat = S.chat.filter(m => !m.pending); S.chat.push({ role: "assistant", text: j.error || "Помощник не ответил. Попробуй ещё раз.", at: Date.now() }); input.value = msg; render(); return; }
-      S = j.state; S.cards ||= [];
+      S = j.state; S.cards ||= []; S.exams ||= []; S.materials ||= [];
       if (j.quiz) setTimeout(() => startQuiz({ subject: j.quiz.subject, topicTitle: j.quiz.topic, n: j.quiz.n || 5 }), 300);
       const after = planKeys(C.buildPlan(S, n.today, 7, n.min));
       highlight = new Set([...after].filter(k => !before.has(k)));
