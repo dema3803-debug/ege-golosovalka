@@ -63,6 +63,7 @@ cat > /etc/systemd/system/kozya-update.service <<UNIT
 Description=Kozya: pull updates from GitHub
 [Service]
 Type=oneshot
+Environment=HOME=/root
 ExecStart=/bin/bash $DIR/deploy/update.sh
 UNIT
 cat > /etc/systemd/system/kozya-update.timer <<UNIT
