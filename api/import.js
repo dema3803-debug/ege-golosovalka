@@ -100,10 +100,17 @@ async function runImport(state, text, images) {
     let all = text ? `Расписание:\n${text}` : "";
     for (const [k, m] of images.entries()) {
       const up = await uploadImage(Buffer.from(m[2], "base64"), m[1]);
-      const tr = await chat([{ role: "user", content: "Перепиши дословно весь текст с этой картинки — это расписание занятий или дедлайнов. Сохраняй даты, время, дни недели, названия предметов и строки. Ничего не добавляй и не объясняй.", attachments: [up.id] }],
-        { model: "GigaChat-2-Pro", temperature: 0, maxTokens: 2500, timeout: 60000, base: up.base });
+      const ask = [{ role: "user", attachments: [up.id], content: `Это расписание занятий школьника. Перепиши его в текст очень аккуратно.
+Если это календарь-таблица с клетками по датам — иди по клеткам по порядку и для КАЖДОЙ клетки пиши отдельную строку:
+ДД.ММ (день недели): пункт 1; пункт 2; пункт 3
+Время пиши как на картинке, например 17:00 или 23:55 (не путай двоеточие с цифрами). Пустые клетки пропускай.
+Если это список или таблица — переписывай построчно, сохраняя даты, дни недели, время и предметы.
+В начале одной строкой укажи заголовок/предмет, если он есть. Ничего не выдумывай и не объясняй.` }];
+      let tr;
+      try { tr = await chat(ask, { model: "GigaChat-2-Max", temperature: 0, maxTokens: 3000, timeout: 90000, base: up.base }); }
+      catch (e) { console.log("import: Max недоступна, беру Pro:", e.message.slice(0, 120)); tr = await chat(ask, { model: "GigaChat-2-Pro", temperature: 0, maxTokens: 3000, timeout: 90000, base: up.base }); }
       const t = String(tr.text || "").trim();
-      console.log(`import: скриншот ${k + 1} → текст (${t.length} симв.): ${t.replace(/\s+/g, " ").slice(0, 300)}`);
+      console.log(`import: скриншот ${k + 1} → текст (${t.length} симв., ${tr.model || ""}): ${t.replace(/\s+/g, " ").slice(0, 600)}`);
       if (t.length > 15) all += `\n\nСкриншот ${k + 1}:\n${t.slice(0, 6000)}`;
     }
     if (!all.trim()) throw new Error("пустая расшифровка");

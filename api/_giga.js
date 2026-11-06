@@ -72,7 +72,7 @@ export async function chat(messages, { model = "GigaChat-2", temperature = 0.3, 
         body: JSON.stringify({ model, messages, temperature, max_tokens: maxTokens }),
         extraCa: russianCerts(), timeout,
       });
-      if (r.status === 200) return { base, text: JSON.parse(r.text).choices[0].message.content };
+      if (r.status === 200) { const j = JSON.parse(r.text); return { base, text: j.choices[0].message.content, model: j.model }; }
       lastErr = new Error(`${base}: HTTP ${r.status} ${r.text.slice(0, 200)}`);
     } catch (e) { lastErr = new Error(`${base}: ${e.message}`); }
   }
