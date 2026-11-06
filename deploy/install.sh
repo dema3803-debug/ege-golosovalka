@@ -30,12 +30,12 @@ if [ ! -f /etc/kozya.env ]; then
   umask 077
   cat > /etc/kozya.env <<ENV
 PORT=3000
-REDIS_URL=redis://127.0.0.1:6379
+LOCAL_REDIS_URL=redis://127.0.0.1:6379
 ADMIN_KEY=$ADMIN_KEY
 GIGACHAT_KEY=$GIGACHAT_KEY
 ENV
   chown root:kozya /etc/kozya.env; chmod 640 /etc/kozya.env
-else echo "Пароли уже записаны в /etc/kozya.env — оставляю"; fi
+else echo "Пароли уже записаны в /etc/kozya.env — оставляю"; sed -i 's#^REDIS_URL=#LOCAL_REDIS_URL=#' /etc/kozya.env; fi
 
 say "4/6 База данных (сохраняется на диск)"
 sed -i 's/^appendonly no/appendonly yes/' /etc/redis/redis.conf

@@ -1,11 +1,11 @@
 // База данных. Два режима:
-// • на своём сервере — локальный Redis (переменная REDIS_URL, например redis://127.0.0.1:6379);
+// • на своём сервере — локальный Redis (переменная LOCAL_REDIS_URL, например redis://127.0.0.1:6379);
 // • на Vercel — Upstash Redis по REST (переменные KV_REST_API_URL / KV_REST_API_TOKEN).
 import net from "node:net";
 
 const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-const LOCAL = process.env.REDIS_URL || "";
+const LOCAL = process.env.LOCAL_REDIS_URL || ""; // только на своём сервере (Vercel сам заводит REDIS_URL — его не трогаем)
 
 export function hasDb() { return Boolean(LOCAL || (URL_ && TOKEN)); }
 
