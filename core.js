@@ -176,6 +176,22 @@ export function buildPlan(state, today, nDays = 7, nowMin = null) {
           }
           if (!placed && q.type === "task") unplaced.push(q);
         }
+        // срок сегодня, а свободное время кончилось — ставим вечером сверх плана (до 23:00 или до времени сдачи)
+        const late = unplaced.filter(q => q.must && !q.overdue && q.due === date).sort((a, b) => (a.dueTime || "99").localeCompare(b.dueTime || "99"));
+        if (late.length) {
+          const start0 = Math.max(win.to, isToday && nowMin != null ? Math.ceil(nowMin / 5) * 5 : 0);
+          const busy2 = [...busy, ...blocks.filter(b => b.start != null).map(b => ({ from: b.start, to: b.end + BREAK_MIN }))];
+          let cur = start0;
+          for (const q of late) {
+            const limit = Math.min(23 * 60, q.dueTime ? toMin(q.dueTime) : 23 * 60);
+            for (const b of busy2) if (cur < b.to && cur + q.len > b.from) cur = b.to;
+            if (cur + q.len > limit) continue;
+            blocks.push({ ...q, start: cur, end: cur + q.len, late: true });
+            busy2.push({ from: cur, to: cur + q.len + BREAK_MIN });
+            remaining[q.ref]--; unplaced.splice(unplaced.indexOf(q), 1);
+            cur += q.len + BREAK_MIN;
+          }
+        }
         freeLeft = win.to > win.from ? subtract(win, blocks.map(x => ({ from: x.start, to: x.end + (x.type === "lesson" ? 15 : BREAK_MIN) }))).filter(f => f.to - f.from >= 30) : [];
       }
     }

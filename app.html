@@ -880,7 +880,7 @@ function blockHTML(b, date) {
   const t = b.type === "task" ? S.tasks.find(x => x.id === b.ref) : null;
   const meta = [`${time}`, b.count > 1 ? `${b.count} × ${S.sessionMin} мин` : `${S.sessionMin} мин`, t?.due ? `срок ${t.due === date ? "сегодня" : C.humanDate(t.due)}${t.dueTime ? " " + t.dueTime : ""}` : ""].filter(Boolean).join(" · ");
   return `<div class="${cls}" style="--c:${c}"><button class="mark" data-done="${b._i}" type="button" aria-label="Сделала ${S.sessionMin} минут: ${esc(b.title)}"></button><span class="tm">${esc(meta)}</span>
-    <button class="tt" ${t ? `data-edit-task="${t.id}"` : ""} type="button"><span class="dot"></span>${esc(b.title)}${b.overdue ? '<span class="tag">просрочено</span>' : ""}${b.pinned ? '<span class="tag pin">по времени</span>' : ""}</button>
+    <button class="tt" ${t ? `data-edit-task="${t.id}"` : ""} type="button"><span class="dot"></span>${esc(b.title)}${b.overdue ? '<span class="tag">просрочено</span>' : ""}${b.late ? '<span class="tag">срок сегодня · сверх плана</span>' : ""}${b.pinned ? '<span class="tag pin">по времени</span>' : ""}</button>
     <button class="play" data-start="${b.type}|${b.ref}" type="button" aria-label="Начать сессию: ${esc(b.title)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button></div>`;
 }
 
