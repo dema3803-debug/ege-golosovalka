@@ -889,7 +889,8 @@ function renderSetup() {
     <label class="field"><span>Максимум в день на самоподготовку</span><select id="set-cap" data-set="dailyCapMin">${[60, 120, 180, 240, 300].map(m => `<option value="${m}" ${S.dailyCapMin === m ? "selected" : ""}>${m / 60} ${word(m / 60, "час", "часа", "часов")}</option>`).join("")}</select></label></div>
     <label class="row small"><input type="checkbox" id="set-habit" ${habit ? "checked" : ""}> Каждый будний день ставить блок «Школьные задания»</label>
     ${(S.capFactor || 1) < 1 ? `<div class="row small"><span class="muted">Сейчас нагрузка облегчена на четверть.</span><button class="btn sm" data-act="unlighten" type="button">Вернуть обычную</button></div>` : ""}</div>
-  <div class="card"><h2>Цели по предметам</h2><div class="list">${S.subjects.map(s => `<div class="li"><div><div class="t">${esc(s.name)}</div><div class="meta">сейчас ${s.current ?? "—"} → цель ${s.target ?? "—"}</div><div class="progress" style="margin-top:6px"><i style="width:${s.current || 0}%;background:${color(s.name)}"></i></div></div></div>`).join("")}</div></div>`;
+  <div class="card"><h2>Цели по предметам</h2><div class="list">${S.subjects.map(s => `<div class="li"><div><div class="t">${esc(s.name)}</div><div class="meta">сейчас ${s.current ?? "—"} → цель ${s.target ?? "—"}</div><div class="progress" style="margin-top:6px"><i style="width:${s.current || 0}%;background:${color(s.name)}"></i></div></div></div>`).join("")}</div></div>
+  <div class="card"><div class="cardhead"><h2>Аккаунт</h2></div>${S.email ? `<p class="small muted" style="margin:0">Вход по почте ${esc(S.email)}</p>` : ""}<button class="btn" data-act="logout" type="button" style="justify-content:center">Выйти из плана на этом телефоне</button></div>`;
 }
 
 // ---------- формы ----------
@@ -1140,6 +1141,11 @@ function showInstall() {
   else { el.hidden = true; return; }
   el.hidden = false;
 }
+document.addEventListener("click", e => {
+  if (!e.target.closest("[data-act=logout]")) return;
+  try { localStorage.removeItem("ege-u"); if (U) localStorage.removeItem("ege-state-" + U); } catch {}
+  location.replace("/app#login");
+});
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; showInstall(); });
 addEventListener("appinstalled", () => { installEvt = null; $("#install").hidden = true; });
 document.addEventListener("click", async e => {
