@@ -1663,7 +1663,7 @@ function renderEge() {
   }
   return `<div class="egehead"><span>${esc(q.subject)} · ${esc(c.block)}</span><span>${q.i + 1} из ${q.cards.length}</span></div>
     <div class="egebar"><i style="width:${Math.round(q.i / q.cards.length * 100)}%"></i></div>
-    <div class="card egecard"><div class="egetag">${[EGE_KINDS[c.kind], c.topic !== EGE_KINDS[c.kind] ? c.topic : ""].filter(Boolean).map(esc).join(" · ")}</div><p class="egeq">${esc(c.q)}</p>${opts}${foot}</div>
+    <div class="card egecard"><div class="egetag">${[EGE_KINDS[c.kind], c.topic !== EGE_KINDS[c.kind] && (c.kind !== "term" || q.phase !== "ask") ? c.topic : ""].filter(Boolean).map(esc).join(" · ")}</div><p class="egeq">${esc(c.q)}</p>${opts}${foot}</div>
     ${q.phase === "ask" ? `<button class="btn ghost" data-act="ege-stop" type="button" style="align-self:center">Хватит на сегодня</button>` : ""}`;
 }
 function egeCardHTML(n) {
