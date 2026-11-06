@@ -84,7 +84,8 @@ h3{font-size:14px;font-weight:600;margin:0}
 .bubble{align-self:center;background:#FFFFFF;border-radius:18px;padding:10px 14px;font-size:15px;font-weight:700;text-align:center;max-width:290px;line-height:1.35}
 .mascot{display:flex;justify-content:center}
 /* тур и подсказки */
-#tour{position:fixed;inset:0;z-index:60}
+#tour{position:fixed;inset:0;z-index:60;touch-action:none;overscroll-behavior:none}
+html.tourlock,html.tourlock body{overflow:hidden;overscroll-behavior:none}
 .tour-hole{position:fixed;border-radius:18px;box-shadow:0 0 0 9999px rgba(24,10,20,.62);transition:all .25s ease;pointer-events:none}
 .tour-hole.on{outline:3px solid var(--pink);outline-offset:3px}
 .tour-box{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));margin:0 auto;max-width:420px;background:var(--surface);color:var(--ink);border-radius:22px;padding:14px 14px 12px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 12px 40px rgba(0,0,0,.25);transition:top .25s ease,bottom .25s ease}
@@ -1527,10 +1528,15 @@ function tourShow() {
   box.querySelector(".tour-txt").textContent = gx(typeof st.t === "function" ? st.t() : st.t);
   box.querySelector(".tour-n").textContent = `${tourI + 1} из ${steps.length}`;
   box.querySelector('[data-tour="next"]').textContent = tourI + 1 < steps.length ? "Дальше" : "Понятно!";
+  const el = st.sel && tourVisible(st.sel);
+  if (el) el.scrollIntoView({ block: "center" });
+  tourPlace();
+}
+function tourPlace() {
+  const st = tourSteps()[tourI], box = $("#tour"); if (!st) return;
   const hole = box.querySelector(".tour-hole"), tb = box.querySelector(".tour-box");
   const el = st.sel && tourVisible(st.sel);
   if (el) {
-    el.scrollIntoView({ block: "center" });
     const r = el.getBoundingClientRect(), p = 6;
     Object.assign(hole.style, { left: r.left - p + "px", top: r.top - p + "px", width: r.width + p * 2 + "px", height: r.height + p * 2 + "px" });
     hole.classList.add("on");
@@ -1543,8 +1549,8 @@ function tourShow() {
     tb.style.top = "auto"; tb.style.bottom = "calc(40% - 60px)";
   }
 }
-function tourStart() { if (tourI >= 0) return; tourI = 0; scrollTo(0, 0); tourShow(); }
-function tourEnd() { tourI = -1; $("#tour").hidden = true; scrollTo(0, 0); if (!S.tips?.tour) change(() => { (S.tips ||= {}).tour = 1; }); }
+function tourStart() { if (tourI >= 0) return; tourI = 0; scrollTo(0, 0); document.documentElement.classList.add("tourlock"); tourShow(); }
+function tourEnd() { tourI = -1; $("#tour").hidden = true; document.documentElement.classList.remove("tourlock"); scrollTo(0, 0); if (!S.tips?.tour) change(() => { (S.tips ||= {}).tour = 1; }); }
 $("#tour").addEventListener("click", e => {
   e.stopPropagation();
   const b = e.target.closest("[data-tour]"); if (!b) return;
@@ -1552,6 +1558,10 @@ $("#tour").addEventListener("click", e => {
   tourI++; tourSteps()[tourI] ? tourShow() : tourEnd();
 });
 addEventListener("resize", () => { if (tourI >= 0) tourShow(); });
+// во время тура страница не листается пальцем; если всё же сдвинулась - подсветка встаёт на место
+["touchmove", "wheel"].forEach(ev => $("#tour").addEventListener(ev, e => e.preventDefault(), { passive: false }));
+let tourRaf = 0;
+addEventListener("scroll", () => { if (tourI < 0 || tourRaf) return; tourRaf = requestAnimationFrame(() => { tourRaf = 0; tourPlace(); }); }, { passive: true });
 function afterRender(v) {
   document.documentElement.style.setProperty("--dockh", ($("#dock").hidden ? 0 : $("#dock").offsetHeight) + "px");
   const tips = S.tips || {}, busy = tourI >= 0 || dlg.open || !S.gender;
