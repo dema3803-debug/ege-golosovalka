@@ -144,6 +144,19 @@ html.tourlock,html.tourlock body{overflow:hidden;overscroll-behavior:none}
 .tgl{flex:0 0 50px;height:30px;border-radius:99px;background:var(--line2);position:relative;transition:background .2s}
 .tgl::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
 .tglrow[aria-checked="true"] .tgl,.setrow[aria-checked="true"] .tgl{background:var(--accent)}.tglrow[aria-checked="true"] .tgl::after,.setrow[aria-checked="true"] .tgl::after{transform:translateX(20px)}
+.gamepick{all:unset;cursor:pointer;box-sizing:border-box;display:flex;flex-direction:column;gap:3px;padding:14px 16px;border-radius:16px;background:var(--raised);border:1px solid var(--line2)}
+.gamepick span{font-size:13px;color:var(--muted)}
+.pairs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ptile{min-height:84px;padding:8px;border-radius:16px;border:2px solid var(--line2);background:var(--surface);font-size:13px;font-weight:700;line-height:1.25;overflow-wrap:anywhere;transition:transform .15s,background .2s,opacity .3s}
+.ptile.pa{background:var(--raised);font-weight:500}
+.ptile.sel{border-color:var(--accent);background:var(--accent-soft);transform:scale(1.04)}
+.ptile.ok{opacity:0;transform:scale(.8);pointer-events:none}
+.ptile.bad{border-color:var(--warn);background:var(--warn-soft);animation:pshake .4s}
+@keyframes pshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.speedopts{display:flex;flex-direction:column;gap:8px}
+.sopt{text-align:left;padding:13px 14px;border-radius:14px;border:2px solid var(--line2);background:var(--surface);font-size:14px;font-weight:600;line-height:1.3}
+.sopt.ok{border-color:var(--ok);background:var(--ok-soft)}
+.sopt.bad{border-color:var(--warn);background:var(--warn-soft)}
 .helpsec{background:var(--surface);border-radius:var(--r);padding:0 16px}
 .helpsec summary{cursor:pointer;list-style:none;padding:14px 0;font-weight:800;display:flex;justify-content:space-between;gap:10px}
 .helpsec summary::-webkit-details-marker{display:none}
@@ -494,8 +507,10 @@ let U = new URLSearchParams(location.search).get("u");
 if (/[?&]new=1/.test(location.search)) history.replaceState(null, "", "/app?u=" + U + location.hash);
 try { if (U) localStorage.setItem("ege-u", U); else if (location.hash !== "#login") { U = localStorage.getItem("ege-u"); if (U) history.replaceState(null, "", "/app?u=" + U + location.hash); } } catch {}
 if (U) document.getElementById("manifest-link")?.setAttribute("href", "/api/manifest?u=" + encodeURIComponent(U));
-const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"], ["calendar", "Важные даты", "i-week"], ["settings", "Настройки", "i-set"], ["buddy", "Помощник", "i-set"], ["ege", "Тренажёр ЕГЭ", "i-topics"], ["help", "Как пользоваться", "i-set"]];
-const SUB = { ege: "Тренажёр ЕГЭ", day: "Весь план на сегодня", setup: "Расписание", calendar: "Важные даты", settings: "Настройки", buddy: "Помощник и награды", help: "Как пользоваться" };
+const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"], ["calendar", "Важные даты", "i-week"], ["settings", "Настройки", "i-set"], ["buddy", "Помощник", "i-set"], ["ege", "Тренажёр ЕГЭ", "i-topics"], ["help", "Как пользоваться", "i-set"], ["game", "Игра", "i-topics"]];
+const SUB = { ege: "Тренажёр ЕГЭ", day: "Весь план на сегодня", setup: "Расписание", calendar: "Важные даты", settings: "Настройки", buddy: "Помощник и награды", help: "Как пользоваться", game: "Игра с карточками" };
+// ссылка на набор карточек: /app#share-xxxxxxxx - запоминаем и предложим добавить после входа
+{ const m = location.hash.match(/^#share-([a-z0-9]{8})$/); if (m) { try { localStorage.setItem("ege-share", m[1]); } catch {} history.replaceState(null, "", location.pathname + location.search + "#today"); } }
 let backStack = [];
 let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
 let quiz = null; const openTopics = new Set();
@@ -571,6 +586,7 @@ async function load() {
     if (!r.ok) { flash(j.error || "Не удалось загрузить план.", true); return; }
     S = j.state; S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; S.exams ||= []; S.materials ||= []; applyLook(S.look); if (!egeIndex) egeLoadIndex().then(() => { if (egeSubjects().length && S) render(); }); flash(""); $("#dock").hidden = false; render();
     try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {}
+    setTimeout(shareImportAsk, 400);
   } catch {
     let cached = null; try { cached = JSON.parse(localStorage.getItem("ege-state-" + U) || "null"); } catch {}
     if (cached && !S) { S = cached; $("#dock").hidden = false; render(); flash("Нет интернета - показываю последний сохранённый план. Отметки сохранятся, когда связь вернётся.", true); }
@@ -636,6 +652,7 @@ function activeDays() {
   for (const c of Object.values(S.ege || {})) if (c?.last) set.add(c.last);
   for (const t of S.tasks || []) if (t.doneAt) set.add(t.doneAt);
   for (const d of S.streakFix || []) set.add(d);
+  for (const d of Object.keys(S.played || {})) set.add(d);
   return set;
 }
 function streakDays(today) {
@@ -720,9 +737,9 @@ function render() {
   $("#streak").innerHTML = true ? `<div class="streak" title="Дней подряд с занятиями"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0702B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-3.5 2-5 1 1.5 2 2 3-5z"/></svg>${sd} ${word(sd, "день", "дня", "дней")}</div>` : "";
   $("#streak").insertAdjacentHTML("beforeend", `<button class="gearbtn" type="button" data-view="settings" aria-label="Настройки"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>`);
   { const nm = helperName(); const h = document.querySelector(".chatcol .head h2"); if (h) h.textContent = nm; }
-  const navHTML = VIEWS.map(v => v[0] === "chat" ? [v[0], helperName(), v[2]] : v).filter(v => !["setup", "calendar", "settings", "buddy", "ege", "help"].includes(v[0])).map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id || (id === "today" && view === "day") ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
+  const navHTML = VIEWS.map(v => v[0] === "chat" ? [v[0], helperName(), v[2]] : v).filter(v => !["setup", "calendar", "settings", "buddy", "ege", "help", "game"].includes(v[0])).map(([id, label, ic]) => `<button type="button" data-view="${id}" class="${id === "chat" ? "navchat" : ""}" ${view === id || (id === "today" && view === "day") ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></button>`).join("");
   $("#nav").innerHTML = navHTML;
-  $("#toptabs").innerHTML = VIEWS.filter(v => !["chat", "settings", "buddy", "ege", "help"].includes(v[0])).map(([id, label]) => `<button type="button" data-view="${id}" ${view === id ? 'aria-current="page"' : ""}>${label}</button>`).join("");
+  $("#toptabs").innerHTML = VIEWS.filter(v => !["chat", "settings", "buddy", "ege", "help", "game"].includes(v[0])).map(([id, label]) => `<button type="button" data-view="${id}" ${view === id ? 'aria-current="page"' : ""}>${label}</button>`).join("");
   $("#composer-m").hidden = view !== "chat";
   $("#dock").hidden = view === "session";
   const tiredNow = view === "today" && S.tired[n.today] && !S.tired[n.today].rest;
@@ -731,7 +748,7 @@ function render() {
   document.body.classList.toggle("insession", view === "session");
   const plan = C.buildPlan(S, n.today, 7, n.min);
   const v = view === "chat" && matchMedia("(min-width:1000px)").matches ? "today" : view;
-  $("#view").innerHTML = gx((v === "today" && !S.gender ? genderAsk() : "") + (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "ege" ? renderEge() : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "help" ? renderHelp() : v === "setup" ? renderSetup() : renderChatView(n)));
+  $("#view").innerHTML = gx((v === "today" && !S.gender ? genderAsk() : "") + (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "ege" ? renderEge() : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "help" ? renderHelp() : v === "game" ? renderGame() : v === "setup" ? renderSetup() : renderChatView(n)));
   $("#chat-desk").innerHTML = gx(chatHTML(n, 60));
   const cd = $("#chat-desk"); cd.scrollTop = cd.scrollHeight;
   afterRender(v);
@@ -1031,13 +1048,13 @@ function renderTopics(n) {
       <div class="meta small muted">${esc(t.subject || "")} · ${due ? "<b style=\"color:var(--accent)\">повторить сегодня</b>" : "следующее повторение " + C.humanDate(t.next)} · ${cs.length} ${word(cs.length, "карточка", "карточки", "карточек")}</div>${steps(t)}</div><span class="muted">▾</span></summary>
       ${due ? `<div class="row" style="margin-top:10px"><button class="btn soft sm" data-quiz-topic="${t.id}" type="button">Проверь меня</button><button class="btn sm" data-grade="easy" data-ref="${t.id}" type="button">Легко</button><button class="btn sm" data-grade="hard" data-ref="${t.id}" type="button">С трудом</button><button class="btn sm" data-grade="forgot" data-ref="${t.id}" type="button">Забыла</button></div>` : cs.length ? `<div class="row" style="margin-top:10px"><button class="btn sm" data-quiz-topic="${t.id}" type="button">Проверь меня</button></div>` : ""}
       <div class="cardlist">${cs.map(cardRow).join("")}</div>
-      <div class="row" style="margin-top:8px"><button class="btn sm" data-add-cards="${t.id}" type="button">${icon("i-plus")}Карточки</button><button class="btn sm" data-gen-cards="${t.id}" type="button">✨ Придумай карточки</button><button class="btn sm danger" data-del-topic="${t.id}" type="button">Удалить тему</button></div></details>`;
+      <div class="row" style="margin-top:8px"><button class="btn sm" data-add-cards="${t.id}" type="button">${icon("i-plus")}Карточки</button><button class="btn sm" data-gen-cards="${t.id}" type="button">✨ Придумай карточки</button>${cs.length >= 3 ? `<button class="btn sm" data-play-topic="${t.id}" type="button">🎮 Играть</button>` : ""}${cs.length ? `<button class="btn sm" data-share-topic="${t.id}" type="button">🔗 Поделиться</button>` : ""}<button class="btn sm danger" data-del-topic="${t.id}" type="button">Удалить тему</button></div></details>`;
   };
   const sorted = [...S.topics].sort((a, b) => a.next.localeCompare(b.next));
   const loose = S.cards.filter(c => !c.topicId || !S.topics.some(t => t.id === c.topicId));
   let h = egeCardHTML(n) + `<div class="card"><div class="cardhead"><h2>База знаний</h2><span class="small muted">${S.cards.length} ${word(S.cards.length, "карточка", "карточки", "карточек")}</span></div>
     <p class="small muted" style="margin:0">Темы повторяются через ${C.INTERVALS.join(", ")} дней. Внутри темы - карточки «вопрос → ответ»: по ним я тебя спрашиваю, когда пора повторять или когда сил нет.</p>
-    <div class="row"><button class="btn primary" data-act="quiz-any" type="button">Проверь меня · 5 вопросов</button><button class="btn" data-act="learned" type="button">${icon("i-plus")}Тема</button><button class="btn" data-add-cards="" type="button">${icon("i-plus")}Карточки без темы</button></div></div>`;
+    <div class="row"><button class="btn primary" data-act="quiz-any" type="button">Проверь меня · 5 вопросов</button>${S.cards.length >= 3 ? `<button class="btn" data-play-topic="" type="button">🎮 Игры</button>` : ""}<button class="btn" data-act="learned" type="button">${icon("i-plus")}Тема</button><button class="btn" data-add-cards="" type="button">${icon("i-plus")}Карточки без темы</button></div></div>`;
   h += materialsCard();
   h += `<div class="card"><div class="cardhead"><h2>Темы</h2><span class="small muted">${S.topics.length}</span></div>${sorted.length ? sorted.map(topicItem).join("") : `<p class="empty">Пока тем нет. {Изучила|Изучил} тему - нажми «+ Тема».</p>`}</div>`;
   if (loose.length) h += `<div class="card"><div class="cardhead"><h2>Карточки без темы</h2><span class="small muted">${loose.length}</span></div><div class="cardlist">${loose.map(cardRow).join("")}</div></div>`;
@@ -1658,6 +1675,7 @@ function renderHelp() {
   ${sec(`💬 Как писать мне`, `Обычными словами: «к среде домашка по истории», «репетитора в четверг не будет», «в субботу {свободна|свободен} только с обеда», «проверь меня по экономике». Я сама поменяю план.`)}
   ${sec("🪫 Сил нет", `Нажми <b>«Сил нет»</b> на главном экране. Дам одно маленькое дело или <b>«Не сегодня»</b> - перенесу всё на другие дни. Вернуть: <b>«Обычный план»</b>.`)}
   ${sec("🎓 Тренажёр ЕГЭ", `<b>«Знания»</b> → выбери предмет. 10 карточек в формате ЕГЭ. Ответ - цифры, как на экзамене. Ошибки вернутся скорее, верные - позже. {Нашла|Нашёл} ошибку в карточке - <b>«Здесь ошибка»</b>.`)}
+  ${sec("🎮 Игры и обмен карточками", `В «Знаниях» открой тему: <b>«🎮 Играть»</b> - «Найди пары» на время или «На скорость» за 60 секунд. Игры тоже идут в серию. <b>«🔗 Поделиться»</b> - ссылка на карточки темы: одноклассник откроет её и добавит набор себе.`)}
   ${sec("📚 Темы и повторение", `Изученную тему добавь в <b>«Знания»</b> → <b>«+ Тема»</b>. Нажми <b>«✨ Придумай карточки»</b> - я составлю вопросы и напомню повторить через 1, 3, 7 дней.`)}
   ${sec("📅 Важные даты", `<b>«Неделя»</b> → <b>«Важные даты»</b> → <b>«+ Добавить»</b>: пробники, олимпиады, ЕГЭ. Я заранее поставлю подготовку. После пробника впиши баллы.`)}
   ${sec("🎀 Награды", `За дни подряд с занятиями я получаю наряды: 3, 5, 7, 10, 14, 21, 30 и 45 дней. Через 14 дней подряд появится Шоколадка, моя сестрёнка. Надеть наряд: ⚙︎ → <b>«Помощник и награды»</b>.`)}
@@ -1775,6 +1793,146 @@ setInterval(() => {
   clearTimeout(WK.back); WK.back = setTimeout(() => wkMove(wkTargetX()), 3500 + Math.random() * 2500);
 }, 14000);
 addEventListener("resize", () => { WK.x = null; wkUpdate(); });
+
+
+// ---------- обмен наборами карточек ----------
+async function shareTopic(topicId) {
+  const t = S.topics.find(x => x.id === topicId); if (!t) return;
+  openDialog("🔗 Поделиться карточками", `<p class="small muted" style="margin:0">Делаю ссылку…</p>`, { submit: () => false, submitLabel: "Подожди" });
+  let j = {};
+  try { const r = await fetch("/api/share", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, topicId }) }); j = await r.json(); if (!r.ok) throw new Error(j.error); }
+  catch (e) { dlg.close(); flash(e.message || "Не получилось сделать ссылку. Проверь интернет."); return; }
+  dlg.close();
+  const link = `${location.origin}/app#share-${j.id}`, n = S.cards.filter(c => c.topicId === t.id).length;
+  openDialog("🔗 Поделиться карточками", `<p style="margin:0">Набор «<b>${esc(t.title)}</b>», ${n} ${word(n, "карточка", "карточки", "карточек")}. Отправь ссылку однокласснику: откроет и добавит себе в Козю.</p>
+    <label class="field"><span>Ссылка</span><input type="text" id="f-link" readonly value="${esc(link)}"></label>
+    <div class="row"><button class="btn primary sm" type="button" id="f-copy">📋 Скопировать</button>${navigator.share ? `<button class="btn sm" type="button" id="f-send">📤 Отправить</button>` : ""}</div>
+    <span class="small muted" id="f-copied" hidden>Скопировано ✓</span>`, { submit: () => true, submitLabel: "Готово" });
+  dlgform.querySelector("#f-copy").addEventListener("click", async () => {
+    const inp = dlgform.querySelector("#f-link");
+    try { await navigator.clipboard.writeText(link); } catch { inp.select(); try { document.execCommand("copy"); } catch {} }
+    dlgform.querySelector("#f-copied").hidden = false;
+  });
+  dlgform.querySelector("#f-send")?.addEventListener("click", () => navigator.share({ title: `Карточки: ${t.title}`, text: `Карточки «${t.title}» для Кози 🐐`, url: link }).catch(() => {}));
+}
+async function shareImportAsk() {
+  let id = null; try { id = localStorage.getItem("ege-share"); localStorage.removeItem("ege-share"); } catch {}
+  if (!id || !S) return;
+  let set;
+  try { const r = await fetch("/api/share?id=" + encodeURIComponent(id)); set = await r.json(); if (!r.ok) throw new Error(set.error); }
+  catch (e) { flash(e.message || "Не получилось открыть набор карточек."); return; }
+  const n = set.cards.length;
+  openDialog("📥 Набор карточек", `<p style="margin:0">«<b>${esc(set.title)}</b>»${set.subject ? ` · ${esc(set.subject)}` : ""} · ${n} ${word(n, "карточка", "карточки", "карточек")}${set.by ? `<br><span class="small muted">Поделился(ась): ${esc(set.by)}</span>` : ""}</p>
+    <div class="cardlist">${set.cards.slice(0, 5).map(c => `<div class="kc"><b>${esc(c.q)}</b><span>${esc(c.a)}</span></div>`).join("")}${n > 5 ? `<p class="small muted" style="margin:0">и ещё ${n - 5}</p>` : ""}</div>`, {
+    submitLabel: "Добавить себе",
+    submit: () => {
+      change(() => {
+        C.addTopic(S, set.title, set.subject, now().today);
+        const t = S.topics[S.topics.length - 1];
+        for (let k = 0; k < set.cards.length; k += 50) C.addCards(S, set.cards.slice(k, k + 50), { topicId: t.id, subject: set.subject, source: "shared" });
+        openTopics.add(t.id);
+      });
+      flash(`Добавила набор «${set.title}» в «Знания» 📚`);
+      view = "topics"; history.replaceState(null, "", "#topics"); render();
+    },
+  });
+}
+
+// ---------- игры с карточками: «Найди пары» и «На скорость» ----------
+let game = null, gameTimer = 0;
+const gameCards = topicId => (topicId ? S.cards.filter(c => c.topicId === topicId) : S.cards).filter(c => c.q && c.a);
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const clipTxt = (t, n) => { t = String(t); return t.length > n ? t.slice(0, n - 1) + "…" : t; };
+function gameChoose(topicId) {
+  const cs = gameCards(topicId);
+  if (cs.length < 3) { flash("Для игры нужно хотя бы 3 карточки."); return; }
+  const best = S.games?.[topicId || "all"] || {};
+  openDialog("🎮 Во что играем?", `<div style="display:flex;flex-direction:column;gap:10px">
+    <button class="gamepick" type="button" data-pick="pairs"><b>🧩 Найди пары</b><span>Соедини вопросы с ответами как можно быстрее${best.pairs ? ` · рекорд ${best.pairs} сек` : ""}</span></button>
+    <button class="gamepick" type="button" data-pick="speed"><b>⚡ На скорость</b><span>60 секунд, выбирай верный ответ из четырёх${best.speed ? ` · рекорд ${best.speed}` : ""}</span></button></div>`, { submit: () => { setTimeout(() => gameStart(topicId, Math.random() < 0.5 ? "pairs" : "speed"), 0); return true; }, submitLabel: "🎲 Любая" });
+  dlgform.querySelectorAll("[data-pick]").forEach(b => b.addEventListener("click", () => { dlg.close(); gameStart(topicId, b.dataset.pick); }));
+}
+function gameStart(topicId, mode) {
+  const cs = shuffle([...gameCards(topicId)]);
+  if (cs.length < 3) return;
+  clearInterval(gameTimer);
+  if (mode === "pairs") {
+    const pick = cs.slice(0, 6), tiles = shuffle(pick.flatMap((c, i) => [{ k: i, side: "q", t: c.q }, { k: i, side: "a", t: c.a }]));
+    game = { mode, topicId, tiles, sel: null, done: new Set(), bad: null, start: Date.now(), miss: 0, pairs: pick.length };
+  } else {
+    game = { mode, topicId, cards: cs, pool: S.cards.filter(c => c.a), i: 0, score: 0, wrong: 0, start: Date.now(), len: 60000, last: null };
+    speedNext();
+  }
+  if (view !== "game") { backStack.push(view); view = "game"; history.replaceState(null, "", "#game"); }
+  render(); scrollTo(0, 0);
+  gameTimer = setInterval(gameTick, 250);
+}
+function gameTick() {
+  if (!game || view !== "game" || game.over) { clearInterval(gameTimer); return; }
+  const el = document.getElementById("game-time"); if (!el) return;
+  if (game.mode === "pairs") el.textContent = Math.floor((Date.now() - game.start) / 1000) + " сек";
+  else { const left = Math.max(0, game.len - (Date.now() - game.start)); el.textContent = Math.ceil(left / 1000) + " сек"; const bar = document.getElementById("game-bar"); if (bar) bar.style.width = (left / game.len * 100) + "%"; if (left <= 0) gameOver(); }
+}
+function gameOver() {
+  if (!game || game.over) return;
+  game.over = true; clearInterval(gameTimer);
+  const key = game.topicId || "all", today = now().today;
+  const result = game.mode === "pairs" ? Math.round((Date.now() - game.start) / 1000) : game.score;
+  change(() => {
+    const g = ((S.games ||= {})[key] ||= {});
+    game.record = game.mode === "pairs" ? (!g.pairs || result < g.pairs) : (result > (g.speed || 0));
+    if (game.record) g[game.mode] = result;
+    (S.played ||= {})[today] = (S.played[today] || 0) + 1;
+    for (const k of Object.keys(S.played)) if (k < C.addDays(today, -120)) delete S.played[k];
+  });
+  game.result = result;
+  render();
+}
+function pairsTap(i) {
+  const g = game; if (!g || g.mode !== "pairs" || g.over || g.done.has(g.tiles[i].k)) return;
+  if (g.sel === i) { g.sel = null; render(); return; }
+  if (g.sel == null) { g.sel = i; g.bad = null; render(); return; }
+  const a = g.tiles[g.sel], b = g.tiles[i];
+  if (a.k === b.k && a.side !== b.side) { g.done.add(a.k); g.sel = null; render(); if (g.done.size === g.pairs) setTimeout(gameOver, 350); }
+  else { g.bad = [g.sel, i]; g.sel = null; g.miss++; render(); setTimeout(() => { if (game === g) { g.bad = null; render(); } }, 600); }
+}
+function speedNext() {
+  const g = game, c = g.cards[g.i % g.cards.length];
+  const others = shuffle(g.pool.filter(x => x.a !== c.a)).map(x => x.a).filter((a, k, arr) => arr.indexOf(a) === k).slice(0, 3);
+  g.cur = { c, opts: shuffle([c.a, ...others]) };
+}
+function speedAnswer(k) {
+  const g = game; if (!g || g.mode !== "speed" || g.over || g.lock) return;
+  const ok = g.cur.opts[k] === g.cur.c.a;
+  const card = S.cards.find(x => x.id === g.cur.c.id); if (card) { ok ? card.right++ : card.wrong++; card.last = now().today; }
+  ok ? g.score++ : g.wrong++;
+  g.last = { k, ok, right: g.cur.opts.indexOf(g.cur.c.a) }; g.lock = true; render();
+  setTimeout(() => { if (game !== g || g.over) return; g.lock = false; g.last = null; g.i++; speedNext(); render(); }, ok ? 350 : 900);
+}
+function renderGame() {
+  const g = game;
+  if (!g) return `<p class="empty">Игра не начата.</p><button class="btn" data-view="topics" type="button">К знаниям</button>`;
+  const title = g.topicId ? S.topics.find(t => t.id === g.topicId)?.title || "Карточки" : "Все карточки";
+  if (g.over) {
+    const txt = g.mode === "pairs" ? `${g.result} сек` : `${g.result} ${word(g.result, "верный ответ", "верных ответа", "верных ответов")}`;
+    const say = g.record ? "Новый рекорд! 🏆" : g.mode === "pairs" ? (g.miss ? `Ошибок: ${g.miss}. Ещё разок?` : "Без единой ошибки! ✨") : (g.wrong ? `Ошибок: ${g.wrong}. Ещё разок?` : "Ни одной ошибки! ✨");
+    return `<div class="card egedone"><div class="mascot" style="width:150px;align-self:center">${mascot("happy")}</div>
+      <h2 style="text-align:center">${g.mode === "pairs" ? "🧩" : "⚡"} ${txt}</h2><p class="small muted" style="margin:0;text-align:center">${esc(title)} · ${say}</p>
+      <button class="btn primary" data-act="game-again" type="button" style="justify-content:center">Ещё раз</button>
+      <button class="btn" data-act="game-other" type="button" style="justify-content:center">${g.mode === "pairs" ? "⚡ Сыграть на скорость" : "🧩 Найти пары"}</button>
+      <button class="btn ghost" data-back="" type="button" style="justify-content:center">Готово</button></div>`;
+  }
+  if (g.mode === "pairs") {
+    return `<div class="egehead"><span>🧩 ${esc(title)}</span><span id="game-time">${Math.floor((Date.now() - g.start) / 1000)} сек</span></div>
+      <p class="small muted" style="margin:0">Нажми на вопрос, потом на его ответ. Найдено ${g.done.size} из ${g.pairs}.</p>
+      <div class="pairs">${g.tiles.map((t, i) => `<button type="button" class="ptile${t.side === "a" ? " pa" : ""}${g.done.has(t.k) ? " ok" : ""}${g.sel === i ? " sel" : ""}${g.bad?.includes(i) ? " bad" : ""}" data-pair-tile="${i}" ${g.done.has(t.k) ? "disabled" : ""}>${esc(clipTxt(t.t, 70))}</button>`).join("")}</div>`;
+  }
+  const left = Math.max(0, g.len - (Date.now() - g.start));
+  return `<div class="egehead"><span>⚡ ${esc(title)}</span><span><b>${g.score}</b> · <span id="game-time">${Math.ceil(left / 1000)} сек</span></span></div>
+    <div class="egebar"><i id="game-bar" style="width:${left / g.len * 100}%"></i></div>
+    <div class="card egecard"><p class="egeq">${esc(g.cur.c.q)}</p>
+    <div class="speedopts">${g.cur.opts.map((o, k) => `<button type="button" class="sopt${g.last ? (k === g.last.right ? " ok" : k === g.last.k ? " bad" : "") : ""}" data-speed-opt="${k}">${esc(clipTxt(o, 90))}</button>`).join("")}</div></div>`;
+}
 
 function genderAsk() {
   return `<div class="card genderask"><b>Как к тебе обращаться?</b><span class="small muted">Чтобы я писала «ты сделала» или «ты сделал».</span>
@@ -2074,8 +2232,14 @@ document.addEventListener("click", e => {
   if (d.delCard) { change(() => { S.cards = S.cards.filter(c => c.id !== d.delCard); }); return; }
   if (d.addCards !== undefined) { addCardsDialog(d.addCards || null); return; }
   if (d.genCards) { genCards(d.genCards); return; }
+  if (d.shareTopic) { shareTopic(d.shareTopic); return; }
+  if ("playTopic" in d) { gameChoose(d.playTopic); return; }
+  if (d.pairTile !== undefined) { pairsTap(+d.pairTile); return; }
+  if (d.speedOpt !== undefined) { speedAnswer(+d.speedOpt); return; }
   if (d.quizTopic) { startQuiz({ topicId: d.quizTopic, n: 5, mode: "topic" }); return; }
   switch (d.act) {
+    case "game-again": gameStart(game?.topicId ?? "", game?.mode || "pairs"); return;
+    case "game-other": gameStart(game?.topicId ?? "", game?.mode === "pairs" ? "speed" : "pairs"); return;
     case "walker-toggle": change(() => { look().walker = look().walker === false; }); return;
     case "tour-again": change(() => { (S.tips ||= {}).tour = 0; }); backStack = []; view = "today"; history.replaceState(null, "", "#today"); render(); scrollTo(0, 0); return;
     case "tips-toggle": change(() => { const on = !!S.tips?.off; S.tips = on ? { tour: S.tips?.tour ?? 1 } : { ...(S.tips || {}), off: 1 }; }); return;
