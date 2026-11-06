@@ -66,7 +66,7 @@ const server = http.createServer(async (req, res) => {
       if (!h) return res.status(404).json({ error: "Не найдено" });
       req.query = Object.fromEntries(url.searchParams);
       if (req.method !== "GET" && req.method !== "HEAD") {
-        const raw = await readBody(req);
+        const raw = await readBody(req, ["import", "files"].includes(p.slice(5).replace(/\/$/, "")) ? 9_000_000 : 1_000_000);
         try { req.body = raw ? JSON.parse(raw) : undefined; } catch { req.body = raw; }
       }
       return await h(req, res);

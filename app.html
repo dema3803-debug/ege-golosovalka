@@ -880,7 +880,8 @@ function renderSetup() {
   const n = now();
   const events = S.extraLessons.filter(e => e.date >= n.today).sort((a, b) => (a.date + a.from).localeCompare(b.date + b.from)).map(e => `<div class="li"><div><button class="t" data-edit-event="${e.id}" type="button">${esc(e.title)}</button><div class="meta">${C.humanDate(e.date)} · ${e.from}–${e.to}</div></div><button class="iconbtn" data-edit-event="${e.id}" type="button" aria-label="Изменить">${icon("i-edit")}</button></div>`).join("");
   const habit = S.habits[0];
-  return `<div class="card"><div class="cardhead"><h2>Занятия по расписанию</h2><button class="btn sm" data-act="new-lesson" type="button">${icon("i-plus")}Добавить</button></div>${lessons ? `<div class="list">${lessons}</div>` : `<p class="empty">Нет регулярных занятий.</p>`}</div>
+  return `<div class="card"><div class="cardhead"><h2>Расписание онлайн-школы</h2></div><p class="small muted" style="margin:0">Умскул, Вебиум, 100балльный, репетитор — скинь скриншот или текст расписания, и Козя сама разложит вебинары и дедлайны по плану.</p><button class="btn primary" data-act="import" type="button" style="justify-content:center">${icon("i-plus")}Загрузить расписание</button></div>
+  <div class="card"><div class="cardhead"><h2>Занятия по расписанию</h2><button class="btn sm" data-act="new-lesson" type="button">${icon("i-plus")}Добавить</button></div>${lessons ? `<div class="list">${lessons}</div>` : `<p class="empty">Нет регулярных занятий.</p>`}</div>
   <div class="card"><div class="cardhead"><h2>Разовые события</h2><button class="btn sm" data-act="new-event" type="button">${icon("i-plus")}Добавить</button></div><p class="small muted" style="margin:0">Зачёт, пробник, кружок, поездка — то, что бывает один раз.</p>${events ? `<div class="list">${events}</div>` : ""}</div>
   <div class="card"><h2>Свободное время по дням</h2><p class="small muted" style="margin:0">Когда можно заниматься самой. Занятия вычитаются автоматически.</p>
     <div style="display:flex;flex-direction:column;gap:8px">${S.free.map((f, i) => `<div class="week-free"><b class="small">${C.DAYS[i]}</b><input type="time" id="free-from-${i}" data-free="${i}" data-k="from" value="${esc(f.from)}" aria-label="${C.DAYS[i]}, с" ${f.off ? "disabled" : ""}><input type="time" id="free-to-${i}" data-free="${i}" data-k="to" value="${esc(f.to)}" aria-label="${C.DAYS[i]}, до" ${f.off ? "disabled" : ""}><label><input type="checkbox" id="free-off-${i}" data-free="${i}" data-k="off" ${f.off ? "checked" : ""}> выходной</label></div>`).join("")}</div></div>
@@ -987,6 +988,135 @@ function eventDialog(e) {
     actions: isNew ? {} : { del: { label: "Удалить", cls: "danger", run: () => change(() => { S.extraLessons = S.extraLessons.filter(x => x.id !== e.id); }) } },
   });
 }
+// ---------- импорт расписания онлайн-школы ----------
+function importDialog() {
+  openDialog("Загрузить расписание", `
+    <p class="small muted" style="margin:0">Открой расписание в личном кабинете школы или в её Telegram-канале. Сделай скриншот или скопируй текст. Можно и то и другое.</p>
+    <label class="field"><span>Скриншоты или файл календаря (.ics)</span><input type="file" id="f-files" accept="image/*,.ics,text/calendar" multiple></label>
+    <label class="field"><span>Или вставь текст расписания</span><textarea id="f-text" rows="6" maxlength="12000" placeholder="12 ноября, 18:00 — Обществознание. Вебинар «Право»&#10;Дедлайн ДЗ №5 — 15 ноября до 23:59"></textarea></label>
+    <span class="small" id="f-imp-status" hidden></span>`, {
+    submitLabel: "Разобрать",
+    submit: () => { runImport(); return false; },
+  });
+}
+async function runImport() {
+  const st = dlgform.querySelector("#f-imp-status"), btn = dlgform.querySelector("button[value=ok]");
+  const files = [...(dlgform.querySelector("#f-files")?.files || [])], text = val("f-text");
+  const show = (t, bad) => { st.hidden = false; st.textContent = t; st.style.color = bad ? "var(--warn)" : "var(--muted)"; };
+  if (!files.length && !text) { show("Прикрепи скриншот или вставь текст.", true); return; }
+  btn.disabled = true; btn.textContent = "Козя читает…";
+  const found = { lessons: [], events: [], deadlines: [] };
+  try {
+    const images = [];
+    for (const f of files) {
+      if (/\.ics$/i.test(f.name) || f.type === "text/calendar") { const r = parseICS(await f.text()); for (const k in found) found[k].push(...r[k]); }
+      else if (f.type.startsWith("image/")) { if (images.length < 4) images.push(await shrinkImage(f)); }
+    }
+    if (images.length || text) {
+      show(images.length ? "Читаю скриншоты — это до минуты…" : "Разбираю расписание…");
+      const r = await fetch("/api/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, text, images }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || "Не получилось разобрать расписание.");
+      for (const k in found) found[k].push(...(j[k] || []));
+    }
+  } catch (e) { show(e.message || "Нет связи. Проверь интернет.", true); btn.disabled = false; btn.textContent = "Разобрать"; return; }
+  if (!found.lessons.length && !found.events.length && !found.deadlines.length) { show("Не нашла в расписании ни дат, ни времени. Попробуй другой скриншот или вставь текст.", true); btn.disabled = false; btn.textContent = "Разобрать"; return; }
+  dlg.close(); importPreview(found);
+}
+function shrinkImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      resolve(c.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Не открылась картинка " + file.name)); };
+    img.src = url;
+  });
+}
+// .ics (Google, Яндекс, Apple Календарь): повторяющиеся по неделям — в занятия, остальное — в события
+function parseICS(txt) {
+  const out = { lessons: [], events: [], deadlines: [] }, today = now().today;
+  const lines = txt.replace(/\r?\n[ \t]/g, "").split(/\r?\n/);
+  const unesc = v => v.replace(/\\n/gi, " ").replace(/\\([,;\\])/g, "$1").trim();
+  const BY = { MO: 0, TU: 1, WE: 2, TH: 3, FR: 4, SA: 5, SU: 6 };
+  const pad = n => String(n).padStart(2, "0");
+  const toMsk = (prop, v) => {
+    const m = v.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2}))?/); if (!m) return null;
+    if (!m[4]) return { date: `${m[1]}-${m[2]}-${m[3]}`, time: null };
+    let ms = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+    const tz = (prop.match(/TZID=([^;:]+)/) || [])[1];
+    if (/Z$/.test(v)) ms += 3 * 3600000;
+    else if (tz && !/Moscow/i.test(tz)) {
+      try { const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(ms).map(x => [x.type, x.value]));
+        const off = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute) - ms; ms = ms - off + 3 * 3600000; } catch {}
+    }
+    const d = new Date(ms);
+    return { date: `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`, time: `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}` };
+  };
+  let ev = null;
+  for (const line of lines) {
+    if (line === "BEGIN:VEVENT") { ev = {}; continue; }
+    if (line === "END:VEVENT" && ev) {
+      const st = ev.start, en = ev.end, title = (ev.title || "Событие").slice(0, 80), where = (ev.where || "").slice(0, 200);
+      const subject = (S.subjects.find(x => title.toLowerCase().includes(x.name.toLowerCase().slice(0, 5))) || {}).name || "";
+      if (st && ev.rrule && /FREQ=WEEKLY/.test(ev.rrule) && st.time) {
+        const until = (ev.rrule.match(/UNTIL=(\d{8})/) || [])[1];
+        if (!until || `${until.slice(0, 4)}-${until.slice(4, 6)}-${until.slice(6, 8)}` >= today) {
+          const by = (ev.rrule.match(/BYDAY=([A-Z,0-9-]+)/) || [])[1];
+          const days = by ? by.split(",").map(d => BY[d.slice(-2)]).filter(d => d >= 0) : [C.weekday(st.date)];
+          out.lessons.push({ title, subject, days: [...new Set(days)].sort(), from: st.time, to: en?.time || C.toHHMM(Math.min(C.toMin(st.time) + 90, 1439)), where });
+        }
+      } else if (st && st.date >= today && st.date <= C.addDays(today, 200)) {
+        if (st.time) out.events.push({ title, subject, date: st.date, from: st.time, to: en?.date === st.date && en.time ? en.time : C.toHHMM(Math.min(C.toMin(st.time) + 90, 1439)), where });
+        else out.deadlines.push({ title, subject, date: st.date, time: null });
+      }
+      ev = null; continue;
+    }
+    if (!ev) continue;
+    const c = line.indexOf(":"); if (c < 0) continue;
+    const prop = line.slice(0, c), v = line.slice(c + 1), name = prop.split(";")[0].toUpperCase();
+    if (name === "SUMMARY") ev.title = unesc(v);
+    else if (name === "DTSTART") ev.start = toMsk(prop, v);
+    else if (name === "DTEND") ev.end = toMsk(prop, v);
+    else if (name === "RRULE") ev.rrule = v;
+    else if ((name === "LOCATION" || name === "URL") && !ev.where) ev.where = unesc(v);
+  }
+  return out;
+}
+function importPreview(f) {
+  const same = (a, b) => String(a || "").toLowerCase().trim() === String(b || "").toLowerCase().trim();
+  const dupL = l => S.lessons.some(x => x.from === l.from && x.days.join() === l.days.join() && (same(x.subject, l.subject) || same(x.title, l.title)));
+  const dupE = e => S.extraLessons.some(x => x.date === e.date && x.from === e.from);
+  const dupD = d => S.tasks.some(x => x.due === d.date && same(x.title, d.title));
+  const items = [
+    ...f.lessons.map(x => ({ k: "l", x, dup: dupL(x), line: `${x.days.map(d => C.DAYS[d]).join(", ")} · ${x.from}–${x.to}` })),
+    ...f.events.map(x => ({ k: "e", x, dup: dupE(x), line: `${C.humanDate(x.date)} · ${x.from}–${x.to}` })),
+    ...f.deadlines.map(x => ({ k: "d", x, dup: dupD(x), line: `сдать до ${C.humanDate(x.date)}${x.time ? " " + x.time : ""}` })),
+  ];
+  const group = (k, h) => { const g = items.map((it, i) => [it, i]).filter(([it]) => it.k === k); return g.length ? `<h3 style="margin-top:6px">${h}</h3><div class="list">${g.map(([it, i]) => `<label class="li" style="grid-template-columns:auto minmax(0,1fr);cursor:pointer"><input type="checkbox" data-imp="${i}" ${it.dup ? "" : "checked"} style="width:20px;height:20px;accent-color:var(--accent)"><div><div class="t">${esc(it.x.title)}${it.x.subject ? ` <span class="muted">· ${esc(it.x.subject)}</span>` : ""}</div><div class="meta">${esc(it.line)}${it.dup ? " · уже есть в плане" : ""}</div></div></label>`).join("")}</div>` : ""; };
+  openDialog("Что нашла Козя", `<p class="small muted" style="margin:0">Сними галочки с того, что не нужно. Потом всё можно поправить в «Расписании».</p>
+    ${group("l", "Каждую неделю")}${group("e", "Вебинары и занятия по датам")}${group("d", "Дедлайны")}`, {
+    submitLabel: "Добавить в план",
+    submit: () => {
+      const pick = [...dlgform.querySelectorAll("[data-imp]:checked")].map(b => items[+b.dataset.imp]);
+      if (!pick.length) return;
+      const n = now();
+      change(() => {
+        for (const { k, x } of pick) {
+          if (k === "l") S.lessons.push({ id: C.uid("l"), title: x.title, subject: x.subject, days: x.days, from: x.from, to: x.to, where: x.where || "", src: "import" });
+          if (k === "e") S.extraLessons.push({ id: C.uid("x"), title: x.title, subject: x.subject, date: x.date, from: x.from, to: x.to, where: x.where || "", src: "import" });
+          if (k === "d") S.tasks.push({ id: C.uid("t"), title: x.title, subject: x.subject, kind: "ege", sessions: 1, done: 0, due: x.date, dueTime: x.time || null, created: n.today, src: "import" });
+        }
+        const c = t => pick.filter(p => p.k === t).length;
+        C.pushChat(S, "assistant", `Добавила из расписания: ${[c("l") && `регулярные занятия — ${c("l")}`, c("e") && `вебинары по датам — ${c("e")}`, c("d") && `дедлайны — ${c("d")}`].filter(Boolean).join(", ")}. План под это уже перестроила ✨`);
+      });
+    },
+  });
+}
+
 function dayDialog(date) {
   const ov = S.avail[date] || {}, base = S.free[C.weekday(date)];
   openDialog(`${C.DAYS_FULL[C.weekday(date)]}, ${C.humanDate(date)}`, `
@@ -1031,6 +1161,7 @@ document.addEventListener("click", e => {
   if (d.quizTopic) { startQuiz({ topicId: d.quizTopic, n: 5, mode: "topic" }); return; }
   switch (d.act) {
     case "new-task": taskDialog(null, { at: d.at }); return;
+    case "import": importDialog(); return;
     case "new-lesson": lessonDialog(null); return;
     case "new-event": eventDialog(null); return;
     case "learned": learnedDialog(); return;
