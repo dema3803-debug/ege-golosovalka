@@ -41,6 +41,7 @@
   --s1:#7B97FF; --s2:#47C99C; --s3:#E8A05C; --s4:#C38BE6; --s5:#EF7FAB; --s0:#A898A2; color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
+html{overscroll-behavior-y:none}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -49,7 +50,7 @@ button{cursor:pointer}
 
 /* каркас */
 .shell{display:grid;grid-template-columns:minmax(0,1fr);min-height:100%}
-.main{padding-block:calc(18px + env(safe-area-inset-top,0px)) 170px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.main{padding-block:calc(18px + env(safe-area-inset-top,0px)) calc(var(--dockh,150px) + 24px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 #view{display:flex;flex-direction:column;gap:14px;min-width:0}
 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
 .date{font-size:13px;color:var(--muted);font-weight:500}
@@ -689,8 +690,8 @@ function render() {
   $("#view").innerHTML = gx((v === "today" && !S.gender ? genderAsk() : "") + (SUB[v] ? `<div class="sethead"><button class="iconbtn back" data-back="" type="button" aria-label="Назад">‹</button><h2>${SUB[v]}</h2></div>` : "") + (v === "session" ? renderSession() : v === "day" ? renderDay(plan[0], n) : v === "today" ? renderToday(plan[0], n) : v === "week" ? renderWeek(plan) : v === "calendar" ? renderCalendar(n) : v === "ege" ? renderEge() : v === "settings" ? renderSettings(n) : v === "buddy" ? renderBuddy(n) : v === "topics" ? renderTopics(n) : v === "help" ? renderHelp() : v === "setup" ? renderSetup() : renderChatView(n)));
   $("#chat-desk").innerHTML = gx(chatHTML(n, 60));
   const cd = $("#chat-desk"); cd.scrollTop = cd.scrollHeight;
-  if (v === "chat") scrollTo(0, document.body.scrollHeight);
   afterRender(v);
+  if (v === "chat") scrollTo(0, document.body.scrollHeight);
 }
 
 function chatHTML(n, limit) {
