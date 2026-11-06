@@ -134,7 +134,8 @@ html.tourlock,html.tourlock body{overflow:hidden;overscroll-behavior:none}
 .tour-box .tm{flex:0 0 64px}.tour-box .tm svg{width:64px;height:auto}
 .tour-body{display:flex;flex-direction:column;gap:10px;min-width:0;flex:1}
 .tour-txt{font-size:15px;line-height:1.4}
-.tour-foot{display:flex;align-items:center;gap:8px}.tour-foot .tour-n{flex:1;font-size:12px;color:var(--faint);font-weight:700}
+.tour-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.tour-foot .tour-n{flex:1;font-size:12px;color:var(--faint);font-weight:700;white-space:nowrap}
+@media (max-width:380px){.tour-box .tm{flex-basis:44px}.tour-box .tm svg{width:44px}}
 .tipbox{position:fixed;z-index:30;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(var(--dockh,0px) + 12px + env(safe-area-inset-bottom,0px));margin:0 auto;max-width:460px;background:var(--surface);border:1px solid var(--accent-line);border-radius:20px;padding:12px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 10px 30px rgba(0,0,0,.16);animation:tipin .3s ease}
 .tipbox .tm{flex:0 0 46px}.tipbox .tm svg{width:46px;height:auto}
 .tipbox .tb{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1;font-size:14px}
@@ -150,7 +151,7 @@ html.tourlock,html.tourlock body{overflow:hidden;overscroll-behavior:none}
 .gamepick{all:unset;cursor:pointer;box-sizing:border-box;display:flex;flex-direction:column;gap:3px;padding:14px 16px;border-radius:16px;background:var(--raised);border:1px solid var(--line2)}
 .gamepick span{font-size:13px;color:var(--muted)}
 .pairs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.ptile{min-height:84px;padding:8px;border-radius:16px;border:2px solid var(--line2);background:var(--surface);font-size:13px;font-weight:700;line-height:1.25;overflow-wrap:anywhere;transition:transform .15s,background .2s,opacity .3s}
+.ptile{min-height:84px;padding:8px;border-radius:16px;border:2px solid var(--line2);background:var(--surface);font-size:13px;font-weight:700;line-height:1.25;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto;transition:transform .15s,background .2s,opacity .3s}
 .ptile.pa{background:var(--raised);font-weight:500}
 .ptile.sel{border-color:var(--accent);background:var(--accent-soft);transform:scale(1.04)}
 .ptile.ok{opacity:0;transform:scale(.8);pointer-events:none}
@@ -211,7 +212,7 @@ body.insession #install{display:none!important}
 .nx .box{width:24px;height:24px;border-radius:8px;border:2px solid var(--c,var(--s0));flex:none;background:transparent;padding:0}
 .nx .box.review{border-style:dashed;border-color:var(--accent)}
 .nx .tx{flex:1;min-width:0;border:0;background:none;padding:0;text-align:left}
-.nx .tx b{display:block;font-weight:700;overflow-wrap:anywhere}
+.nx .tx b{display:block;font-weight:700;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
 .nx .tx span{font-size:13px;color:var(--muted);font-weight:600}
 .quick{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .quick .btn{background:transparent;border-color:var(--line2);font-size:13px;padding:7px 12px}
@@ -269,7 +270,7 @@ details.topic summary::-webkit-details-marker{display:none}
 .b .mark:hover{background:var(--accent-soft)}
 .b .mark svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.6;fill:none}
 .b .tm{grid-column:2;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.b .tt{grid-column:2;font-weight:700;min-width:0;overflow-wrap:anywhere;background:none;border:0;padding:0;text-align:left;cursor:pointer}
+.b .tt{grid-column:2;font-weight:700;min-width:0;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto;background:none;border:0;padding:0;text-align:left;cursor:pointer}
 .b .tt:hover{color:var(--accent)}
 .b .side{grid-column:3;grid-row:1/3;display:flex;gap:6px}
 .b .dot{width:8px;height:8px;border-radius:50%;background:var(--c);display:inline-block;margin-right:6px;vertical-align:1px}
@@ -318,7 +319,7 @@ details.topic summary::-webkit-details-marker{display:none}
 .week-free label{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;white-space:nowrap}
 
 /* формы */
-input[type=text],input[type=time],input[type=date],input[type=number],select,textarea{width:100%;min-width:0;background:var(--raised);border:1px solid var(--line2);border-radius:10px;padding:10px 12px}
+input[type=text],input[type=email],input[type=password],input[type=url],input[type=search],input[type=time],input[type=date],input[type=number],select,textarea{width:100%;min-width:0;background:var(--raised);border:1px solid var(--line2);border-radius:10px;padding:10px 12px}
 textarea{min-height:90px;resize:vertical}
 .field{display:flex;flex-direction:column;gap:5px;min-width:0}
 .field>span{font-size:13px;color:var(--muted)}
@@ -358,12 +359,13 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
   .preview,.navchat{display:none!important}
 }
 @media (max-width:420px){.week-free{grid-template-columns:36px 1fr 1fr}.week-free label{grid-column:2/-1}}
+@media (max-width:360px){.week-free input[type=time]{padding:10px 4px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .examcard{all:unset;box-sizing:border-box;cursor:pointer;background:var(--surface);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:8px}
 .examcard:focus-visible{outline:2px solid var(--accent)}
 .exrow{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center}
 .em{font-size:20px;line-height:1;text-align:center}
-.exrow .tx b{display:block;font-weight:700;overflow-wrap:anywhere}.exrow .tx span{font-size:13px;color:var(--muted)}
+.exrow .tx b{display:block;font-weight:700;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}.exrow .tx span{font-size:13px;color:var(--muted)}
 .left{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}.left.soon{color:var(--accent)}
 .calhead{display:flex;justify-content:space-between;align-items:center}
 .calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
@@ -374,9 +376,9 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 .cd .ems{font-size:12px;line-height:1;min-height:12px;display:flex;gap:1px;align-items:center}
 i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
 .exli{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
-.exli .t{display:block;font-weight:700;overflow-wrap:anywhere}.exli .meta{display:block;font-size:13px;color:var(--muted)}
+.exli .t{display:block;font-weight:700;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}.exli .meta{display:block;font-size:13px;color:var(--muted)}
 .matlink{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:center;color:inherit;text-decoration:none;min-width:0}
-.matlink .t{display:block;font-weight:700;overflow-wrap:anywhere;color:var(--accent)}.matlink .meta{display:block;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.matlink .t{display:block;font-weight:700;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto;color:var(--accent)}.matlink .meta{display:block;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
 .dlgfoot .row{flex-wrap:wrap}
 :root[data-accent="lav"]{--accent:#7B4FCF;--accent-soft:#EEE7FB;--accent-line:#CDB9F0;--pink:#8A6BE0;--bg:#F4F0FB;--surface:#FFFFFF;--raised:#F9F6FD;--line:#E6DEF4;--line2:#D3C6EA}
 @media (prefers-color-scheme: dark){:root[data-accent="lav"]:not([data-theme="light"]){--accent:#B9A2F5;--accent-soft:#2C2540;--accent-line:#54457A;--pink:#B9A2F5;--bg:#17121A;--surface:#221A25;--raised:#2B2230;--line:#3A2E40;--line2:#4A3B52}}
@@ -402,7 +404,7 @@ i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
 .setrow+.setrow{border-top:1px solid var(--line)}.setrow.off{cursor:default;opacity:.6}
 .setrow:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
 .setic{width:34px;height:34px;border-radius:11px;background:var(--accent-soft);display:grid;place-items:center;font-size:17px;flex:none}
-.setrow .rt{flex:1;min-width:0}.setrow .rt b{display:block;font-size:16px}.setrow .rt span{display:block;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.setrow .rt{flex:1;min-width:0}.setrow .rt b{display:block;font-size:16px}.setrow .rt span{display:block;font-size:13px;color:var(--muted);overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
 .chev{color:var(--faint);font-size:22px}
 .setcard>b{margin-top:10px}
 .seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--raised);border-radius:14px;padding:4px;gap:4px}
@@ -551,9 +553,10 @@ document.getElementById("status").addEventListener("click", e => { if (e.target.
 async function load() {
   if (!U) {
     $("#date").textContent = ""; $("#hello").textContent = "Привет!";
-    const login = location.hash === "#login", deleted = location.hash === "#deleted";
-    $("#view").innerHTML = `<div class="hero"><div class="bubble">${deleted ? "Аккаунт удалён, все твои данные стёрты. Будет нужна помощь с ЕГЭ - я тут 🐐" : login ? "С возвращением! Введи почту и пароль - и продолжим." : "Я Козя! Помогу готовиться к ЕГЭ без завалов: соберу план и буду напоминать, что делать."}</div><div class="mascot">${mascot("happy")}</div></div>
+    const login = location.hash === "#login", deleted = location.hash === "#deleted", lost = location.hash === "#notfound";
+    $("#view").innerHTML = `<div class="hero"><div class="bubble">${deleted ? "Аккаунт удалён, все твои данные стёрты. Будет нужна помощь с ЕГЭ - я тут 🐐" : lost ? "Не нашла такой план. Войди по почте и паролю - или собери новый план." : login ? "С возвращением! Введи почту и пароль - и продолжим." : "Я Козя! Помогу готовиться к ЕГЭ без завалов: соберу план и буду напоминать, что делать."}</div><div class="mascot">${mascot("happy")}</div></div>
       ${login ? "" : `<a class="btn primary" href="/start" style="justify-content:center;text-decoration:none">Начать - собрать мой план</a>`}
+      <div id="sharepend"></div>
       <form class="card" id="loginform"><b>Уже есть план? Войди</b>
       <label class="field"><span>Почта</span><input type="email" id="l-email" autocomplete="email" inputmode="email" required></label>
       <label class="field"><span>Пароль</span><input type="password" id="l-pass" autocomplete="current-password" required></label>
@@ -563,6 +566,12 @@ async function load() {
       <form id="linkform" style="display:flex;flex-direction:column;gap:10px;margin-top:10px"><label class="field"><span>Ссылка на план (или код после «u=»)</span><input type="text" id="link-in" autocomplete="off" placeholder="https://…/app?u=…" required></label>
       <span class="small muted" id="link-err" hidden>Не вижу кода. Скопируй ссылку целиком - в ней есть «?u=» и буквы с цифрами.</span>
       <button class="btn" type="submit" style="justify-content:center">Открыть мой план</button></form></details>`;
+    // пришли по ссылке на карточки без аккаунта: показываем, что за набор, и добавим его после входа
+    { let sid = null; try { sid = localStorage.getItem("ege-share"); } catch {}
+      if (sid) fetch("/api/share?id=" + sid).then(r => r.ok ? r.json() : null).then(set => {
+        if (!set || !$("#sharepend")) return; const n = set.cards.length;
+        $("#sharepend").innerHTML = `<div class="card" style="gap:6px"><b>${ki("books")} Тебе прислали карточки</b><span>«${esc(set.title)}»${set.subject ? ` · ${esc(set.subject)}` : ""} · ${n} ${word(n, "карточка", "карточки", "карточек")}${set.by ? `, от ${esc(set.by)}` : ""}</span><span class="small muted">Собери свой план или войди - и я сразу предложу добавить их к тебе.</span></div>`;
+      }).catch(() => {}); }
     $("#loginform").addEventListener("submit", async e => {
       e.preventDefault();
       const err = $("#l-err"), b = e.target.querySelector("button"); err.hidden = true; b.disabled = true; b.textContent = "Входим…";
@@ -587,6 +596,7 @@ async function load() {
     const r = await fetch(`/api/app?u=${encodeURIComponent(U)}`, { cache: "no-store" });
     const j = await r.json();
     if (r.status === 410 && j.movedTo) { showMoved(j.movedTo); return; }
+    if (r.status === 404) { try { if (localStorage.getItem("ege-u") === U) localStorage.removeItem("ege-u"); } catch {} location.replace("/app#notfound"); return; }
     if (!r.ok) { flash(j.error || "Не удалось загрузить план.", true); return; }
     S = j.state; BADGES = j.badges || {}; if (BADGES.pioneerNew) setTimeout(() => flash("🚀 Ты среди первых 100 пользователей Кози! Особый наряд уже в «Помощник и награды»"), 1500); S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; S.exams ||= []; S.materials ||= []; applyLook(S.look); if (!egeIndex) egeLoadIndex().then(() => { if (egeSubjects().length && S) render(); }); flash(""); $("#dock").hidden = false; render();
     try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {}
@@ -902,7 +912,7 @@ function renderToday(d, n) {
   else if (totalN) { say1 = "Всё на сегодня сделано! Ты {умница|молодец}."; moodLabel = "гордится"; }
   else say1 = "Задач пока нет. Напиши мне, что нужно сделать, - разложу по времени.";
   h += `<div class="hero"><div class="herohead"><b>Козя</b><span class="mood">${moodLabel}</span></div>
-    <div class="bubble" id="kzsay">${esc(say1)}</div><div class="mascot kzpoke" data-mood="${mood}" role="button" tabindex="0" aria-label="Погладить ${esc(helperName())}">${mascot(mood)}</div>
+    <div class="bubble" id="kzsay">${esc(say1)}</div><div class="mascot kzpoke" data-mood="${mood}" role="button" tabindex="0" aria-label="${esc(helperName())}: погладить">${mascot(mood)}</div>
     <div class="stats"><div class="stat"><span>Сегодня</span><b>${doneN} из ${totalN}</b></div>
     ${egeIndex && egeSubjects().length ? `<button class="stat statbtn" data-act="ege-any" type="button"><span>Тренажёр ЕГЭ</span><b>10 карточек</b><i>Проверь меня →</i></button>` : `<button class="stat statbtn" data-act="quiz-any" type="button"><span>Закрепить</span><b>${dueTopics ? `${dueTopics} ${word(dueTopics, "тема", "темы", "тем")}` : "5 вопросов"}</b><i>Проверь меня →</i></button>`}</div></div>`;
   if (session) h += `<div class="minibar"><span>${session.phase === "work" ? esc(session.title) : "Перерыв"} · <span class="tm" id="mini-time">${fmt(leftMs())}</span></span><button class="btn sm" data-view="session" type="button">Открыть</button></div>`;
@@ -1106,7 +1116,7 @@ function renderSetup() {
   const habit = S.habits.find(h => h.title === "Школьные задания" && h.subject === "Школа");
   return `<div class="card"><div class="cardhead"><h2>Расписание онлайн-школы</h2></div><p class="small muted" style="margin:0">Умскул, Вебиум, 100балльный, репетитор - скинь скриншот или текст расписания, и Козя сама разложит вебинары и дедлайны по плану.</p><button class="btn primary" data-act="import" type="button" style="justify-content:center">${icon("i-plus")}Загрузить расписание</button></div>
   <div class="card"><div class="cardhead"><h2>Занятия по расписанию</h2><button class="btn sm" data-act="new-lesson" type="button">${icon("i-plus")}Добавить</button></div>${lessons ? `<div class="list">${lessons}</div>` : `<p class="empty">Нет регулярных занятий.</p>`}</div>
-  <div class="card"><div class="cardhead"><h2>Повторяющиеся дела</h2><button class="btn sm" data-act="new-habit" type="button">${icon("i-plus")}Добавить</button></div><p class="small muted" style="margin:0">Домашка или привычка, которая бывает каждую неделю в одни и те же дни.</p>${S.habits.length ? `<div class="list">${S.habits.map(h => `<div class="li"><div><button class="t" data-edit-habit="${h.id}" type="button">🔁 ${esc(h.title)}</button><div class="meta">${esc([h.subject, h.days.map(d => C.DAYS[d]).join(", ") || "дни не выбраны", `${h.sessions || 1} × ${S.sessionMin} мин`].filter(Boolean).join(" · "))}</div></div><button class="iconbtn" data-edit-habit="${h.id}" type="button" aria-label="Изменить">${icon("i-edit")}</button></div>`).join("")}</div>` : ""}</div>
+  <div class="card"><div class="cardhead"><h2>Повторяющиеся дела</h2><button class="btn sm" data-act="new-habit" type="button">${icon("i-plus")}Добавить</button></div><p class="small muted" style="margin:0">Домашка или привычка, которая бывает каждую неделю в одни и те же дни.</p>${S.habits.length ? `<div class="list">${S.habits.map(h => `<div class="li"><div><button class="t" data-edit-habit="${h.id}" type="button">${ki("repeat")} ${esc(h.title)}</button><div class="meta">${esc([h.subject, h.days.map(d => C.DAYS[d]).join(", ") || "дни не выбраны", `${h.sessions || 1} × ${S.sessionMin} мин`].filter(Boolean).join(" · "))}</div></div><button class="iconbtn" data-edit-habit="${h.id}" type="button" aria-label="Изменить">${icon("i-edit")}</button></div>`).join("")}</div>` : ""}</div>
   <div class="card"><div class="cardhead"><h2>Разовые события</h2><button class="btn sm" data-act="new-event" type="button">${icon("i-plus")}Добавить</button></div><p class="small muted" style="margin:0">Зачёт, пробник, кружок, поездка - то, что бывает один раз.</p>${events ? `<div class="list">${events}</div>` : ""}</div>
   <div class="card"><h2>Свободное время по дням</h2><p class="small muted" style="margin:0">Когда можно заниматься самой. Занятия вычитаются автоматически.</p>
     <div style="display:flex;flex-direction:column;gap:8px">${S.free.map((f, i) => `<div class="week-free"><b class="small">${C.DAYS[i]}</b><input type="time" id="free-from-${i}" data-free="${i}" data-k="from" value="${esc(f.from)}" aria-label="${C.DAYS[i]}, с" ${f.off ? "disabled" : ""}><input type="time" id="free-to-${i}" data-free="${i}" data-k="to" value="${esc(f.to)}" aria-label="${C.DAYS[i]}, до" ${f.off ? "disabled" : ""}><label><input type="checkbox" id="free-off-${i}" data-free="${i}" data-k="off" ${f.off ? "checked" : ""}> выходной</label></div>`).join("")}</div></div>
@@ -1124,7 +1134,7 @@ let dlgSubmit = null, dlgAct = {};
 function openDialog(title, body, { submit, actions = {}, submitLabel = "Сохранить" }) {
   dlgSubmit = submit; dlgAct = actions;
   dlgform.innerHTML = gx(`<div class="cardhead"><h2>${title}</h2><button class="iconbtn" value="cancel" formnovalidate type="submit" aria-label="Закрыть">${ki("close")}</button></div>${body}
-    <div class="dlgfoot"><span class="row">${Object.entries(actions).map(([k, a]) => `<button class="btn sm ${a.cls || ""}" type="button" data-dlg="${k}">${a.label}</button>`).join("")}</span>
+    <div class="dlgfoot"><span class="row">${Object.entries(actions).map(([k, a]) => `<button class="btn sm ${a.cls || ""}" type="button" data-dlg="${k}"${a.aria ? ` aria-label="${a.aria}"` : ""}>${a.label}</button>`).join("")}</span>
     <span class="row"><button class="btn" value="cancel" formnovalidate type="submit">Отмена</button><button class="btn primary" value="ok" type="submit">${submitLabel}</button></span></div>`);
   dlg.showModal();
   dlgform.querySelector("input,select,textarea")?.focus();
@@ -1171,15 +1181,21 @@ function taskDialog(t, preset = {}) {
     submit: () => {
       const title = val("f-title"); if (!title) return false;
       const sessions = Math.max(1, Math.min(20, parseInt(val("f-sess")) || 1));
-      const pd = val("f-pindate"), pf = val("f-pinfrom");
+      const pd = val("f-pindate"), pf = val("f-pinfrom"); let newId = null;
       change(() => {
         const target = isNew ? { id: C.uid("t"), done: 0, created: n.today } : S.tasks.find(x => x.id === t.id);
         Object.assign(target, { title, subject: val("f-subj"), sessions: Math.max(sessions, target.done || 0), due: val("f-due") || null, dueTime: val("f-duetime") || null, kind: "other", pin: pd && pf ? { date: pd, from: pf } : null, on: pd && !pf ? pd : null });
         if (isNew) S.tasks.push(target);
+        if (isNew) newId = target.id;
       });
+      if (newId) { // сразу говорим, когда задача попала в план - иначе кажется, что ничего не произошло
+        const first = C.buildPlan(S, n.today, 14, n.min).find(d => d.blocks.some(b => b.type === "task" && b.ref === newId));
+        flash(first ? (first.date === n.today ? `Добавила «${title}» - начнём уже сегодня` : `Добавила «${title}». Начнём ${first.date === C.addDays(n.today, 1) ? "завтра" : C.humanDate(first.date)}${val("f-due") ? " - я раскидала сессии до срока" : ""}`) : `Добавила «${title}». В свободное время пока не влезает - загляни в «Неделю»`);
+        setTimeout(() => flash(""), 4000);
+      }
     },
     actions: isNew ? {} : {
-      attach: { label: ki("clip"), run: () => setTimeout(() => materialDialog({ ref: { t: "task", id: t.id }, subject: t.subject }), 0) },
+      attach: { label: ki("clip"), aria: "Прикрепить материал", run: () => setTimeout(() => materialDialog({ ref: { t: "task", id: t.id }, subject: t.subject }), 0) },
       move: { label: ki("calendar") + "На другой день", run: () => setTimeout(() => moveDialog(t.id), 0) },
       skip: { label: "Не сегодня", run: () => change(() => { const x = S.tasks.find(y => y.id === t.id); (x.skip ||= []).push(n.today); if (x.pin?.date === n.today) x.pin = null; if (x.on === n.today) x.on = null; }) },
       done: { label: "Готово целиком", run: () => change(() => { const x = S.tasks.find(y => y.id === t.id); x.done = x.sessions; x.doneAt = n.today; }) },
@@ -1207,7 +1223,7 @@ function lessonDialog(l) {
       });
     },
     actions: isNew ? {} : {
-      attach: { label: ki("clip"), run: () => setTimeout(() => materialDialog({ ref: { t: "lesson", id: l.id }, subject: l.subject }), 0) },
+      attach: { label: ki("clip"), aria: "Прикрепить материал", run: () => setTimeout(() => materialDialog({ ref: { t: "lesson", id: l.id }, subject: l.subject }), 0) },
       cancelToday: { label: "Отменить сегодня", run: () => change(() => { const d = now().today; if (!S.cancelled.some(c => c.lessonId === l.id && c.date === d)) S.cancelled.push({ lessonId: l.id, date: d }); }) },
       del: { label: "Удалить совсем", cls: "danger", run: () => change(() => { S.lessons = S.lessons.filter(x => x.id !== l.id); }) },
     },
@@ -1229,7 +1245,7 @@ function eventDialog(e) {
         if (isNew) S.extraLessons.push(target);
       });
     },
-    actions: isNew ? {} : { attach: { label: ki("clip"), run: () => setTimeout(() => materialDialog({ ref: { t: "event", id: e.id }, subject: e.subject }), 0) }, del: { label: "Удалить", cls: "danger", run: () => change(() => { S.extraLessons = S.extraLessons.filter(x => x.id !== e.id); }) } },
+    actions: isNew ? {} : { attach: { label: ki("clip"), aria: "Прикрепить материал", run: () => setTimeout(() => materialDialog({ ref: { t: "event", id: e.id }, subject: e.subject }), 0) }, del: { label: "Удалить", cls: "danger", run: () => change(() => { S.extraLessons = S.extraLessons.filter(x => x.id !== e.id); }) } },
   });
 }
 // ---------- импорт расписания онлайн-школы ----------
@@ -1840,13 +1856,15 @@ async function shareImportAsk() {
     <div class="cardlist">${set.cards.slice(0, 5).map(c => `<div class="kc"><b>${esc(c.q)}</b><span>${esc(c.a)}</span></div>`).join("")}${n > 5 ? `<p class="small muted" style="margin:0">и ещё ${n - 5}</p>` : ""}</div>`, {
     submitLabel: "Добавить себе",
     submit: () => {
+      let added = 0;
       change(() => {
-        C.addTopic(S, set.title, set.subject, now().today);
-        const t = S.topics[S.topics.length - 1];
-        for (let k = 0; k < set.cards.length; k += 50) C.addCards(S, set.cards.slice(k, k + 50), { topicId: t.id, subject: set.subject, source: "shared" });
+        const low = x => String(x || "").trim().toLowerCase();
+        let t = S.topics.find(x => low(x.title) === low(set.title) && low(x.subject) === low(set.subject));
+        if (!t) { C.addTopic(S, set.title, set.subject, now().today); t = S.topics[S.topics.length - 1]; }
+        for (let k = 0; k < set.cards.length; k += 50) added += C.addCards(S, set.cards.slice(k, k + 50), { topicId: t.id, subject: set.subject, source: "shared" });
         openTopics.add(t.id);
       });
-      flash(`Добавила набор «${set.title}» в «Знания» 📚`);
+      flash(added ? `Добавила набор «${set.title}» в «Знания» 📚` : `Эти карточки у тебя уже есть в теме «${set.title}» 👌`);
       view = "topics"; history.replaceState(null, "", "#topics"); render();
     },
   });
@@ -2000,7 +2018,7 @@ async function inviteDialog() {
 // ---------- удалить аккаунт и все данные (отзыв согласия) ----------
 function deleteAccountDialog() {
   openDialog("Удалить аккаунт?", `<div class="mascot" style="width:110px;align-self:center">${mascot("plead")}</div>
-    <p style="margin:0">Удалятся <b>все</b> твои данные: план, задачи, темы, карточки, переписка с ${esc(helperName())}, файлы, награды и серия. Восстановить их будет нельзя.</p>
+    <p style="margin:0">Удалятся <b>все</b> твои данные: план, задачи, темы, карточки, переписка в чате, файлы, награды и серия. Восстановить их будет нельзя.</p>
     ${S.email ? `<label class="field"><span>Для подтверждения введи пароль</span><input type="password" id="f-delpass" autocomplete="current-password" required></label>`
       : `<label class="field"><span>Для подтверждения напиши слово УДАЛИТЬ</span><input type="text" id="f-delpass" autocomplete="off" required></label>`}
     <span class="small" id="f-delerr" style="color:var(--warn)" hidden></span>`, {
@@ -2274,7 +2292,7 @@ function dayDialog(date) {
   openDialog(`${C.DAYS_FULL[C.weekday(date)]}, ${C.humanDate(date)}`, `
     <p class="small muted" style="margin:0">Обычно в этот день: ${base.off ? "выходной" : `${base.from}–${base.to}`}. Здесь можно поменять только этот день.</p>
     <label class="row"><input type="checkbox" id="f-off" ${ov.off ? "checked" : ""}> В этот день без подготовки</label>
-    <div class="grid2"><label class="field"><span>Свободна с</span><input type="time" id="f-from" value="${esc(ov.from || base.from)}"></label><label class="field"><span>до</span><input type="time" id="f-to" value="${esc(ov.to || base.to)}"></label></div>`, {
+    <div class="grid2"><label class="field"><span>{Свободна|Свободен} с</span><input type="time" id="f-from" value="${esc(ov.from || base.from)}"></label><label class="field"><span>до</span><input type="time" id="f-to" value="${esc(ov.to || base.to)}"></label></div>`, {
     submit: () => change(() => {
       if (dlgform.querySelector("#f-off").checked) S.avail[date] = { off: true };
       else { const f = val("f-from"), t = val("f-to"); if (f === base.from && t === base.to && !base.off) delete S.avail[date]; else S.avail[date] = { from: f, to: t }; }
@@ -2340,7 +2358,7 @@ document.addEventListener("click", e => {
     case "game-other": gameStart(game?.topicId ?? "", game?.mode === "pairs" ? "speed" : "pairs"); return;
     case "walker-toggle": change(() => { look().walker = look().walker === false; }); return;
     case "tour-again": change(() => { (S.tips ||= {}).tour = 0; }); backStack = []; view = "today"; history.replaceState(null, "", "#today"); render(); scrollTo(0, 0); return;
-    case "tips-toggle": change(() => { const on = !!S.tips?.off; S.tips = on ? { tour: S.tips?.tour ?? 1 } : { ...(S.tips || {}), off: 1 }; }); return;
+    case "tips-toggle": change(() => { const on = !!S.tips?.off; S.tips = on ? { tour: S.tips?.tour ?? 1, ...(S.tips?.policy ? { policy: 1 } : {}) } : { ...(S.tips || {}), off: 1 }; }); return;
     case "new-task": taskDialog(null, { at: d.at }); return;
     case "import": importDialog(); return;
     case "ege-any": egeStart(); return;

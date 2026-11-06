@@ -15,17 +15,17 @@ export default async function handler(req, res) {
   if (await overLimit(`lim:del:${b.u}`, 10, 900)) return res.status(429).json({ error: "Слишком много попыток. Подожди 15 минут." });
   const s = await loadState(b.u);
   if (!s) return res.status(404).json({ error: "Аккаунт не найден" });
-  const email = normEmail(s.email || "");
-  let userRaw = email ? await redis("HGET", "users", email) : null;
-  if (userRaw) {
-    let user; try { user = JSON.parse(userRaw); } catch { user = null; }
-    if (!user || user.u !== b.u) userRaw = null;
-    else {
-      const { hash } = hashPassword(String(b.password || ""), user.salt);
-      if (!crypto.timingSafeEqual(Buffer.from(hash, "hex"), Buffer.from(user.hash, "hex"))) return res.status(401).json({ error: "Неверный пароль." });
-    }
+  // почту ищем по самой записи входа (u), а не по полю в плане: план можно подменить
+  let email = null, user = null;
+  const hinted = normEmail(s.email || "");
+  const tryUser = (e, raw) => { try { const x = JSON.parse(raw); if (x && x.u === b.u) { email = e; user = x; } } catch {} };
+  if (hinted) { const raw = await redis("HGET", "users", hinted); if (raw) tryUser(hinted, raw); }
+  if (!user) { const flat = (await redis("HGETALL", "users")) || []; for (let i = 0; i + 1 < flat.length && !user; i += 2) tryUser(flat[i], flat[i + 1]); }
+  if (user) {
+    const { hash } = hashPassword(String(b.password || ""), user.salt);
+    if (!crypto.timingSafeEqual(Buffer.from(hash, "hex"), Buffer.from(user.hash, "hex"))) return res.status(401).json({ error: "Неверный пароль." });
   }
-  if (!userRaw && String(b.password || "").trim().toUpperCase() !== "УДАЛИТЬ") return res.status(401).json({ error: "Напиши слово УДАЛИТЬ, чтобы подтвердить." });
+  if (!user && String(b.password || "").trim().toUpperCase() !== "УДАЛИТЬ") return res.status(401).json({ error: "Напиши слово УДАЛИТЬ, чтобы подтвердить." });
 
   const u = b.u;
   const del = async (...keys) => { for (const k of keys) { try { await redis("DEL", k); } catch {} } };

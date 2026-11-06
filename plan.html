@@ -263,12 +263,12 @@ function render(){
   h+=sec(1,"О тебе");
   h+=card(1,"Как тебя зовут и в каком ты классе?","Имя нужно, чтобы подписать план.",
     `<div class="grid"><label class="field"><span>Имя</span>${inp("name","Например, Аня")}</label>
-     <label class="field"><span>Класс</span><select id="f-grade" data-path="grade"><option value="">Выбери…</option>${["10","11","Уже окончила школу"].map(g=>`<option${F.grade===g?" selected":""}>${g}</option>`).join("")}</select></label></div>`,"q-name");
+     <label class="field"><span>Класс</span><select id="f-grade" data-path="grade"><option value="">Выбери…</option>${["10","11","Уже окончил(а) школу"].map(g=>`<option${F.grade===g?" selected":""}>${g}</option>`).join("")}</select></label></div>`,"q-name");
   h+=card(2,"Какие экзамены сдаёшь?","Нажми на предметы, потом впиши цель и последний результат.",
     `<div class="chips">${SUBJECTS.map(s=>`<button type="button" class="chip" data-subj="${esc(s)}" aria-pressed="${F.subjects.some(x=>x.name===s)}">${esc(s)}</button>`).join("")}</div>
      ${F.subjects.length?F.subjects.map((s,i)=>`<div class="rowbox"><div class="rowhead"><b>${esc(s.name)}</b></div><div class="grid">
        <label class="field"><span>Цель, баллов</span>${inp(`subjects.${i}.target`,"Например, 85","number",'min="0" max="100" inputmode="numeric"')}</label>
-       <label class="field"><span>Последний пробник, баллов</span>${inp(`subjects.${i}.current`,"Если писала","number",'min="0" max="100" inputmode="numeric"')}</label>
+       <label class="field"><span>Последний пробник, баллов</span>${inp(`subjects.${i}.current`,"Если писал(а)","number",'min="0" max="100" inputmode="numeric"')}</label>
        <label class="field"><span>Где готовишься</span>${inp(`subjects.${i}.where`,"Курс, репетитор, самостоятельно")}</label></div></div>`).join(""):`<p class="empty">Пока ничего не выбрано.</p>`}`,"q-subj");
 
   h+=sec(2,"Занятия по расписанию");
@@ -294,7 +294,7 @@ function render(){
      <button type="button" class="add" data-add="deadlines">+ Добавить дедлайн</button>`,"q-deadlines");
 
   h+=sec(4,"Свободное время");
-  h+=card(6,"Когда у тебя есть время заниматься самой?","Укажи окно на каждый день. Если в какой-то день времени нет совсем, поставь галочку.",
+  h+=card(6,"Когда у тебя есть время заниматься самостоятельно?","Укажи окно на каждый день. Если в какой-то день времени нет совсем, поставь галочку.",
     `<div class="week">${DAYS.map((d,i)=>`<div class="wd${F.free[i].off?" off":""}"><span class="dn">${d}</span>
       ${inp(`free.${i}.from`,"","time",`aria-label="${d}, с"`+(F.free[i].off?" disabled":""))}${inp(`free.${i}.to`,"","time",`aria-label="${d}, до"`+(F.free[i].off?" disabled":""))}
       <label><input type="checkbox" id="f-free-${i}-off" data-off="${i}" ${F.free[i].off?"checked":""}> нет времени</label></div>`).join("")}</div>`,"q-free");

@@ -58,6 +58,7 @@ function sendFile(res, rel) {
 
 const server = http.createServer(async (req, res) => {
   wrap(res);
+  res.setHeader("X-Content-Type-Options", "nosniff"); res.setHeader("X-Frame-Options", "DENY"); res.setHeader("Referrer-Policy", "same-origin");
   try {
     const url = new URL(req.url, "http://localhost");
     const p = decodeURIComponent(url.pathname);

@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   const today = /^\d{4}-\d{2}-\d{2}$/.test(b.today) ? b.today : new Date(Date.now() + 3 * 3600000).toISOString().slice(0, 10);
   const now = /^\d{1,2}:\d{2}$/.test(b.now) ? b.now : "";
 
-  const state = await loadState(b.u);
+  let state = await loadState(b.u);
   if (!state) return res.status(404).json({ error: "План не найден" });
   if (await aiOverLimit(b.u)) return res.status(429).json({ error: "На сегодня я наговорилась 😴 Завтра продолжим. А план можно поправить руками." });
 
@@ -53,12 +53,15 @@ export default async function handler(req, res) {
     await redis("LTRIM", "giga_log", 0, 29);
   } catch {}
   if (!parsed) {
+    { const fresh = await loadState(b.u); if (fresh) state = fresh; }
     const fallback = "Не до конца поняла 🙈 Скажи чуть по-другому: что, к какому дню и по какому предмету?";
     pushChat(state, "user", message); pushChat(state, "assistant", fallback);
     state.rev = (state.rev || 0) + 1; await saveState(b.u, state);
     return res.status(200).json({ reply: fallback, changes: [], state });
   }
 
+  // пока помощник думал, план могли поменять (отметить сделанное) - применяем действия к свежей версии
+  { const fresh = await loadState(b.u); if (fresh && fresh.rev !== state.rev) state = fresh; }
   const notes = [];
   const quizAct = Array.isArray(parsed.actions) ? parsed.actions.find(a => a && a.type === "start_quiz") : null;
   const quiz = quizAct ? { subject: quizAct.subject || null, topic: quizAct.topic || null, n: Math.max(3, Math.min(10, parseInt(quizAct.n) || 5)) } : null;
