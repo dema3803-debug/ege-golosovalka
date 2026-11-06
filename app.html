@@ -471,7 +471,14 @@ const PRAISE = ["Ты молодец!! 🎉 А может, ещё одну? То
 
 // {женский|мужской} - подставляется по выбранному обращению
 const gx = t => String(t ?? "").replace(/\{([^{}|<>`$]{1,40})\|([^{}|<>`$]{1,40})\}/g, (_, f, m) => S?.gender === "m" ? m : f);
-function flash(t) { const s = $("#status"); s.textContent = gx(t || ""); s.hidden = !t; }
+// жёлтая плашка: сама пропадает через 4 секунды (кроме «нет интернета»), по нажатию и при смене экрана
+let flashTimer = 0, flashSticky = false;
+function flash(t, sticky = false) {
+  const s = $("#status"); clearTimeout(flashTimer);
+  s.textContent = gx(t || ""); s.hidden = !t; flashSticky = !!t && sticky;
+  if (t && !sticky) flashTimer = setTimeout(() => { s.hidden = true; }, 4000);
+}
+document.getElementById("status").addEventListener("click", () => { if (!flashSticky) flash(""); });
 
 // ---------- загрузка и сохранение ----------
 async function load() {
@@ -513,13 +520,13 @@ async function load() {
     const r = await fetch(`/api/app?u=${encodeURIComponent(U)}`, { cache: "no-store" });
     const j = await r.json();
     if (r.status === 410 && j.movedTo) { showMoved(j.movedTo); return; }
-    if (!r.ok) { flash(j.error || "Не удалось загрузить план."); return; }
+    if (!r.ok) { flash(j.error || "Не удалось загрузить план.", true); return; }
     S = j.state; S.chat ||= []; S.extraLessons ||= []; S.cards ||= []; S.exams ||= []; S.materials ||= []; applyLook(S.look); if (!egeIndex) egeLoadIndex().then(() => { if (egeSubjects().length && S) render(); }); flash(""); $("#dock").hidden = false; render();
     try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {}
   } catch {
     let cached = null; try { cached = JSON.parse(localStorage.getItem("ege-state-" + U) || "null"); } catch {}
-    if (cached && !S) { S = cached; $("#dock").hidden = false; render(); flash("Нет интернета - показываю последний сохранённый план. Отметки сохранятся, когда связь вернётся."); }
-    else if (!S) flash("Нет связи. Проверь интернет и обнови страницу.");
+    if (cached && !S) { S = cached; $("#dock").hidden = false; render(); flash("Нет интернета - показываю последний сохранённый план. Отметки сохранятся, когда связь вернётся.", true); }
+    else if (!S) flash("Нет связи. Проверь интернет и обнови страницу.", true);
   }
 }
 async function save() {
@@ -1866,7 +1873,7 @@ function learnedDialog() {
 document.addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t || !S || t.closest("dialog")) return;
   const n = now(), d = t.dataset;
-  if (d.view) { if (SUB[d.view] && d.view !== view) backStack.push(view); else if (!SUB[d.view]) backStack = []; view = d.view; history.replaceState(null, "", "#" + view); render(); scrollTo(0, view === "chat" ? document.body.scrollHeight : 0); return; }
+  if (d.view) { if (!flashSticky) flash(""); if (SUB[d.view] && d.view !== view) backStack.push(view); else if (!SUB[d.view]) backStack = []; view = d.view; history.replaceState(null, "", "#" + view); render(); scrollTo(0, view === "chat" ? document.body.scrollHeight : 0); return; }
   if (d.start) { const [type, ref] = d.start.split("|"); const b = todayBlocks.find(x => x.type === type && String(x.ref) === ref) || { type, ref, title: (S.tasks.find(t => t.id === ref) || S.habits.find(h => h.id === ref) || S.topics.find(t => t.id === ref) || {}).title || "Задача", subject: "" }; if (session && session.phase === "work") { view = "session"; render(); return; } startSession(b); return; }
   if (d.dur) { const m = +d.dur; session = { ...session, len: m, left: m * 60000, endAt: session.endAt ? Date.now() + m * 60000 : null }; keepSession(); render(); return; }
   if (d.done !== undefined) { const b = todayBlocks[+d.done]; if (b) change(() => C.markDone(S, n.today, b)); return; }
