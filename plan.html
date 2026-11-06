@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>План подготовки ЕГЭ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap">
 <style>
 /* Layout: тетрадный лист в клетку, вопросы — карточки-«бланки», ответы как клетки бланка ЕГЭ, результаты полосами под ними */
 :root{
@@ -122,14 +122,66 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 .submit[disabled]{opacity:.6;cursor:wait}
 .empty{font-size:13px;color:var(--muted);margin:0}
 @media (max-width:480px){.wd{grid-template-columns:36px 1fr 1fr}.wd label{grid-column:2/-1}}
+/* ===== стиль Кози (розовый, как в приложении) ===== */
+:root{
+  --paper:#FBEFF3; --sheet:#FFFFFF; --ink:#1B1620; --muted:#6B5A63; --line:#F1DDE5; --cell:#FDF5F8;
+  --accent:#B8325E; --accent-soft:#FBE3EB; --bar:#F3D3DE; --warn:#B35418; --btn:#1B1620; --btn-ink:#FFFFFF;
+  --display:"Nunito",system-ui,sans-serif; --body:"Nunito","Segoe UI",system-ui,-apple-system,sans-serif; --mono:var(--body);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#17121A; --sheet:#221A25; --ink:#F5EEF2; --muted:#BBA9B4; --line:#3A2E40; --cell:#2B2230;
+  --accent:#F28AAB; --accent-soft:#3D2232; --bar:#4A3B52; --warn:#F0965D; --btn:#F5EEF2; --btn-ink:#17121A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#17121A; --sheet:#221A25; --ink:#F5EEF2; --muted:#BBA9B4; --line:#3A2E40; --cell:#2B2230;
+  --accent:#F28AAB; --accent-soft:#3D2232; --bar:#4A3B52; --warn:#F0965D; --btn:#F5EEF2; --btn-ink:#17121A; color-scheme:dark}
+body{background:var(--paper);background-image:none;font-size:16px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:640px;gap:16px}
+.hero{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.hero svg{flex:none}
+.eyebrow{font-family:var(--body);font-weight:700;letter-spacing:0;text-transform:none;font-size:14px}
+h1{font-weight:800;font-size:clamp(26px,6vw,34px);letter-spacing:-.01em;margin:2px 0 0}
+.lead{font-weight:500}
+.card h2,.qhead h2,.qhead h3{font-weight:800;font-size:19px;line-height:1.25;margin:0}
+.card{border:0;border-radius:22px;padding:20px}
+.qnum{border:0;background:var(--accent-soft);color:var(--accent);border-radius:999px;font-weight:800;min-width:30px;text-align:center}
+.ot{font-weight:800;font-size:17px}
+.sec{font-weight:800}
+.sec span{font-family:var(--body);font-weight:800;letter-spacing:.04em}
+.status{border-radius:16px;border-style:solid;font-weight:700}
+input[type=text],input[type=time],input[type=date],input[type=number],input[type=email],input[type=password],select,textarea{
+  font:inherit;color:var(--ink);background:var(--cell);border:2px solid var(--line);border-radius:16px;padding:11px 14px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-color:var(--accent)}
+.chip{border:2px solid var(--line);background:var(--sheet);font-weight:700;padding:8px 14px}
+.chip[aria-pressed="true"]{background:var(--btn);border-color:var(--btn);color:var(--btn-ink)}
+.opt{border-radius:16px}
+.rowbox{border:0;border-radius:18px}
+.rowhead b{font-family:var(--body);font-weight:800;letter-spacing:.04em}
+.add{font-family:var(--body);font-weight:800;border-radius:999px;border:2px dashed var(--accent)}
+.day{border:2px solid var(--line);border-radius:12px;font-family:var(--body);font-weight:700}
+.day[aria-pressed="true"]{background:var(--btn);border-color:var(--btn);color:var(--btn-ink)}
+.wd .dn{font-family:var(--body);font-weight:800}
+.submit{font-family:var(--body);font-weight:800;font-size:17px;border-radius:20px;background:var(--btn);color:var(--btn-ink)}
+.done{background:var(--accent-soft)}
+a{color:var(--accent)}
 </style>
 </head>
 <body>
 <div id="app" class="wrap">
-  <header>
+  <header class="hero">
+    <div class="mascot-mini" aria-hidden="true"><svg width="84" height="84" viewBox="0 0 200 196" role="img" aria-label="Козя"><ellipse cx="100" cy="190" rx="52" ry="6" fill="#E9C3D1"></ellipse><rect x="60" y="126" width="80" height="58" rx="28" fill="#1B1620"></rect><ellipse cx="100" cy="160" rx="18" ry="13" fill="#F8D3DC"></ellipse><path d="M140 140 C158 128 164 112 160 100" fill="none" stroke="#1B1620" stroke-width="13" stroke-linecap="round"></path><path d="M62 142 C50 150 48 162 54 170" fill="none" stroke="#1B1620" stroke-width="13" stroke-linecap="round"></path><path d="M76 58 C66 38 66 20 74 6 C82 24 88 38 92 52 Z" fill="#1B1620"></path><path d="M124 58 C134 38 134 20 126 6 C118 24 112 38 108 52 Z" fill="#1B1620"></path>
+  <ellipse cx="44" cy="92" rx="25" ry="12" fill="#1B1620" transform="rotate(-14 44 92)"></ellipse><ellipse cx="47" cy="93" rx="15" ry="6" fill="#F8D3DC" transform="rotate(-14 47 93)"></ellipse>
+  <ellipse cx="156" cy="92" rx="25" ry="12" fill="#1B1620" transform="rotate(14 156 92)"></ellipse><ellipse cx="153" cy="93" rx="15" ry="6" fill="#F8D3DC" transform="rotate(14 153 93)"></ellipse>
+  <circle cx="100" cy="100" r="46" fill="#F8D3DC"></circle><ellipse cx="100" cy="72" rx="44" ry="24" fill="#FFFFFF"></ellipse>
+  <circle cx="62" cy="84" r="11" fill="#FFFFFF"></circle><circle cx="76" cy="90" r="11" fill="#FFFFFF"></circle><circle cx="91" cy="92" r="11" fill="#FFFFFF"></circle><circle cx="109" cy="92" r="11" fill="#FFFFFF"></circle><circle cx="124" cy="90" r="11" fill="#FFFFFF"></circle><circle cx="138" cy="84" r="11" fill="#FFFFFF"></circle>
+  <circle cx="100" cy="66" r="2.4" fill="#1B1620"></circle><circle cx="84" cy="72" r="2" fill="#1B1620"></circle><circle cx="116" cy="72" r="2" fill="#1B1620"></circle>
+  <circle cx="68" cy="128" r="7" fill="#F29BB2"></circle><circle cx="132" cy="128" r="7" fill="#F29BB2"></circle><ellipse cx="84" cy="114" rx="11" ry="13" fill="#FFFFFF" stroke="#1B1620" stroke-width="2"></ellipse><ellipse cx="116" cy="114" rx="11" ry="13" fill="#FFFFFF" stroke="#1B1620" stroke-width="2"></ellipse>
+  <circle cx="85" cy="116" r="7" fill="#1B1620"></circle><circle cx="115" cy="116" r="7" fill="#1B1620"></circle><circle cx="87.5" cy="113" r="2.4" fill="#FFFFFF"></circle><circle cx="117.5" cy="113" r="2.4" fill="#FFFFFF"></circle>
+  <path d="M75 104 L71 99 M80 101 L78 96 M86 100 L87 95 M125 104 L129 99 M120 101 L122 96 M114 100 L113 95" stroke="#1B1620" stroke-width="2" stroke-linecap="round"></path><circle cx="96" cy="128" r="1.6" fill="#1B1620"></circle><circle cx="104" cy="128" r="1.6" fill="#1B1620"></circle><path d="M92 134 Q100 141 108 134" fill="none" stroke="#1B1620" stroke-width="2.5" stroke-linecap="round"></path></svg></div>
+    <div>
     <div class="eyebrow">Анкета · личный план подготовки</div>
     <h1>Соберём твой план на неделю</h1>
     <p class="lead">Заполни, что знаешь: предметы, занятия, дедлайны и свободное время. По этим ответам мы составим расписание подготовки. Займёт 10–15 минут. Черновик сохраняется сам, можно закрыть и вернуться.</p>
+    </div>
   </header>
   <div id="status" class="status" hidden></div>
   <div id="form" style="display:flex;flex-direction:column;gap:20px"></div>
