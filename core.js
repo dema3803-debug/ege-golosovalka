@@ -52,7 +52,7 @@ export function lessonsOn(state, date) {
     out.push({ ...l, from: toMin(l.from), to: toMin(l.to) });
   }
   for (const l of state.extraLessons) if (l.date === date) out.push({ ...l, from: toMin(l.from), to: toMin(l.to) });
-  // важные даты (пробник, олимпиада, ЕГЭ…) со временем — тоже заняты
+  // важные даты (пробник, олимпиада, ЕГЭ…) со временем - тоже заняты
   for (const e of state.exams || []) if (e.date === date && e.from) out.push({ ...e, kind: "exam", from: toMin(e.from), to: e.to ? toMin(e.to) : Math.min(toMin(e.from) + 180, 1439) });
   return out;
 }
@@ -81,7 +81,7 @@ function workDaysLeft(state, date, due) {
 
 /**
  * Раскладывает задачи и повторения на nDays дней начиная с today.
- * nowMin — текущее время в минутах (для сегодняшнего дня план строится от «сейчас»).
+ * nowMin - текущее время в минутах (для сегодняшнего дня план строится от «сейчас»).
  */
 export function buildPlan(state, today, nDays = 7, nowMin = null) {
   const remaining = {};
@@ -179,12 +179,12 @@ export function buildPlan(state, today, nDays = 7, nowMin = null) {
               if (q.type === "review") reviewPlaced.add(q.ref);
               break;
             }
-            if (limit < s.to) break; // дедлайн раньше конца окна — дальше не влезет
+            if (limit < s.to) break; // дедлайн раньше конца окна - дальше не влезет
             si++; cursor = slots[si]?.from;
           }
           if (!placed && q.type === "task") unplaced.push(q);
         }
-        // срок сегодня, а свободное время кончилось — ставим вечером сверх плана (до 23:00 или до времени сдачи)
+        // срок сегодня, а свободное время кончилось - ставим вечером сверх плана (до 23:00 или до времени сдачи)
         const late = unplaced.filter(q => q.must && !q.overdue && q.due === date).sort((a, b) => (a.dueTime || "99").localeCompare(b.dueTime || "99"));
         if (late.length) {
           const start0 = Math.max(win.to, isToday && nowMin != null ? Math.ceil(nowMin / 5) * 5 : 0);
@@ -269,14 +269,14 @@ export function microOptions(state, today) {
   const used0 = new Set((state.log[today] || []).map(x => x.kind + "|" + x.ref));
   if (((state.cards || []).length >= 3 || state.subjects.length) && !used0.has("micro|quiz")) {
     const due = state.topics.find(t => t.next && t.next <= today);
-    out.push({ kind: "quiz", ref: "quiz", topicId: due?.id || null, title: due ? `3 быстрых вопроса по теме «${due.title}» — я спрошу прямо тут` : "3 быстрых вопроса — я спрошу прямо тут", subject: due?.subject || "", min: 5 });
+    out.push({ kind: "quiz", ref: "quiz", topicId: due?.id || null, title: due ? `3 быстрых вопроса по теме «${due.title}» - я спрошу прямо тут` : "3 быстрых вопроса - я спрошу прямо тут", subject: due?.subject || "", min: 5 });
   }
   const used = new Set((state.log[today] || []).map(x => x.ref + "|" + x.kind));
   for (const t of state.topics.filter(t => t.next && t.next <= today).sort((a, b) => a.next.localeCompare(b.next)).slice(1))
     if (!used.has("quiz-" + t.id + "|micro") && !used.has(t.id + "|review")) out.push({ kind: "quiz", ref: "quiz-" + t.id, topicId: t.id, title: `3 вопроса по теме «${t.title}»`, subject: t.subject, min: 5 });
   const tasks = state.tasks.filter(t => t.done < t.sessions).sort((a, b) => (a.due || "9999").localeCompare(b.due || "9999"));
-  for (const t of tasks) if (!used.has(t.id + "|micro")) out.push({ kind: "micro", ref: t.id, title: `Начать «${t.title}» — просто 5 минут`, subject: t.subject, min: 5 });
-  for (const s of state.subjects) if (!used.has("quiz-" + s.name + "|micro")) out.push({ kind: "quiz", ref: "quiz-" + s.name, title: `3 вопроса по предмету «${s.name}» — я спрошу`, subject: s.name, min: 5 });
+  for (const t of tasks) if (!used.has(t.id + "|micro")) out.push({ kind: "micro", ref: t.id, title: `Начать «${t.title}» - просто 5 минут`, subject: t.subject, min: 5 });
+  for (const s of state.subjects) if (!used.has("quiz-" + s.name + "|micro")) out.push({ kind: "quiz", ref: "quiz-" + s.name, title: `3 вопроса по предмету «${s.name}» - я спрошу`, subject: s.name, min: 5 });
   return out;
 }
 
@@ -362,7 +362,7 @@ export function applyActions(state, actions, today) {
       }
       case "set_availability": {
         if (!isDate(a.date)) break;
-        if (a.off) { state.avail[a.date] = { off: true }; changes.push(`${humanDate(a.date)} — без подготовки`); }
+        if (a.off) { state.avail[a.date] = { off: true }; changes.push(`${humanDate(a.date)} - без подготовки`); }
         else if (isTime(a.from) || isTime(a.to)) {
           const f = state.free[weekday(a.date)];
           state.avail[a.date] = { from: isTime(a.from) ? a.from : f.from, to: isTime(a.to) ? a.to : f.to };
@@ -394,7 +394,7 @@ export function applyActions(state, actions, today) {
 
 // ---------- переписка ----------
 export function pushChat(state, role, text, extra = {}) {
-  (state.chat ||= []).push({ role, text: String(text).slice(0, 800), at: Date.now(), ...extra });
+  (state.chat ||= []).push({ role, text: String(text).replace(/\s*\u2014\s*/g, " - ").slice(0, 800), at: Date.now(), ...extra });
   if (state.chat.length > 60) state.chat.splice(0, state.chat.length - 60);
 }
 
@@ -412,7 +412,7 @@ export function addCards(state, list, { topicId = null, subject = "", source = "
   }
   return n;
 }
-// «термин — определение» построчно → карточки
+// «термин - определение» построчно → карточки
 export function parseCardLines(text) {
   return String(text || "").split(/\n+/).map(l => l.trim()).filter(Boolean).map(l => {
     const m = l.match(/^(.+?)\s+[-—–]\s+(.+)$/) || l.match(/^(.+?)\s*[:=—–]\s*(.+)$/);

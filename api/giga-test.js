@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (!process.env.ADMIN_KEY || req.query.key !== process.env.ADMIN_KEY) return res.status(403).json({ error: "Неверный ключ" });
   const report = {
-    "1_ключ_GIGACHAT_KEY": process.env.GIGACHAT_KEY ? "есть" : "НЕТ — добавь в Environment Variables",
+    "1_ключ_GIGACHAT_KEY": process.env.GIGACHAT_KEY ? "есть" : "НЕТ - добавь в Environment Variables",
     "2_сертификатов_Минцифры_в_папке_certs": russianCerts().length,
     "регион_сервера": process.env.VERCEL_REGION || "неизвестно",
   };

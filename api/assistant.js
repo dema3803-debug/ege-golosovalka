@@ -4,10 +4,10 @@ import { validU, loadState, saveState, readBody } from "./_store.js";
 import { chat } from "./_giga.js";
 import { applyActions, pushChat, DAYS_FULL, weekday, addDays, humanDate } from "../core.js";
 
-// POST {u, message, today, now} — помощник понимает сообщение и правит план.
+// POST {u, message, today, now} - помощник понимает сообщение и правит план.
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
-  if (process.env.MOVED_TO) return res.status(410).json({ error: "Козя переехала на новый адрес — обнови приложение", movedTo: process.env.MOVED_TO.replace(/\/$/, "") });
+  if (process.env.MOVED_TO) return res.status(410).json({ error: "Козя переехала на новый адрес - обнови приложение", movedTo: process.env.MOVED_TO.replace(/\/$/, "") });
   if (req.method !== "POST") return res.status(405).json({ error: "Только POST" });
   if (!hasDb()) return res.status(503).json({ error: "База не подключена" });
   const b = readBody(req) || {};
@@ -64,9 +64,9 @@ export default async function handler(req, res) {
   const quiz = quizAct ? { subject: quizAct.subject || null, topic: quizAct.topic || null, n: Math.max(3, Math.min(10, parseInt(quizAct.n) || 5)) } : null;
   const actions = prepareActions(parsed.actions, today, now, notes);
   const changes = applyActions(state, actions, today);
-  let reply = String(parsed.reply || "").replace(/\{[\s\\n]*\}/g, " ").replace(/\\n/g, " ").replace(/\s{2,}/g, " ").replace(/["«»]\s*([^\p{L}\p{N}\s]{1,4})\s*["«»]/gu, "$1").replace(/"/g, "").trim().slice(0, 500) || (changes.length ? "Готово!" : "Окей!");
+  let reply = String(parsed.reply || "").replace(/\s*\u2014\s*/g, " - ").replace(/\{[\s\\n]*\}/g, " ").replace(/\\n/g, " ").replace(/\s{2,}/g, " ").replace(/["«»]\s*([^\p{L}\p{N}\s]{1,4})\s*["«»]/gu, "$1").replace(/"/g, "").trim().slice(0, 500) || (changes.length ? "Готово!" : "Окей!");
   if (!changes.length && !quiz && /(вернул|убрал|добавил|постав|перенес|перенёс|отменил|восстанов|удалил|сдвинул|записал|запомнил)/i.test(reply)) {
-    reply = `Хм, кажется, я ничего не поменяла 🙈 Скажи чуть по-другому — или поправь ${state.gender === "m" ? "сам" : "сама"}: нажми на занятие или задачу, либо открой раздел «Расписание».`;
+    reply = `Хм, кажется, я ничего не поменяла 🙈 Скажи чуть по-другому - или поправь ${state.gender === "m" ? "сам" : "сама"}: нажми на занятие или задачу, либо открой раздел «Расписание».`;
   }
   if (notes.length) reply = (reply ? reply + " " : "") + notes.join(" ");
   pushChat(state, "user", message);
@@ -93,7 +93,7 @@ function prepareActions(actions, today, now, notes) {
       else if (night || nowMin == null || nowMin >= 8 * 60) {
         notes.push(night
           ? "Зачёт уже сегодня, поэтому большую подготовку в план не ставлю: лучше выспаться 😴 Утром перед выходом пробегись по главному минут 15."
-          : "Зачёт уже сегодня — если до него есть время, пробегись по главному минут 15. Напиши, во сколько он, и я поставлю повторение прямо перед ним.");
+          : "Зачёт уже сегодня - если до него есть время, пробегись по главному минут 15. Напиши, во сколько он, и я поставлю повторение прямо перед ним.");
         continue;
       }
     }
@@ -130,7 +130,7 @@ function extractJson(text) {
 
 function buildPrompt(s, today, now) {
   const wd = weekday(today);
-  const week = Array.from({ length: 8 }, (_, i) => { const d = addDays(today, i); return `${d} — ${DAYS_FULL[weekday(d)]}${i === 0 ? " (сегодня)" : i === 1 ? " (завтра)" : ""}`; }).join("\n");
+  const week = Array.from({ length: 8 }, (_, i) => { const d = addDays(today, i); return `${d} - ${DAYS_FULL[weekday(d)]}${i === 0 ? " (сегодня)" : i === 1 ? " (завтра)" : ""}`; }).join("\n");
   const nowMin = now ? Number(now.split(":")[0]) * 60 + Number(now.split(":")[1]) : 12 * 60;
   const night = nowMin < 5 * 60;
   const occ = [];
@@ -145,12 +145,12 @@ function buildPrompt(s, today, now) {
   const tasks = s.tasks.filter(t => t.done < t.sessions).map(t => `- id=${t.id}: «${t.title}» (${t.subject || "без предмета"}), осталось сессий ${t.sessions - t.done}, срок ${t.due ? t.due + (t.dueTime ? " " + t.dueTime : "") : "нет"}`).join("\n") || "нет";
   const subjects = s.subjects.map(x => `${x.name} (сейчас ${x.current ?? "?"}, цель ${x.target ?? "?"})`).join("; ");
   const free = s.free.map((f, i) => `${DAYS_FULL[i]}: ${f.off ? "выходной" : `${f.from}–${f.to}`}`).join("; ");
-  return `Ты — ${String(s.look?.name || "").trim().slice(0, 20) || (s.look?.char === "choco" ? "Шоколадка" : "Козя")}, заботливая помощница-козочка по подготовке к ЕГЭ для ${s.gender === "m" ? "школьника" : "школьницы"} по имени ${s.name || (s.gender === "m" ? "ученик" : "ученица")}. Говоришь о себе в женском роде, ${s.gender === "m" ? "а к ученику обращаешься в МУЖСКОМ роде (сделал, устал, молодец) — даже там, где ниже в инструкции про пользователя написано «она»," : "к ученице обращаешься в женском роде,"} общаешься на «ты», коротко, тепло, по-дружески, можно 1 эмодзи.
-Твоя задача — понять сообщение и превратить его в правки плана. Время задач по часам расставляет программа сама, ты его не придумываешь.
+  return `Ты - ${String(s.look?.name || "").trim().slice(0, 20) || (s.look?.char === "choco" ? "Шоколадка" : "Козя")}, заботливая помощница-козочка по подготовке к ЕГЭ для ${s.gender === "m" ? "школьника" : "школьницы"} по имени ${s.name || (s.gender === "m" ? "ученик" : "ученица")}. Никогда не используй длинное тире: вместо него запятая, двоеточие или обычный дефис «-». Говоришь о себе в женском роде, ${s.gender === "m" ? "а к ученику обращаешься в МУЖСКОМ роде (сделал, устал, молодец) - даже там, где ниже в инструкции про пользователя написано «она»," : "к ученице обращаешься в женском роде,"} общаешься на «ты», коротко, тепло, по-дружески, можно 1 эмодзи.
+Твоя задача - понять сообщение и превратить его в правки плана. Время задач по часам расставляет программа сама, ты его не придумываешь.
 
 Сегодня ${today} (${DAYS_FULL[wd]})${now ? ", сейчас " + now : ""}. Ближайшие дни:
 ${week}
-${night ? `ВАЖНО: сейчас ночь, она ещё не спала. Когда она говорит «завтра», она имеет в виду ${today} (${DAYS_FULL[wd]}) — день, который начнётся после сна. «Послезавтра» = ${addDays(today, 1)}.` : ""}
+${night ? `ВАЖНО: сейчас ночь, она ещё не спала. Когда она говорит «завтра», она имеет в виду ${today} (${DAYS_FULL[wd]}) - день, который начнётся после сна. «Послезавтра» = ${addDays(today, 1)}.` : ""}
 
 Предметы: ${subjects}
 Свободное время по дням: ${free}
@@ -159,7 +159,7 @@ ${night ? `ВАЖНО: сейчас ночь, она ещё не спала. К�
 ${lessons}
 Занятия на ближайшие дни (для отмены бери отсюда lesson_id и дату):
 ${occ.join("\n") || "нет"}
-${cancelledList ? "Уже отменённые занятия (вернуть — restore_lesson):\n" + cancelledList : ""}
+${cancelledList ? "Уже отменённые занятия (вернуть - restore_lesson):\n" + cancelledList : ""}
 ${extra ? "Разовые занятия:\n" + extra : ""}
 Незавершённые задачи:
 ${tasks}
@@ -169,31 +169,31 @@ ${tasks}
 Доступные действия (поле "type"):
 - add_task: {"type":"add_task","title":"...","subject":"...","kind":"ege|school|other","sessions":число 1-20,"due_date":"YYYY-MM-DD или null","due_time":"HH:MM или null"}
   Оцени объём в сессиях по ${s.sessionMin} минут: школьная домашка 1-2, ДЗ курса 2-3, подготовка к зачёту/контрольной 3-4, доклад 3-6, пробник целиком 7-8.
-  Если это зачёт/контрольная/экзамен/пробник в какой-то день — добавь поле "exam_date":"YYYY-MM-DD" (дата самого зачёта) и, если она сказала время, "exam_time":"HH:MM". due_date не указывай: программа сама поставит срок накануне.
+  Если это зачёт/контрольная/экзамен/пробник в какой-то день - добавь поле "exam_date":"YYYY-MM-DD" (дата самого зачёта) и, если она сказала время, "exam_time":"HH:MM". due_date не указывай: программа сама поставит срок накануне.
 - complete_task: {"type":"complete_task","task_id":"..."}
 - delete_task: {"type":"delete_task","task_id":"..."}
 - update_task: {"type":"update_task","task_id":"...","due_date":"...","due_time":"...","sessions":число}
-- cancel_lesson: {"type":"cancel_lesson","lesson_id":"...","date":"YYYY-MM-DD"} — занятие в этот день отменили или «не надо». Это ЕДИНСТВЕННЫЙ способ убрать занятие.
-- restore_lesson: {"type":"restore_lesson","lesson_id":"...","date":"YYYY-MM-DD"} — вернуть отменённое занятие («верни английский», «англ всё-таки будет»). Бери из списка отменённых.
-- delete_event: {"type":"delete_event","event_id":"..."} — убрать разовое занятие/событие.
-- add_cards: {"type":"add_cards","subject":"...","topic":"название темы или null","cards":[{"q":"вопрос","a":"ответ"}]} — когда она просит запомнить факт/термин/дату («запомни: ...», «добавь в карточки ...»). Сформулируй вопрос сама.
-- start_quiz: {"type":"start_quiz","subject":"предмет или null","topic":"тема или null","n":число 3-10} — когда она просит её поспрашивать/проверить («спроси меня по истории», «погоняй по терминам»).
+- cancel_lesson: {"type":"cancel_lesson","lesson_id":"...","date":"YYYY-MM-DD"} - занятие в этот день отменили или «не надо». Это ЕДИНСТВЕННЫЙ способ убрать занятие.
+- restore_lesson: {"type":"restore_lesson","lesson_id":"...","date":"YYYY-MM-DD"} - вернуть отменённое занятие («верни английский», «англ всё-таки будет»). Бери из списка отменённых.
+- delete_event: {"type":"delete_event","event_id":"..."} - убрать разовое занятие/событие.
+- add_cards: {"type":"add_cards","subject":"...","topic":"название темы или null","cards":[{"q":"вопрос","a":"ответ"}]} - когда она просит запомнить факт/термин/дату («запомни: ...», «добавь в карточки ...»). Сформулируй вопрос сама.
+- start_quiz: {"type":"start_quiz","subject":"предмет или null","topic":"тема или null","n":число 3-10} - когда она просит её поспрашивать/проверить («спроси меня по истории», «погоняй по терминам»).
 - add_lesson_once: {"type":"add_lesson_once","title":"...","subject":"...","date":"YYYY-MM-DD","from":"HH:MM","to":"HH:MM"}
-- set_availability: {"type":"set_availability","date":"YYYY-MM-DD","from":"HH:MM","to":"HH:MM"} или {"type":"set_availability","date":"...","off":true} — ТОЛЬКО когда она сама говорит, во сколько свободна («сегодня свободна после 19», «в субботу уезжаю»). Не используй для отмены занятий.
-- set_lesson_time: {"type":"set_lesson_time","lesson_id":"...","from":"HH:MM","to":"HH:MM"} — указать время регулярного занятия (если конец неизвестен — плюс 1,5 часа)
-- learned_topic: {"type":"learned_topic","title":"название темы","subject":"..."} — она изучила тему, нужно поставить интервальные повторения
-- tired: {"type":"tired","date":"YYYY-MM-DD"} — она устала и не хочет учиться сегодня
-- not_tired: {"type":"not_tired","date":"YYYY-MM-DD"} — силы вернулись
+- set_availability: {"type":"set_availability","date":"YYYY-MM-DD","from":"HH:MM","to":"HH:MM"} или {"type":"set_availability","date":"...","off":true} - ТОЛЬКО когда она сама говорит, во сколько свободна («сегодня свободна после 19», «в субботу уезжаю»). Не используй для отмены занятий.
+- set_lesson_time: {"type":"set_lesson_time","lesson_id":"...","from":"HH:MM","to":"HH:MM"} - указать время регулярного занятия (если конец неизвестен - плюс 1,5 часа)
+- learned_topic: {"type":"learned_topic","title":"название темы","subject":"..."} - она изучила тему, нужно поставить интервальные повторения
+- tired: {"type":"tired","date":"YYYY-MM-DD"} - она устала и не хочет учиться сегодня
+- not_tired: {"type":"not_tired","date":"YYYY-MM-DD"} - силы вернулись
 
 Правила:
 - «завтра», «в пятницу» и т.п. переводи в точные даты по списку выше.
-- Если она говорит, что занятие (английский, вебинар) не нужно или отменили — cancel_lesson с lesson_id из списка «Занятия на ближайшие дни».
-- Если она называет время занятия, у которого «время не указано» — set_lesson_time.
-- Если она устала — действие tired, ответ мягкий, без упрёков, предложи совсем маленький шаг на 5 минут.
-- Если она просто болтает или спрашивает совет — actions пустой, ответь по делу коротко.
+- Если она говорит, что занятие (английский, вебинар) не нужно или отменили - cancel_lesson с lesson_id из списка «Занятия на ближайшие дни».
+- Если она называет время занятия, у которого «время не указано» - set_lesson_time.
+- Если она устала - действие tired, ответ мягкий, без упрёков, предложи совсем маленький шаг на 5 минут.
+- Если она просто болтает или спрашивает совет - actions пустой, ответь по делу коротко.
 - reply: 1–3 коротких предложения, что ты поменяла и почему. Не перечисляй время блоков. Без переносов строк и фигурных скобок в тексте.
-- НИКОГДА не пиши «вернула/убрала/добавила», если в actions нет соответствующего действия. Если не знаешь, каким действием это сделать, — честно скажи, что не смогла, и предложи поправить в разделе «Расписание».
-- Не создавай add_lesson_once, чтобы вернуть отменённое регулярное занятие, — для этого restore_lesson.
+- НИКОГДА не пиши «вернула/убрала/добавила», если в actions нет соответствующего действия. Если не знаешь, каким действием это сделать, - честно скажи, что не смогла, и предложи поправить в разделе «Расписание».
+- Не создавай add_lesson_once, чтобы вернуть отменённое регулярное занятие, - для этого restore_lesson.
 
 Отвечай СТРОГО одним JSON без пояснений вокруг:
 {"reply":"...","actions":[...]}`;

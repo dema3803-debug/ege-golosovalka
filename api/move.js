@@ -1,10 +1,10 @@
 import { hasDb } from "./_redis.js";
 import { dumpAll, loadAll } from "./_dump.js";
 
-// Переезд и резервные копии — одна функция (на бесплатном Vercel их не больше 12).
-//   /api/move?do=export&key=ADMIN_KEY                       — скачать копию всех данных
-//   /api/move?do=migrate&key=ADMIN_KEY&to=https://домен.ru  — перенести всё на новый сервер (открывать на СТАРОМ сайте)
-//   POST /api/move?do=import  + заголовок X-Admin-Key        — приём данных на НОВОМ сервере
+// Переезд и резервные копии - одна функция (на бесплатном Vercel их не больше 12).
+//   /api/move?do=export&key=ADMIN_KEY                       - скачать копию всех данных
+//   /api/move?do=migrate&key=ADMIN_KEY&to=https://домен.ru  - перенести всё на новый сервер (открывать на СТАРОМ сайте)
+//   POST /api/move?do=import  + заголовок X-Admin-Key        - приём данных на НОВОМ сервере
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (!hasDb()) return res.status(503).json({ error: "База не подключена" });

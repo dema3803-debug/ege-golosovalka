@@ -17,13 +17,13 @@ export default async function handler(req, res) {
   if (!hasDb()) return res.status(503).json({ error: "База не подключена" });
   const b = readBody(req) || {};
   const email = normEmail(b.email), password = String(b.password || "");
-  if (!validEmail(email)) return res.status(400).json({ error: "Проверь почту — похоже, в ней опечатка." });
-  if (password.length < 8 || password.length > 100) return res.status(400).json({ error: "Пароль — минимум 8 символов." });
+  if (!validEmail(email)) return res.status(400).json({ error: "Проверь почту - похоже, в ней опечатка." });
+  if (password.length < 8 || password.length > 100) return res.status(400).json({ error: "Пароль - минимум 8 символов." });
   if (b.consent !== true) return res.status(400).json({ error: "Поставь галочку согласия на обработку данных." });
   if (!b.form || typeof b.form !== "object" || !Array.isArray(b.form.subjects) || !b.form.subjects.length) return res.status(400).json({ error: "Выбери хотя бы один предмет в анкете." });
   const ip = String(req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "").split(",")[0].trim();
   if (await overLimit(`lim:signup:${ip}`, 10, 3600)) return res.status(429).json({ error: "Слишком много регистраций с этого устройства. Попробуй через час." });
-  if (await redis("HEXISTS", "users", email) === 1) return res.status(409).json({ error: "Эта почта уже зарегистрирована — нажми «Войти»." });
+  if (await redis("HEXISTS", "users", email) === 1) return res.status(409).json({ error: "Эта почта уже зарегистрирована - нажми «Войти»." });
 
   const state = formToState(b.form);
   state.email = email;
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   const { salt, hash } = hashPassword(password);
   await saveState(u, state);
   const ok = await redis("HSETNX", "users", email, JSON.stringify({ u, salt, hash, created: mskToday(), consentAt: new Date().toISOString() }));
-  if (Number(ok) !== 1) return res.status(409).json({ error: "Эта почта уже зарегистрирована — нажми «Войти»." });
+  if (Number(ok) !== 1) return res.status(409).json({ error: "Эта почта уже зарегистрирована - нажми «Войти»." });
   try { await redis("HSET", "plans", "signup-" + u, JSON.stringify({ ...b.form, sentAt: Date.now(), via: "signup" })); } catch {}
   await markSeen(u);
   res.status(200).json({ ok: true, u });

@@ -23,7 +23,7 @@ export function formToState(f) {
   }));
   const today = mskToday();
   s.tasks = (f.deadlines || []).slice(0, 30).filter(d => d.date && d.date >= today).map(d => ({
-    id: uid("t"), title: clip(`${(d.what || "Задание").trim() || "Задание"}${d.subject ? " — " + d.subject : ""}`.replace(/^дз/i, "ДЗ"), 100), subject: clip(d.subject, 40),
+    id: uid("t"), title: clip(`${(d.what || "Задание").trim() || "Задание"}${d.subject ? " - " + d.subject : ""}`.replace(/^дз/i, "ДЗ"), 100), subject: clip(d.subject, 40),
     kind: "ege", sessions: 2, done: 0, due: clip(d.date, 10), dueTime: clip(d.time, 5) || null, created: today,
   }));
   s.habits = [{ id: uid("h"), title: "Школьные задания", subject: "Школа", days: [0, 1, 2, 3, 4], sessions: 1 }];

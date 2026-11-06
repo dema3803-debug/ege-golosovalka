@@ -33,7 +33,7 @@ export default async function handler(req, res) {
   if (!/^[A-Za-z0-9+/=]+$/.test(data)) return res.status(400).json({ error: "Файл повреждён" });
   const size = Math.floor(data.length * 3 / 4);
   if (size > MAX_BYTES) return res.status(413).json({ error: "Файл больше 4 МБ. Сожми его или прикрепи ссылкой." });
-  if (Number(await redis("SCARD", `files:${b.u}`)) >= MAX_FILES) return res.status(400).json({ error: `Уже ${MAX_FILES} файлов — удали ненужные или прикрепляй ссылками.` });
+  if (Number(await redis("SCARD", `files:${b.u}`)) >= MAX_FILES) return res.status(400).json({ error: `Уже ${MAX_FILES} файлов - удали ненужные или прикрепляй ссылками.` });
   const id = crypto.randomBytes(8).toString("hex");
   await redis("SET", `file:${b.u}:${id}`, JSON.stringify({ mime: b.mime, name: String(b.name || "").slice(0, 120), data, at: Date.now() }));
   await redis("SADD", `files:${b.u}`, id);

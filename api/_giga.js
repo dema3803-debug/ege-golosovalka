@@ -14,7 +14,7 @@ export function russianCerts() {
     try {
       let txt = fs.readFileSync(path.join(process.cwd(), "certs", f));
       if (!txt.toString("latin1").includes("BEGIN CERTIFICATE")) {
-        // двоичный формат (DER) — переводим в PEM
+        // двоичный формат (DER) - переводим в PEM
         txt = "-----BEGIN CERTIFICATE-----\n" + txt.toString("base64").match(/.{1,64}/g).join("\n") + "\n-----END CERTIFICATE-----\n";
       }
       out.push(txt.toString());

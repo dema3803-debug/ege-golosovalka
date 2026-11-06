@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap">
 <style>
-/* Layout: тетрадный лист в клетку, вопросы — карточки-«бланки», ответы как клетки бланка ЕГЭ, результаты полосами под ними */
+/* Layout: тетрадный лист в клетку, вопросы - карточки-«бланки», ответы как клетки бланка ЕГЭ, результаты полосами под ними */
 :root{
   --paper:#f6f8fb; --grid:#e3e9f2; --sheet:#ffffff; --ink:#1b2333; --muted:#5d6779;
   --line:#d3dbe7; --cell:#f1f4f9; --accent:#2348d6; --accent-soft:#e3e9ff; --bar:#c9d4f5; --warn:#b4471c;
@@ -194,9 +194,9 @@ a{color:var(--accent)}
       <label class="chip" style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="radio" name="a-gender" value="f"> В женском роде</label>
       <label class="chip" style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="radio" name="a-gender" value="m"> В мужском роде</label></div></div>
     <label class="field"><span>Почта</span><input type="email" id="a-email" autocomplete="email" inputmode="email" placeholder="you@mail.ru"></label>
-    <label class="field"><span>Пароль — минимум 8 символов</span><input type="password" id="a-pass" autocomplete="new-password" minlength="8"></label>
+    <label class="field"><span>Пароль - минимум 8 символов</span><input type="password" id="a-pass" autocomplete="new-password" minlength="8"></label>
     <label style="display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.4"><input type="checkbox" id="a-consent" style="width:20px;height:20px;flex:none;margin-top:1px">
-      <span>Соглашаюсь на обработку моих данных по <a href="/privacy" target="_blank">политике конфиденциальности</a>. Если мне нет 18 лет — родители в курсе.</span></label>
+      <span>Соглашаюсь на обработку моих данных по <a href="/privacy" target="_blank">политике конфиденциальности</a>. Если мне нет 18 лет - родители в курсе.</span></label>
     <p class="hint">Уже есть план? <a href="/app#login">Войти</a></p>
   </div>
   <button id="send" class="submit" type="button">Отправить анкету</button>
@@ -221,9 +221,9 @@ const blank=()=>({name:"",grade:"",subjects:[],lessons:[],deadlines:[],schoolEnd
 let F=blank(), sending=false;
 const SIGNUP=location.pathname.replace(/\/$/,"")==="/start";
 if(SIGNUP){
-  document.title="Козя — твой план подготовки к ЕГЭ";
+  document.title="Козя - твой план подготовки к ЕГЭ";
   document.querySelector("header .eyebrow").textContent="Козя · план подготовки к ЕГЭ";
-  document.querySelector("header .lead").textContent="Расскажи про предметы, занятия, дедлайны и свободное время — Козя соберёт из этого гибкий план и будет помогать каждый день. Займёт 10–15 минут, черновик сохраняется сам. Заполни, что знаешь: остальное поправишь потом.";
+  document.querySelector("header .lead").textContent="Расскажи про предметы, занятия, дедлайны и свободное время - Козя соберёт из этого гибкий план и будет помогать каждый день. Займёт 10–15 минут, черновик сохраняется сам. Заполни, что знаешь: остальное поправишь потом.";
   document.getElementById("acct").hidden=false;
   document.getElementById("send").textContent="Создать мой план";
 }
@@ -260,7 +260,7 @@ function render(){
        <label class="field"><span>Где готовишься</span>${inp(`subjects.${i}.where`,"Курс, репетитор, самостоятельно")}</label></div></div>`).join(""):`<p class="empty">Пока ничего не выбрано.</p>`}`,"q-subj");
 
   h+=sec(2,"Занятия по расписанию");
-  h+=card(3,"Какие у тебя занятия в конкретное время?","Репетиторы, вебинары курсов, групповые занятия. Одно занятие — одна строка. Если занятие повторяется, отметь все дни.",
+  h+=card(3,"Какие у тебя занятия в конкретное время?","Репетиторы, вебинары курсов, групповые занятия. Одно занятие - одна строка. Если занятие повторяется, отметь все дни.",
     `${F.lessons.map((l,i)=>`<div class="rowbox"><div class="rowhead"><b>Занятие ${i+1}</b><button type="button" class="del" data-del="lessons" data-i="${i}">Удалить</button></div>
       <div class="grid"><label class="field"><span>Предмет</span><select id="f-lessons-${i}-subject" data-path="lessons.${i}.subject">${subjOpts(l.subject)}</select></label>
       <label class="field"><span>Что это</span><select id="f-lessons-${i}-kind" data-path="lessons.${i}.kind"><option value="">Выбери…</option>${KINDS.map(k=>`<option${k===l.kind?" selected":""}>${k}</option>`).join("")}</select></label></div>
@@ -293,7 +293,7 @@ function render(){
 
   h+=sec(5,"Материалы и напоминания");
   h+=card(11,"Где лежат материалы?","Курсы, сайты, личные кабинеты, Telegram-каналы. Можно ссылками, каждую с новой строки.",
-    `<textarea id="f-sources" data-path="sources" placeholder="Например:&#10;Курс по профилю — личный кабинет на сайте школы&#10;Решу ЕГЭ — для тренировки&#10;ТГ-канал репетитора по химии">${esc(F.sources)}</textarea>`,"q-sources");
+    `<textarea id="f-sources" data-path="sources" placeholder="Например:&#10;Курс по профилю - личный кабинет на сайте школы&#10;Решу ЕГЭ - для тренировки&#10;ТГ-канал репетитора по химии">${esc(F.sources)}</textarea>`,"q-sources");
   h+=choiceCard(12,"remindHow");
   h+=choiceCard(13,"remindWhen");
   h+=card(14,"Что сейчас больше всего беспокоит в подготовке?","Необязательно. Любыми словами.",
@@ -338,25 +338,25 @@ async function send(){
     const r=await fetch("/api/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({voter,form:readable})});
     if(!r.ok) throw 0;
     $("#status").hidden=true; $("#sent").hidden=false; $("#sent").scrollIntoView({behavior:"smooth",block:"center"});
-  }catch(e){ flash("Не получилось отправить. Проверь интернет и нажми «Отправить» ещё раз — ответы не потеряются.") }
+  }catch(e){ flash("Не получилось отправить. Проверь интернет и нажми «Отправить» ещё раз - ответы не потеряются.") }
   sending=false; b.disabled=false; b.textContent="Отправить анкету";
 }
 async function signup(){
   const email=$("#a-email").value.trim(), password=$("#a-pass").value, consent=$("#a-consent").checked, gender=(document.querySelector('input[name="a-gender"]:checked')||{}).value||"";
   const need=(t,el)=>{flash(t);el.scrollIntoView({behavior:"smooth",block:"center"});el.focus()};
   if(!gender) return need("Выбери, как к тебе обращаться.",document.querySelector('input[name="a-gender"]'));
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return need("Впиши почту — по ней ты будешь входить.",$("#a-email"));
-  if(password.length<8) return need("Пароль — минимум 8 символов.",$("#a-pass"));
-  if(!consent) return need("Поставь галочку согласия — без неё план не сохранить.",$("#a-consent"));
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return need("Впиши почту - по ней ты будешь входить.",$("#a-email"));
+  if(password.length<8) return need("Пароль - минимум 8 символов.",$("#a-pass"));
+  if(!consent) return need("Поставь галочку согласия - без неё план не сохранить.",$("#a-consent"));
   sending=true; const b=$("#send"); b.disabled=true; b.textContent="Козя собирает план…";
   const readable={...F, choices:Object.fromEntries(Object.entries(F.choices).map(([k,v])=>[k,v.map(i=>CHOICE[k].o[i])])),
     lessons:F.lessons.map(l=>({...l,days:l.days.map(d=>DAYS[d])})), free:F.free.map((f,i)=>({day:DAYS[i],...f}))};
   try{
     const r=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({form:readable,email,password,consent,gender})});
     const j=await r.json().catch(()=>({}));
-    if(!r.ok||!j.u){flash(j.error||"Не получилось. Попробуй ещё раз — ответы не потеряются.")}
+    if(!r.ok||!j.u){flash(j.error||"Не получилось. Попробуй ещё раз - ответы не потеряются.")}
     else{try{localStorage.setItem("ege-u",j.u);localStorage.removeItem("ege-plan-draft")}catch(e){} location.replace("/app?u="+j.u+"&new=1"); return}
-  }catch(e){ flash("Нет связи. Проверь интернет и нажми ещё раз — ответы не потеряются.") }
+  }catch(e){ flash("Нет связи. Проверь интернет и нажми ещё раз - ответы не потеряются.") }
   sending=false; b.disabled=false; b.textContent="Создать мой план";
 }
 render();

@@ -3,8 +3,8 @@ import { hasDb } from "./_redis.js";
 import { validU, loadState, readBody } from "./_store.js";
 import { chat } from "./_giga.js";
 
-// POST {u, mode:"check", q, a, answer} — проверить ответ на карточку
-// POST {u, mode:"cards", topic, subject, n} — придумать карточки по теме
+// POST {u, mode:"check", q, a, answer} - проверить ответ на карточку
+// POST {u, mode:"cards", topic, subject, n} - придумать карточки по теме
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST") return res.status(405).json({ error: "Только POST" });
@@ -22,17 +22,17 @@ export default async function handler(req, res) {
       const j = parse(r.text);
       const verdict = ["yes", "partly", "no"].includes(j?.verdict) ? j.verdict : null;
       if (!verdict) return res.status(200).json({ verdict: null });
-      return res.status(200).json({ verdict, comment: clip(j.comment, 200).replace(/"/g, "") });
+      return res.status(200).json({ verdict, comment: clip(j.comment, 200).replace(/"/g, "").replace(/\s*\u2014\s*/g, " - ") });
     }
     if (b.mode === "cards") {
       const n = Math.max(3, Math.min(12, parseInt(b.n) || 6));
       const r = await chat([
-        { role: "system", content: `Ты составляешь карточки для подготовки к ЕГЭ. Дай ${n} коротких вопросов с точными ответами по теме — то, что реально спрашивают на ЕГЭ: термины, даты, ключевые факты, определения. Ответы короткие (до 25 слов) и фактически верные; если не уверена в факте — не включай его. Ответ строго JSON: {"cards":[{"q":"...","a":"..."}]}` },
+        { role: "system", content: `Ты составляешь карточки для подготовки к ЕГЭ. Дай ${n} коротких вопросов с точными ответами по теме - то, что реально спрашивают на ЕГЭ: термины, даты, ключевые факты, определения. Ответы короткие (до 25 слов) и фактически верные; если не уверена в факте - не включай его. Ответ строго JSON: {"cards":[{"q":"...","a":"..."}]}` },
         { role: "user", content: `Предмет: ${clip(b.subject, 40)}. Тема: ${clip(b.topic, 120)}` },
       ], { model: "GigaChat-2-Pro", temperature: 0.3, maxTokens: 1200 });
       const j = parse(r.text);
       const cards = (Array.isArray(j?.cards) ? j.cards : []).filter(c => c && c.q && c.a).slice(0, n).map(c => ({ q: clip(c.q, 300), a: clip(c.a, 500) }));
-      return res.status(200).json({ cards });
+      return res.status(200).json({ cards: JSON.parse(JSON.stringify(cards).replace(/\s*\u2014\s*/g, " - ")) });
     }
     res.status(400).json({ error: "Неизвестный режим" });
   } catch {

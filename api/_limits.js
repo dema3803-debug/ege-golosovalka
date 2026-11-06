@@ -2,7 +2,7 @@
 import { redis } from "./_redis.js";
 import { mskToday } from "./_fromForm.js";
 
-// true, если лимит превышен. ttl — сколько секунд живёт счётчик.
+// true, если лимит превышен. ttl - сколько секунд живёт счётчик.
 export async function overLimit(key, max, ttl) {
   const n = Number(await redis("INCR", key));
   if (n === 1) await redis("EXPIRE", key, ttl);

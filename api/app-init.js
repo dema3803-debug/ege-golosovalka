@@ -4,8 +4,8 @@ import { saveState } from "./_store.js";
 import { formToState } from "./_fromForm.js";
 
 // Создаёт личный план из последней анкеты (или анкеты с нужным именем) и выдаёт ссылку.
-// Открывать: /api/app-init?key=ADMIN_KEY            — по последней анкете
-//            /api/app-init?key=ADMIN_KEY&name=Вера  — по анкете с этим именем
+// Открывать: /api/app-init?key=ADMIN_KEY            - по последней анкете
+//            /api/app-init?key=ADMIN_KEY&name=Вера  - по анкете с этим именем
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (!hasDb()) return res.status(503).json({ error: "База не подключена" });
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
   const s = formToState(f);
 
-  // ?u=... — пересоздать план по той же ссылке (сбросить к данным анкеты)
+  // ?u=... - пересоздать план по той же ссылке (сбросить к данным анкеты)
   const u = /^[a-z0-9]{16,40}$/.test(req.query.u || "") ? req.query.u : crypto.randomBytes(12).toString("hex");
   await saveState(u, s);
   const host = req.headers["x-forwarded-host"] || req.headers.host;

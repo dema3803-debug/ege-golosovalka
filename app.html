@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#FBEFF3">
 <script>try{const l=JSON.parse(localStorage.getItem("ege-look")||"{}");if(l.theme)document.documentElement.dataset.theme=l.theme;if(l.accent&&l.accent!=="pink")document.documentElement.dataset.accent=l.accent}catch(e){}</script>
-<title>Козя — мой план ЕГЭ</title>
+<title>Козя - мой план ЕГЭ</title>
 <link rel="manifest" id="manifest-link" href="/manifest.json">
 <link rel="icon" type="image/png" href="/icons/favicon-64.png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap">
 <style>
-/* Layout: телефон — одна колонка и нижнее меню; компьютер — план слева, помощник справа */
+/* Layout: телефон - одна колонка и нижнее меню; компьютер - план слева, помощник справа */
 :root{
   --bg:#FBEFF3; --surface:#FFFFFF; --raised:#FDF5F8; --line:#F1DDE5; --line2:#E6C9D4; --ink:#1B1620; --muted:#6B5A63; --faint:#9C8A93;
   --accent:#B8325E; --accent-ink:#FFFFFF; --accent-soft:#FBE3EB; --accent-line:#EBB3C6;
@@ -392,7 +392,7 @@ i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
     <div id="view"></div>
   </main>
   <aside class="chatcol" aria-label="Помощник">
-    <div class="head"><h2>Козя</h2><div class="small muted">Пиши как есть — я поправлю план</div></div>
+    <div class="head"><h2>Козя</h2><div class="small muted">Пиши как есть - я поправлю план</div></div>
     <div class="chat" id="chat-desk"></div>
     <form class="composer" data-composer><input id="msg-desk" type="text" autocomplete="off" maxlength="600" placeholder="Напиши, что у тебя сегодня…" aria-label="Сообщение помощнику"><button class="send" type="submit" aria-label="Отправить"><svg class="ico"><use href="#i-send"/></svg></button></form>
   </aside>
@@ -429,13 +429,13 @@ const subjOptions = sel => [...S.subjects.map(x => x.name), "Школа", "Др�
 const word = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c; };
 
 const ASK = ["Окей, сегодня без подвигов 🫶 Остальное я тихо перенесла на другие дни. Но может, одну малюсенькую штуку? Это 5 минут, честно. Ну пожалуйста",
-  "Понимаю, бывает 💛 Давай так: одно крошечное дело на 5 минут — и {свободна|свободен}. Ну пожааалуйста?",
-  "Отдых — тоже часть подготовки. Но одну мааленькую штучку, а? 5 минут, я засеку 🥺"];
-const PRAISE = ["Ты молодец!! 🎉 А может, ещё одну? Тоже 5 минут. Но если нет — ты сегодня уже {красавица|молодец}, отдыхай.",
-  "Вот это да, {сделала|сделал}! 💪 Ещё одну крошечную? Если нет — всё, ты {заслужила|заслужил} отдых.",
-  "{Умница|Молодец}! ✨ Может, на волне ещё 5 минут? А если нет — ты и так сегодня молодец."];
+  "Понимаю, бывает 💛 Давай так: одно крошечное дело на 5 минут - и {свободна|свободен}. Ну пожааалуйста?",
+  "Отдых - тоже часть подготовки. Но одну мааленькую штучку, а? 5 минут, я засеку 🥺"];
+const PRAISE = ["Ты молодец!! 🎉 А может, ещё одну? Тоже 5 минут. Но если нет - ты сегодня уже {красавица|молодец}, отдыхай.",
+  "Вот это да, {сделала|сделал}! 💪 Ещё одну крошечную? Если нет - всё, ты {заслужила|заслужил} отдых.",
+  "{Умница|Молодец}! ✨ Может, на волне ещё 5 минут? А если нет - ты и так сегодня молодец."];
 
-// {женский|мужской} — подставляется по выбранному обращению
+// {женский|мужской} - подставляется по выбранному обращению
 const gx = t => String(t ?? "").replace(/\{([^{}|<>`$]{1,40})\|([^{}|<>`$]{1,40})\}/g, (_, f, m) => S?.gender === "m" ? m : f);
 function flash(t) { const s = $("#status"); s.textContent = gx(t || ""); s.hidden = !t; }
 
@@ -444,8 +444,8 @@ async function load() {
   if (!U) {
     $("#date").textContent = ""; $("#hello").textContent = "Привет!";
     const login = location.hash === "#login";
-    $("#view").innerHTML = `<div class="hero"><div class="bubble">${login ? "С возвращением! Введи почту и пароль — и продолжим." : "Я Козя! Помогу готовиться к ЕГЭ без завалов: соберу план и буду напоминать, что делать."}</div><div class="mascot">${mascot("happy")}</div></div>
-      ${login ? "" : `<a class="btn primary" href="/start" style="justify-content:center;text-decoration:none">Начать — собрать мой план</a>`}
+    $("#view").innerHTML = `<div class="hero"><div class="bubble">${login ? "С возвращением! Введи почту и пароль - и продолжим." : "Я Козя! Помогу готовиться к ЕГЭ без завалов: соберу план и буду напоминать, что делать."}</div><div class="mascot">${mascot("happy")}</div></div>
+      ${login ? "" : `<a class="btn primary" href="/start" style="justify-content:center;text-decoration:none">Начать - собрать мой план</a>`}
       <form class="card" id="loginform"><b>Уже есть план? Войди</b>
       <label class="field"><span>Почта</span><input type="email" id="l-email" autocomplete="email" inputmode="email" required></label>
       <label class="field"><span>Пароль</span><input type="password" id="l-pass" autocomplete="current-password" required></label>
@@ -453,7 +453,7 @@ async function load() {
       <button class="btn ${login ? "primary" : ""}" type="submit" style="justify-content:center">Войти</button></form>
       <details class="card"><summary class="small muted" style="cursor:pointer">У меня ссылка на план</summary>
       <form id="linkform" style="display:flex;flex-direction:column;gap:10px;margin-top:10px"><label class="field"><span>Ссылка на план (или код после «u=»)</span><input type="text" id="link-in" autocomplete="off" placeholder="https://…/app?u=…" required></label>
-      <span class="small muted" id="link-err" hidden>Не вижу кода. Скопируй ссылку целиком — в ней есть «?u=» и буквы с цифрами.</span>
+      <span class="small muted" id="link-err" hidden>Не вижу кода. Скопируй ссылку целиком - в ней есть «?u=» и буквы с цифрами.</span>
       <button class="btn" type="submit" style="justify-content:center">Открыть мой план</button></form></details>`;
     $("#loginform").addEventListener("submit", async e => {
       e.preventDefault();
@@ -484,7 +484,7 @@ async function load() {
     try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {}
   } catch {
     let cached = null; try { cached = JSON.parse(localStorage.getItem("ege-state-" + U) || "null"); } catch {}
-    if (cached && !S) { S = cached; $("#dock").hidden = false; render(); flash("Нет интернета — показываю последний сохранённый план. Отметки сохранятся, когда связь вернётся."); }
+    if (cached && !S) { S = cached; $("#dock").hidden = false; render(); flash("Нет интернета - показываю последний сохранённый план. Отметки сохранятся, когда связь вернётся."); }
     else if (!S) flash("Нет связи. Проверь интернет и обнови страницу.");
   }
 }
@@ -495,10 +495,10 @@ async function save() {
     const r = await fetch("/api/app", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, state: S }) });
     const j = await r.json();
     if (r.status === 410 && j.movedTo) { showMoved(j.movedTo); }
-    else if (r.status === 409) { S = j.state; flash("План обновился с другого устройства — показываю свежую версию."); render(); }
+    else if (r.status === 409) { S = j.state; flash("План обновился с другого устройства - показываю свежую версию."); render(); }
     else if (!r.ok) flash(j.error || "Не удалось сохранить. Проверь интернет.");
     else { S.rev = j.state.rev; try { localStorage.setItem("ege-state-" + U, JSON.stringify(S)); } catch {} if (/^(Не удалось|Нет интернета)/.test($("#status").textContent || "")) flash(""); }
-  } catch { flash("Не удалось сохранить. Проверь интернет — попробую ещё раз при следующем действии."); }
+  } catch { flash("Не удалось сохранить. Проверь интернет - попробую ещё раз при следующем действии."); }
   saving = false;
   if (savePending) { savePending = false; save(); }
 }
@@ -599,7 +599,7 @@ function renderSession() {
   return `<div class="session">
     <div class="shead"><button class="circbtn" data-act="session-back" type="button" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
       <b style="font-size:17px;font-weight:800">${work ? "Сессия" : "Перерыв"}</b><span style="width:44px"></span></div>
-    <div style="text-align:center;font-size:15px;font-weight:700;color:var(--muted)">${work ? (paused ? "Пауза — Козя ждёт тебя" : "Козя сосредоточилась вместе с тобой") : "Перерыв! Попей воды и разомнись"}</div>
+    <div style="text-align:center;font-size:15px;font-weight:700;color:var(--muted)">${work ? (paused ? "Пауза - Козя ждёт тебя" : "Козя сосредоточилась вместе с тобой") : "Перерыв! Попей воды и разомнись"}</div>
     <div class="ring"><svg viewBox="0 0 240 240" aria-hidden="true"><circle cx="120" cy="120" r="108" fill="none" stroke="var(--accent-soft)" stroke-width="14"/>
       <circle id="sess-ring" cx="120" cy="120" r="108" fill="none" stroke="${work ? "var(--pink)" : "var(--ok)"}" stroke-width="14" stroke-linecap="round" stroke-dasharray="679" stroke-dashoffset="${Math.round(679 * (1 - left / (session.len * 60000)))}" transform="rotate(-90 120 120)"/></svg>
       <div style="position:absolute;inset:16%;display:grid;place-items:center">${mascot(work ? "focus" : "happy", work ? "Козя читает книжку" : "Козя радуется")}</div></div>
@@ -678,7 +678,7 @@ async function startQuiz({ topicId = null, subject = null, topicTitle = null, n 
   if (topicTitle && !topicId) topicId = S.topics.find(t => t.title.toLowerCase() === String(topicTitle).toLowerCase())?.id || null;
   if (subject && !S.subjects.some(x => x.name === subject)) subject = S.subjects.find(x => x.name.toLowerCase().startsWith(String(subject).toLowerCase().slice(0, 5)))?.name || null;
   let cards = C.pickCards(S, { topicId, subject, n, today: d });
-  // карточек мало — помощник сам придумывает вопросы и сохраняет их в базу
+  // карточек мало - помощник сам придумывает вопросы и сохраняет их в базу
   if (cards.length < Math.min(n, 3)) {
     const topic = topicId ? S.topics.find(t => t.id === topicId) : null;
     const subj = topic?.subject || subject || pickSubject();
@@ -697,10 +697,10 @@ async function startQuiz({ topicId = null, subject = null, topicTitle = null, n 
     if (!cards.length) cards = C.pickCards(S, { n, today: d });
   }
   if (!cards.length) {
-    change(() => say("assistant", "Не получилось придумать вопросы — помощник сейчас недоступен 🙈 Попробуй через минуту или добавь карточки в разделе «Знания»."));
+    change(() => say("assistant", "Не получилось придумать вопросы - помощник сейчас недоступен 🙈 Попробуй через минуту или добавь карточки в разделе «Знания»."));
     return;
   }
-  const first = mode === "tired" ? "Тогда так: 3 быстрых вопроса, отвечай как помнишь 🙂" : mode === "topic" ? "Давай проверим тему — отвечай своими словами 🙂" : `Поехали! ${cards.length} ${word(cards.length, "вопрос", "вопроса", "вопросов")}, отвечай своими словами 🙂`;
+  const first = mode === "tired" ? "Тогда так: 3 быстрых вопроса, отвечай как помнишь 🙂" : mode === "topic" ? "Давай проверим тему - отвечай своими словами 🙂" : `Поехали! ${cards.length} ${word(cards.length, "вопрос", "вопроса", "вопросов")}, отвечай своими словами 🙂`;
   quiz = { cards, i: 0, phase: "ask", mode, topicId, results: [], log: [{ role: "assistant", text: first }, { role: "assistant", text: cards[0].q }] };
   quiz.intro = mode === "tired" ? first : null;
   if (!matchMedia("(min-width:1000px)").matches) { view = mode === "tired" ? "today" : "chat"; history.replaceState(null, "", "#" + view); }
@@ -728,7 +728,7 @@ async function answerQuiz(text) {
   const ok = verdict === "yes" ? true : verdict === "no" ? false : "partly";
   q.results.push(ok); C.recordAnswer(S, c.id, ok, d);
   q.fb = { ok: verdict !== "no", text: verdict === "yes" ? `Верно! ${comment}`.trim() : verdict === "partly" ? `Почти. Полностью: ${c.a}` : `Не совсем. Правильно: ${c.a}` };
-  q.log.push({ role: "assistant", text: verdict === "yes" ? `Верно! ✅ ${comment}` : verdict === "partly" ? `Почти 👌 ${comment} Полностью: ${c.a}` : `Не совсем. Правильно: ${c.a}${comment ? " — " + comment : ""}` });
+  q.log.push({ role: "assistant", text: verdict === "yes" ? `Верно! ✅ ${comment}` : verdict === "partly" ? `Почти 👌 ${comment} Полностью: ${c.a}` : `Не совсем. Правильно: ${c.a}${comment ? " - " + comment : ""}` });
   q.phase = "result"; render(); save();
 }
 function quizSelf(ok) { const q = quiz, c = q.cards[q.i]; q.results.push(ok); q.fb = { ok, text: ok ? `Отлично! ${c.a}` : `Запомни: ${c.a}` }; C.recordAnswer(S, c.id, ok, now().today); q.log.push({ role: "user", text: ok ? "{Знала|Знал}" : "Не {знала|знал}" }); q.phase = "result"; render(); save(); }
@@ -775,12 +775,12 @@ function renderToday(d, n) {
   let mood = "happy", moodLabel = "в настроении", say1;
   if (session) { mood = "focus"; moodLabel = "занимается"; say1 = "Мы в сессии! Возвращайся к таймеру."; }
   else if (d.off) { mood = "rest"; moodLabel = "отдыхает"; say1 = "Сегодня выходной! Я тоже валяюсь. Завтра продолжим."; }
-  else if (tiredT && tiredT.rest) { mood = "rest"; moodLabel = "отдыхает"; say1 = "Отдыхай. Всё несделанное я перенесла — ничего не потеряется."; }
+  else if (tiredT && tiredT.rest) { mood = "rest"; moodLabel = "отдыхает"; say1 = "Отдыхай. Всё несделанное я перенесла - ничего не потеряется."; }
   else if (nxt) say1 = doneN
-    ? oneOf(["Так держать! Ещё немного — и можно отдыхать.", "Хорошо идёшь! Я рядом, если что — пиши.", "{Умница|Молодец}, продолжаем в том же темпе!"])
-    : oneOf(["{Готова|Готов}? Я засеку время и напомню про перерыв.", "Начнём потихоньку — первые 25 минут самые трудные.", "Привет! Жми «Начать», а я буду рядом."]);
+    ? oneOf(["Так держать! Ещё немного - и можно отдыхать.", "Хорошо идёшь! Я рядом, если что - пиши.", "{Умница|Молодец}, продолжаем в том же темпе!"])
+    : oneOf(["{Готова|Готов}? Я засеку время и напомню про перерыв.", "Начнём потихоньку - первые 25 минут самые трудные.", "Привет! Жми «Начать», а я буду рядом."]);
   else if (totalN) { say1 = "Всё на сегодня сделано! Ты {умница|молодец}."; moodLabel = "гордится"; }
-  else say1 = "Задач пока нет. Напиши мне, что нужно сделать, — разложу по времени.";
+  else say1 = "Задач пока нет. Напиши мне, что нужно сделать, - разложу по времени.";
   h += `<div class="hero"><div class="herohead"><b>Козя</b><span class="mood">${moodLabel}</span></div>
     <div class="bubble">${esc(say1)}</div><div class="mascot">${mascot(mood)}</div>
     <div class="stats"><div class="stat"><span>Сегодня</span><b>${doneN} из ${totalN}</b></div>
@@ -796,7 +796,7 @@ function renderToday(d, n) {
   if (!d.off) {
     h += examsCard(n);
     h += `<div style="display:flex;flex-direction:column;gap:8px"><div class="nexthead"><h2>Дальше сегодня</h2><button class="linkbtn" data-view="day" type="button">Весь план</button></div>`;
-    if (!rest.length) h += `<p class="empty">${nxt ? "После этого — свободно." : "Пусто. Напиши Козе, что нужно сделать."}</p>`;
+    if (!rest.length) h += `<p class="empty">${nxt ? "После этого - свободно." : "Пусто. Напиши Козе, что нужно сделать."}</p>`;
     for (const b of rest) {
       const t = C.toHHMM(b.start), sub = b.type === "review" ? `10 мин · Козя спросит 5 вопросов` : `${t}–${C.toHHMM(b.end)} · ${b.count > 1 ? `${b.count} × ${S.sessionMin} мин` : `${S.sessionMin} мин`}`;
       h += `<div class="nx" style="--c:${color(b.subject)}">${b.type === "review" ? `<button class="box review" data-quiz-topic="${b.ref}" type="button" aria-label="Проверить: ${esc(b.title)}"></button>` : `<button class="box" data-done="${b._i}" type="button" aria-label="{Сделала|Сделал}: ${esc(b.title)}"></button>`}
@@ -811,7 +811,7 @@ function renderToday(d, n) {
 function renderTired(d, n) {
   const t = S.tired[d.date];
   const lastAsk = [...(S.chat || [])].reverse().find(m => m.role === "assistant")?.text || "Понимаю. Всё остальное я перенесла на завтра. Но может, 3 малюсеньких вопроса? Это 5 минут, честно. Ну пожааалуйста!";
-  let h = `<div><div class="date">Сегодня без подвигов</div><h1>Сил нет — и это ок</h1></div>
+  let h = `<div><div class="date">Сегодня без подвигов</div><h1>Сил нет - и это ок</h1></div>
     <div class="trrow">${mascot("plead", "Козя умоляюще складывает копытца")}<div class="trb">${esc(quiz ? quiz.intro || lastAsk : lastAsk)}</div></div>`;
   if (quiz) {
     const q = quiz, c = q.cards[q.i];
@@ -850,11 +850,11 @@ function renderDay(d, n) {
   const totalTasks = live.filter(b => b.type !== "lesson").length + done.length;
 
   h += `<div class="card"><div class="cardhead"><h2>${d.off ? "Сегодня выходной 🌿" : tired && tired.rest ? "Сегодня отдыхаем 🫶" : "План на сегодня"}</h2><span class="small muted">${totalTasks ? `${done.length} из ${totalTasks}` : ""}</span></div>`;
-  if (tired && tired.rest) h += `<p class="empty">Всё несделанное перенесено на ближайшие дни.${tired.micro ? ` А ещё ты {сделала|сделал} ${tired.micro} ${word(tired.micro, "маленький шаг", "маленьких шага", "маленьких шагов")} — это считается!` : ""}</p><div class="row"><button class="btn sm" data-act="untired" type="button">Силы вернулись — показать план</button></div>`;
+  if (tired && tired.rest) h += `<p class="empty">Всё несделанное перенесено на ближайшие дни.${tired.micro ? ` А ещё ты {сделала|сделал} ${tired.micro} ${word(tired.micro, "маленький шаг", "маленьких шага", "маленьких шагов")} - это считается!` : ""}</p><div class="row"><button class="btn sm" data-act="untired" type="button">Силы вернулись - показать план</button></div>`;
   else if (tired) h += `<p class="empty">Режим «сил нет»: только маленькие шаги, без давления.</p><div class="row"><button class="btn sm" data-act="untired" type="button">Вернуть обычный план</button></div>`;
-  else if (d.off) h += `<p class="empty">Никакой подготовки. Отдыхай — завтра будет проще.</p>`;
+  else if (d.off) h += `<p class="empty">Никакой подготовки. Отдыхай - завтра будет проще.</p>`;
   if (!d.off && !tired) {
-    for (const nt of d.notes) h += `<div class="note">${esc(nt.title)} — время не указано. <button class="more" data-edit-lesson="${nt.id}" type="button">Указать</button></div>`;
+    for (const nt of d.notes) h += `<div class="note">${esc(nt.title)} - время не указано. <button class="more" data-edit-lesson="${nt.id}" type="button">Указать</button></div>`;
     for (const u of d.unplaced) h += `<div class="warnbox">Не влезает до срока: <b>${esc(u.title)}</b> (${u.count} × ${S.sessionMin} мин). Сдвинь срок или освободи время.</div>`;
     if (!all.length) h += `<p class="empty">Задач на сегодня нет. Напиши помощнику или добавь задачу.</p>`;
     h += `<div class="blocks">${all.map(b => blockHTML(b, d.date)).join("")}</div>`;
@@ -937,10 +937,10 @@ function renderTopics(n) {
   const sorted = [...S.topics].sort((a, b) => a.next.localeCompare(b.next));
   const loose = S.cards.filter(c => !c.topicId || !S.topics.some(t => t.id === c.topicId));
   let h = egeCardHTML(n) + `<div class="card"><div class="cardhead"><h2>База знаний</h2><span class="small muted">${S.cards.length} ${word(S.cards.length, "карточка", "карточки", "карточек")}</span></div>
-    <p class="small muted" style="margin:0">Темы повторяются через ${C.INTERVALS.join(", ")} дней. Внутри темы — карточки «вопрос → ответ»: по ним я тебя спрашиваю, когда пора повторять или когда сил нет.</p>
+    <p class="small muted" style="margin:0">Темы повторяются через ${C.INTERVALS.join(", ")} дней. Внутри темы - карточки «вопрос → ответ»: по ним я тебя спрашиваю, когда пора повторять или когда сил нет.</p>
     <div class="row"><button class="btn primary" data-act="quiz-any" type="button">Проверь меня · 5 вопросов</button><button class="btn" data-act="learned" type="button">${icon("i-plus")}Тема</button><button class="btn" data-add-cards="" type="button">${icon("i-plus")}Карточки без темы</button></div></div>`;
   h += materialsCard();
-  h += `<div class="card"><div class="cardhead"><h2>Темы</h2><span class="small muted">${S.topics.length}</span></div>${sorted.length ? sorted.map(topicItem).join("") : `<p class="empty">Пока тем нет. {Изучила|Изучил} тему — нажми «+ Тема».</p>`}</div>`;
+  h += `<div class="card"><div class="cardhead"><h2>Темы</h2><span class="small muted">${S.topics.length}</span></div>${sorted.length ? sorted.map(topicItem).join("") : `<p class="empty">Пока тем нет. {Изучила|Изучил} тему - нажми «+ Тема».</p>`}</div>`;
   if (loose.length) h += `<div class="card"><div class="cardhead"><h2>Карточки без темы</h2><span class="small muted">${loose.length}</span></div><div class="cardlist">${loose.map(cardRow).join("")}</div></div>`;
   return h;
 }
@@ -948,13 +948,13 @@ function renderTopics(n) {
 function addCardsDialog(topicId) {
   const t = S.topics.find(x => x.id === topicId);
   openDialog(t ? `Карточки: ${esc(t.title)}` : "Новые карточки", `
-    <p class="small muted" style="margin:0">Каждая карточка — с новой строки: <b>вопрос или термин — ответ</b>. Например:<br>Инфляция — устойчивый рост общего уровня цен<br>Основание Санкт-Петербурга: 1703</p>
-    <label class="field"><span>Карточки</span><textarea id="f-cards" required rows="6" placeholder="Термин — определение"></textarea></label>
+    <p class="small muted" style="margin:0">Каждая карточка - с новой строки: <b>вопрос или термин - ответ</b>. Например:<br>Инфляция - устойчивый рост общего уровня цен<br>Основание Санкт-Петербурга: 1703</p>
+    <label class="field"><span>Карточки</span><textarea id="f-cards" required rows="6" placeholder="Термин - определение"></textarea></label>
     ${t ? "" : `<label class="field"><span>Предмет</span><select id="f-subj">${subjOptions(S.subjects[0]?.name)}</select></label>`}`, {
     submitLabel: "Добавить",
     submit: () => {
       const list = C.parseCardLines(val("f-cards"));
-      if (!list.length) { const ta = dlgform.querySelector("#f-cards"); ta.setCustomValidity("Не нашла карточек. Пиши так: вопрос — ответ, каждую с новой строки."); ta.reportValidity(); ta.addEventListener("input", () => ta.setCustomValidity(""), { once: true }); return false; }
+      if (!list.length) { const ta = dlgform.querySelector("#f-cards"); ta.setCustomValidity("Не нашла карточек. Пиши так: вопрос - ответ, каждую с новой строки."); ta.reportValidity(); ta.addEventListener("input", () => ta.setCustomValidity(""), { once: true }); return false; }
       change(() => { const k = C.addCards(S, list, { topicId: t?.id || null, subject: t?.subject || val("f-subj") }); if (t) openTopics.add(t.id); say("assistant", `Добавила ${k} ${word(k, "карточку", "карточки", "карточек")} в базу знаний 📚`); });
     },
   });
@@ -969,7 +969,7 @@ async function genCards(topicId) {
   } catch {}
   if (!dlg.open) return;
   if (!cards.length) { openDialog("Не получилось", `<p class="small muted" style="margin:0">Помощник сейчас не смог придумать карточки. Попробуй ещё раз через минуту или добавь их {сама|сам}.</p>`, { submit: () => {}, submitLabel: "Понятно" }); return; }
-  openDialog(`✨ Карточки: ${esc(t.title)}`, `<p class="small muted" style="margin:0">Проверь факты и сними галочки с лишнего — помощник иногда ошибается.</p>
+  openDialog(`✨ Карточки: ${esc(t.title)}`, `<p class="small muted" style="margin:0">Проверь факты и сними галочки с лишнего - помощник иногда ошибается.</p>
     <div class="genlist">${cards.map((c, i) => `<label><input type="checkbox" data-gen="${i}" checked><span><b>${esc(c.q)}</b><br><span class="muted">${esc(c.a)}</span></span></label>`).join("")}</div>`, {
     submitLabel: "Добавить выбранные",
     submit: () => {
@@ -984,9 +984,9 @@ function renderSetup() {
   const n = now();
   const events = S.extraLessons.filter(e => e.date >= n.today).sort((a, b) => (a.date + a.from).localeCompare(b.date + b.from)).map(e => `<div class="li"><div><button class="t" data-edit-event="${e.id}" type="button">${esc(e.title)}</button><div class="meta">${C.humanDate(e.date)} · ${e.from}–${e.to}</div></div><button class="iconbtn" data-edit-event="${e.id}" type="button" aria-label="Изменить">${icon("i-edit")}</button></div>`).join("");
   const habit = S.habits[0];
-  return `<div class="card"><div class="cardhead"><h2>Расписание онлайн-школы</h2></div><p class="small muted" style="margin:0">Умскул, Вебиум, 100балльный, репетитор — скинь скриншот или текст расписания, и Козя сама разложит вебинары и дедлайны по плану.</p><button class="btn primary" data-act="import" type="button" style="justify-content:center">${icon("i-plus")}Загрузить расписание</button></div>
+  return `<div class="card"><div class="cardhead"><h2>Расписание онлайн-школы</h2></div><p class="small muted" style="margin:0">Умскул, Вебиум, 100балльный, репетитор - скинь скриншот или текст расписания, и Козя сама разложит вебинары и дедлайны по плану.</p><button class="btn primary" data-act="import" type="button" style="justify-content:center">${icon("i-plus")}Загрузить расписание</button></div>
   <div class="card"><div class="cardhead"><h2>Занятия по расписанию</h2><button class="btn sm" data-act="new-lesson" type="button">${icon("i-plus")}Добавить</button></div>${lessons ? `<div class="list">${lessons}</div>` : `<p class="empty">Нет регулярных занятий.</p>`}</div>
-  <div class="card"><div class="cardhead"><h2>Разовые события</h2><button class="btn sm" data-act="new-event" type="button">${icon("i-plus")}Добавить</button></div><p class="small muted" style="margin:0">Зачёт, пробник, кружок, поездка — то, что бывает один раз.</p>${events ? `<div class="list">${events}</div>` : ""}</div>
+  <div class="card"><div class="cardhead"><h2>Разовые события</h2><button class="btn sm" data-act="new-event" type="button">${icon("i-plus")}Добавить</button></div><p class="small muted" style="margin:0">Зачёт, пробник, кружок, поездка - то, что бывает один раз.</p>${events ? `<div class="list">${events}</div>` : ""}</div>
   <div class="card"><h2>Свободное время по дням</h2><p class="small muted" style="margin:0">Когда можно заниматься самой. Занятия вычитаются автоматически.</p>
     <div style="display:flex;flex-direction:column;gap:8px">${S.free.map((f, i) => `<div class="week-free"><b class="small">${C.DAYS[i]}</b><input type="time" id="free-from-${i}" data-free="${i}" data-k="from" value="${esc(f.from)}" aria-label="${C.DAYS[i]}, с" ${f.off ? "disabled" : ""}><input type="time" id="free-to-${i}" data-free="${i}" data-k="to" value="${esc(f.to)}" aria-label="${C.DAYS[i]}, до" ${f.off ? "disabled" : ""}><label><input type="checkbox" id="free-off-${i}" data-free="${i}" data-k="off" ${f.off ? "checked" : ""}> выходной</label></div>`).join("")}</div></div>
   <div class="card"><h2>Как ты занимаешься</h2><div class="grid2">
@@ -994,7 +994,7 @@ function renderSetup() {
     <label class="field"><span>Максимум в день на самоподготовку</span><select id="set-cap" data-set="dailyCapMin">${[60, 120, 180, 240, 300].map(m => `<option value="${m}" ${S.dailyCapMin === m ? "selected" : ""}>${m / 60} ${word(m / 60, "час", "часа", "часов")}</option>`).join("")}</select></label></div>
     <label class="row small"><input type="checkbox" id="set-habit" ${habit ? "checked" : ""}> Каждый будний день ставить блок «Школьные задания»</label>
     ${(S.capFactor || 1) < 1 ? `<div class="row small"><span class="muted">Сейчас нагрузка облегчена на четверть.</span><button class="btn sm" data-act="unlighten" type="button">Вернуть обычную</button></div>` : ""}</div>
-  <div class="card"><h2>Цели по предметам</h2><div class="list">${S.subjects.map(s => `<div class="li"><div><div class="t">${esc(s.name)}</div><div class="meta">сейчас ${s.current ?? "—"} → цель ${s.target ?? "—"}</div><div class="progress" style="margin-top:6px"><i style="width:${s.current || 0}%;background:${color(s.name)}"></i></div></div></div>`).join("")}</div></div>`;
+  <div class="card"><h2>Цели по предметам</h2><div class="list">${S.subjects.map(s => `<div class="li"><div><div class="t">${esc(s.name)}</div><div class="meta">сейчас ${s.current ?? "-"} → цель ${s.target ?? "-"}</div><div class="progress" style="margin-top:6px"><i style="width:${s.current || 0}%;background:${color(s.name)}"></i></div></div></div>`).join("")}</div></div>`;
 }
 
 // ---------- формы ----------
@@ -1032,7 +1032,7 @@ function moveDialog(id) {
 function setOn(id, d) {
   change(() => { const x = S.tasks.find(y => y.id === id); x.on = d || null; if (d) x.pin = null; });
   const t = S.tasks.find(y => y.id === id);
-  flash(d ? `Перенесла «${t.title}» на ${d === now().today ? "сегодня" : C.humanDate(d)}${t.due && d > t.due ? " — это позже срока!" : ""}` : "Хорошо, сама подберу день"); setTimeout(() => flash(""), 3000);
+  flash(d ? `Перенесла «${t.title}» на ${d === now().today ? "сегодня" : C.humanDate(d)}${t.due && d > t.due ? " - это позже срока!" : ""}` : "Хорошо, сама подберу день"); setTimeout(() => flash(""), 3000);
 }
 function taskDialog(t, preset = {}) {
   const n = now();
@@ -1044,7 +1044,7 @@ function taskDialog(t, preset = {}) {
       <label class="field"><span>Сколько сессий по ${S.sessionMin} мин</span><input type="number" id="f-sess" min="1" max="20" value="${t.sessions}"></label></div>
     <div class="grid2"><label class="field"><span>Срок (необязательно)</span><input type="date" id="f-due" value="${esc(t.due || "")}"></label>
       <label class="field"><span>До скольки</span><input type="time" id="f-duetime" value="${esc(t.dueTime || "")}"></label></div>
-    <div class="field"><span>Когда делать (необязательно) — день, время можно не указывать</span><div class="grid2"><input type="date" id="f-pindate" aria-label="День" value="${esc(t.pin?.date || t.on || "")}"><input type="time" id="f-pinfrom" aria-label="Начало" value="${esc(t.pin?.from || "")}"></div></div>
+    <div class="field"><span>Когда делать (необязательно) - день, время можно не указывать</span><div class="grid2"><input type="date" id="f-pindate" aria-label="День" value="${esc(t.pin?.date || t.on || "")}"><input type="time" id="f-pinfrom" aria-label="Начало" value="${esc(t.pin?.from || "")}"></div></div>
     ${!isNew ? `<div class="small muted">Сделано ${t.done} из ${t.sessions}</div>` : ""}${isNew ? "" : matsHTML({ t: "task", id: t.id })}`, {
     submit: () => {
       const title = val("f-title"); if (!title) return false;
@@ -1115,7 +1115,7 @@ function importDialog() {
   openDialog("Загрузить расписание", `
     <p class="small muted" style="margin:0">Открой расписание в личном кабинете школы или в её Telegram-канале. Сделай скриншот или скопируй текст. Можно и то и другое.</p>
     <label class="field"><span>Скриншоты или файл календаря (.ics)</span><input type="file" id="f-files" accept="image/*,.ics,text/calendar" multiple></label>
-    <label class="field"><span>Или вставь текст расписания</span><textarea id="f-text" rows="6" maxlength="12000" placeholder="12 ноября, 18:00 — Обществознание. Вебинар «Право»&#10;Дедлайн ДЗ №5 — 15 ноября до 23:59"></textarea></label>
+    <label class="field"><span>Или вставь текст расписания</span><textarea id="f-text" rows="6" maxlength="12000" placeholder="12 ноября, 18:00 - Обществознание. Вебинар «Право»&#10;Дедлайн ДЗ №5 - 15 ноября до 23:59"></textarea></label>
     <span class="small" id="f-imp-status" hidden></span>`, {
     submitLabel: "Разобрать",
     submit: () => { runImport(); return false; },
@@ -1135,14 +1135,14 @@ async function runImport() {
       else if (f.type.startsWith("image/")) { if (images.length < 4) images.push(await shrinkImage(f)); }
     }
     if (images.length || text) {
-      show(images.length ? "Читаю скриншоты — это до минуты…" : "Разбираю расписание…");
+      show(images.length ? "Читаю скриншоты - это до минуты…" : "Разбираю расписание…");
       let r;
       const send = () => fetch("/api/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: U, text, images }) });
       try { r = await send(); } catch { try { await new Promise(res => setTimeout(res, 1500)); r = await send(); } catch { r = null; } }
-      if (!r) throw new Error("Не получилось отправить расписание — проверь интернет и не сворачивай приложение, пока идёт отправка. Если скриншотов много, попробуй по одному.");
+      if (!r) throw new Error("Не получилось отправить расписание - проверь интернет и не сворачивай приложение, пока идёт отправка. Если скриншотов много, попробуй по одному.");
       const s0 = await r.json().catch(() => ({}));
       if (!r.ok || !s0.job) throw new Error(s0.error || "Не получилось разобрать расписание.");
-      show("Козя читает расписание — это до минуты. Можно не ждать на этом экране.");
+      show("Козя читает расписание - это до минуты. Можно не ждать на этом экране.");
       let j = null, fails = 0;
       for (let i = 0; i < 90 && !j; i++) {
         await new Promise(res => setTimeout(res, 2000));
@@ -1172,7 +1172,7 @@ function shrinkImage(file) {
     img.src = url;
   });
 }
-// .ics (Google, Яндекс, Apple Календарь): повторяющиеся по неделям — в занятия, остальное — в события
+// .ics (Google, Яндекс, Apple Календарь): повторяющиеся по неделям - в занятия, остальное - в события
 function parseICS(txt) {
   const out = { lessons: [], events: [], deadlines: [] }, today = now().today;
   const lines = txt.replace(/\r?\n[ \t]/g, "").split(/\r?\n/);
@@ -1247,7 +1247,7 @@ function importPreview(f) {
           if (k === "d") S.tasks.push({ id: C.uid("t"), title: x.title, subject: x.subject, kind: "ege", sessions: 1, done: 0, due: x.date, dueTime: x.time || null, created: n.today, src: "import" });
         }
         const c = t => pick.filter(p => p.k === t).length;
-        C.pushChat(S, "assistant", `Добавила из расписания: ${[c("l") && `регулярные занятия — ${c("l")}`, c("e") && `вебинары по датам — ${c("e")}`, c("d") && `дедлайны — ${c("d")}`].filter(Boolean).join(", ")}. План под это уже перестроила ✨`);
+        C.pushChat(S, "assistant", `Добавила из расписания: ${[c("l") && `регулярные занятия - ${c("l")}`, c("e") && `вебинары по датам - ${c("e")}`, c("d") && `дедлайны - ${c("d")}`].filter(Boolean).join(", ")}. План под это уже перестроила ✨`);
       });
     },
   });
@@ -1286,9 +1286,9 @@ function renderCalendar(n) {
     <p class="small muted" style="margin:0">Пробники, олимпиады, сочинение, ЕГЭ. Козя заранее добавит подготовку в план, а в сам день освободит время.</p>
     <div class="calhead"><button class="iconbtn" data-cal-move="-1" type="button" aria-label="Прошлый месяц">‹</button><b>${MONTHS[m - 1]} ${y}</b><button class="iconbtn" data-cal-move="1" type="button" aria-label="Следующий месяц">›</button></div>
     <div class="calgrid">${C.DAYS.map(d => `<span class="wdn">${d}</span>`).join("")}${cells}</div>
-    <div class="small muted"><i class="dl" style="display:inline-block;vertical-align:middle"></i> — дедлайн задачи</div></div>
+    <div class="small muted"><i class="dl" style="display:inline-block;vertical-align:middle"></i> - дедлайн задачи</div></div>
   <div class="card"><div class="cardhead"><h2>Скоро</h2><span class="small muted">${up.length}</span></div>${up.length ? `<div class="list">${up.map(row).join("")}</div>` : `<p class="empty">Пока ничего. Добавь ближайший пробник или олимпиаду.</p>`}</div>
-  ${past.length ? `<div class="card"><div class="cardhead"><h2>Прошли</h2><span class="small muted">${past.length}</span></div><p class="small muted" style="margin:0">Впиши баллы — потом покажу, как растут результаты.</p><div class="list">${past.map(row).join("")}</div></div>` : ""}`;
+  ${past.length ? `<div class="card"><div class="cardhead"><h2>Прошли</h2><span class="small muted">${past.length}</span></div><p class="small muted" style="margin:0">Впиши баллы - потом покажу, как растут результаты.</p><div class="list">${past.map(row).join("")}</div></div>` : ""}`;
 }
 function examDialog(e, preset = {}) {
   const n = now(), isNew = !e;
@@ -1355,11 +1355,11 @@ function matsHTML(ref) {
 function materialsCard() {
   const list = [...(S.materials || [])].sort((a, b) => (a.subject || "").localeCompare(b.subject || "") || b.created.localeCompare(a.created));
   return `<div class="card"><div class="cardhead"><h2>Материалы</h2><button class="btn sm" data-act="new-mat" type="button">${icon("i-plus")}Добавить</button></div>
-    ${list.length ? `<div class="list">${list.map(m => matRow(m)).join("")}</div>` : `<p class="empty">Ссылки на вебинары и разборы, фото конспектов, PDF с теорией — всё в одном месте. Можно прикрепить к теме, задаче или занятию.</p>`}</div>`;
+    ${list.length ? `<div class="list">${list.map(m => matRow(m)).join("")}</div>` : `<p class="empty">Ссылки на вебинары и разборы, фото конспектов, PDF с теорией - всё в одном месте. Можно прикрепить к теме, задаче или занятию.</p>`}</div>`;
 }
 function materialDialog(preset = {}) {
   const n = now(), r = preset.ref;
-  const opts = [["", "Ни к чему — просто по предмету"],
+  const opts = [["", "Ни к чему - просто по предмету"],
     ...S.topics.map(t => [`topic|${t.id}`, `Тема: ${t.title}`]),
     ...S.tasks.filter(t => t.done < t.sessions).map(t => [`task|${t.id}`, `Задача: ${t.title}`]),
     ...S.lessons.map(l => [`lesson|${l.id}`, `Занятие: ${l.title}`]),
@@ -1409,7 +1409,7 @@ async function saveMaterial() {
 }
 async function deleteMaterial(id) {
   const m = (S.materials || []).find(x => x.id === id); if (!m) return;
-  openDialog("Удалить материал?", `<p style="margin:0">«${esc(m.title)}» исчезнет из плана${m.kind === "file" ? ", а файл — с сервера" : ""}.</p>`, {
+  openDialog("Удалить материал?", `<p style="margin:0">«${esc(m.title)}» исчезнет из плана${m.kind === "file" ? ", а файл - с сервера" : ""}.</p>`, {
     submitLabel: "Удалить",
     submit: () => {
       if (m.kind === "file") fetch(`/api/files?u=${encodeURIComponent(U)}&id=${m.file.id}`, { method: "DELETE" }).catch(() => {});
@@ -1463,7 +1463,7 @@ function bestStreak(today) {
     if (got.length > before) {
       const o = got.at(-1);
       if (!l.outfitPicked) l.outfit = o[0];
-      setTimeout(() => { flash(`${o[2]} Новая награда за ${o[3]} ${word(o[3], "день", "дня", "дней")} подряд — ${o[1].toLowerCase()}!`); setTimeout(() => flash(""), 4000); }, 300);
+      setTimeout(() => { flash(`${o[2]} Новая награда за ${o[3]} ${word(o[3], "день", "дня", "дней")} подряд - ${o[1].toLowerCase()}!`); setTimeout(() => flash(""), 4000); }, 300);
     }
     save();
   }
@@ -1508,10 +1508,10 @@ function renderBuddy(n) {
   return `<div class="card"><h2>Кто тебе помогает</h2><div class="chars">${chars}</div>
     <label class="field"><span>Как зовут помощника</span><input type="text" id="buddy-name" maxlength="20" value="${esc(l.name || "")}" placeholder="${esc(CHARS[l.char || "kozya"].name)}"></label></div>
   <div class="card"><div class="cardhead"><h2>Награды за серию</h2><span class="small muted">${cur ? `сейчас ${cur} ${word(cur, "день", "дня", "дней")} подряд` : "серии пока нет"}</span></div>
-    <div class="rewards">${OUTFITS.map(([k, t, em, d]) => { const open = best >= d, on = l.outfit === k; return `<button type="button" class="rw${open ? "" : " off"}${on ? " on" : ""}" ${open ? `data-outfit-set="${k}"` : "disabled"} aria-pressed="${on}" aria-label="${t}, ${d} ${word(d, "день", "дня", "дней")}${open ? "" : " — пока закрыто"}"><span>${em}</span><small>${d} ${word(d, "день", "дня", "дней")}</small></button>`; }).join("")}</div>
-    ${next ? `<div class="progress"><i style="width:${Math.round(Math.min(1, best / next[3]) * 100)}%;background:var(--accent)"></i></div><p class="small muted" style="margin:0">Ещё ${next[3] - best} ${word(next[3] - best, "день", "дня", "дней")} до ${next[2]} — ${esc(helperName())} получит ${next[1].toLowerCase()}. Награды — это наряды: нажми на открытую, чтобы надеть.</p>` : `<p class="small muted" style="margin:0">Все награды открыты 🏆</p>`}
+    <div class="rewards">${OUTFITS.map(([k, t, em, d]) => { const open = best >= d, on = l.outfit === k; return `<button type="button" class="rw${open ? "" : " off"}${on ? " on" : ""}" ${open ? `data-outfit-set="${k}"` : "disabled"} aria-pressed="${on}" aria-label="${t}, ${d} ${word(d, "день", "дня", "дней")}${open ? "" : " - пока закрыто"}"><span>${em}</span><small>${d} ${word(d, "день", "дня", "дней")}</small></button>`; }).join("")}</div>
+    ${next ? `<div class="progress"><i style="width:${Math.round(Math.min(1, best / next[3]) * 100)}%;background:var(--accent)"></i></div><p class="small muted" style="margin:0">Ещё ${next[3] - best} ${word(next[3] - best, "день", "дня", "дней")} до ${next[2]} - ${esc(helperName())} получит ${next[1].toLowerCase()}. Награды - это наряды: нажми на открытую, чтобы надеть.</p>` : `<p class="small muted" style="margin:0">Все награды открыты 🏆</p>`}
     ${l.outfit ? `<button class="btn sm" data-outfit-set="" type="button" style="align-self:flex-start">Снять наряд</button>` : ""}
-    <p class="small muted" style="margin:0">Серия — дни подряд, когда сделан хотя бы один блок. Выходные её не рвут. Награды остаются навсегда.</p></div>`;
+    <p class="small muted" style="margin:0">Серия - дни подряд, когда сделан хотя бы один блок. Выходные её не рвут. Награды остаются навсегда.</p></div>`;
 }
 function charPic(k) { const save0 = look().char; look().char = k; const s = dressUp(mascot("happy", CHARS[k].name).replace("<svg ", '<svg width="64" height="64" '), "happy"); look().char = save0; return s; }
 function nameDialog() {
@@ -1521,7 +1521,7 @@ function nameDialog() {
 }
 function subjDialog() {
   const rows = S.subjects.map((s, i) => `<div class="grid3 subjrow"><b>${esc(s.name)}</b><label class="field"><span>Сейчас</span><input type="number" min="0" max="100" id="f-cur-${i}" value="${esc(s.current ?? "")}"></label><label class="field"><span>Цель</span><input type="number" min="0" max="100" id="f-tgt-${i}" value="${esc(s.target ?? "")}"></label><label class="small" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="f-del-${i}"> убрать</label></div>`).join("");
-  openDialog("Предметы и цели", `<p class="small muted" style="margin:0">Баллы — из пробника или примерно, как чувствуешь.</p>${rows}
+  openDialog("Предметы и цели", `<p class="small muted" style="margin:0">Баллы - из пробника или примерно, как чувствуешь.</p>${rows}
     <label class="field"><span>Добавить предмет</span><input type="text" id="f-new" maxlength="40" placeholder="Например, Биология"></label>`, {
     submit: () => change(() => {
       const num = v => v === "" ? null : Math.max(0, Math.min(100, Number(v)));
@@ -1533,8 +1533,8 @@ function subjDialog() {
 function passDialog() {
   const has = !!S.email;
   openDialog(has ? "Сменить пароль" : "Почта и пароль", `
-    ${has ? `<label class="field"><span>Старый пароль</span><input type="password" id="f-old" autocomplete="current-password"></label>` : `<p class="small muted" style="margin:0">Тогда план можно открыть с любого телефона по почте и паролю — ссылка больше не понадобится.</p><label class="field"><span>Почта</span><input type="email" id="f-email" autocomplete="email" inputmode="email"></label>`}
-    <label class="field"><span>${has ? "Новый пароль" : "Пароль"} — минимум 8 символов</span><input type="password" id="f-pass" autocomplete="new-password"></label>
+    ${has ? `<label class="field"><span>Старый пароль</span><input type="password" id="f-old" autocomplete="current-password"></label>` : `<p class="small muted" style="margin:0">Тогда план можно открыть с любого телефона по почте и паролю - ссылка больше не понадобится.</p><label class="field"><span>Почта</span><input type="email" id="f-email" autocomplete="email" inputmode="email"></label>`}
+    <label class="field"><span>${has ? "Новый пароль" : "Пароль"} - минимум 8 символов</span><input type="password" id="f-pass" autocomplete="new-password"></label>
     <span class="small" id="f-pass-status" style="color:var(--warn)" hidden></span>`, {
     submitLabel: has ? "Сменить" : "Привязать",
     submit: () => { (async () => {
@@ -1606,7 +1606,7 @@ function egeCheck(c, input) {
   if (c.kind === "judg" || c.kind === "odd") { const d = [...new Set(v.replace(/\D/g, ""))].sort().join(""); return d === [...c.answer].sort().join(""); }
   if (c.kind === "match" || c.kind === "order") return v.replace(/\D/g, "") === c.answer;
   if (c.kind === "term") { const x = egeNorm(v); return (c.accept || [c.answer]).some(a => { const y = egeNorm(a); return x === y || (y.length > 3 && x.includes(y)); }); }
-  return null; // open — сверяет сама
+  return null; // open - сверяет сама
 }
 function egeAnswer(input) {
   const q = ege, c = q.cards[q.i];
@@ -1636,7 +1636,7 @@ function renderEge() {
     const n = q.results.length, r = q.right, mood = "happy";
     return `<div class="card egedone"><div class="mascot" style="width:140px;align-self:center">${mascot(mood)}</div>
       <h2 style="text-align:center">${r} из ${n} верно</h2>
-      <p class="small muted" style="margin:0;text-align:center">${r === n ? "Идеально! Эти карточки вернутся позже, чтобы не забылись." : "Ошибки — не страшно: эти карточки вернутся завтра, а верные — через несколько дней."}</p>
+      <p class="small muted" style="margin:0;text-align:center">${r === n ? "Идеально! Эти карточки вернутся позже, чтобы не забылись." : "Ошибки - не страшно: эти карточки вернутся завтра, а верные - через несколько дней."}</p>
       <div class="egedots">${q.results.map(x => `<i class="${x ? "ok" : "bad"}"></i>`).join("")}</div>
       <button class="btn primary" data-act="ege-again" type="button" style="justify-content:center">Ещё 10 карточек</button>
       <button class="btn" data-back="" type="button" style="justify-content:center">Готово</button></div>`;
@@ -1649,7 +1649,7 @@ function renderEge() {
   let foot = "";
   if (q.phase === "ask") {
     foot = `<form class="egeform" data-ege-form>
-      <label class="field"><span>${c.kind === "match" ? "Ответ — цифры по порядку букв А, Б, В…" : c.kind === "order" ? "Ответ — цифры в нужном порядке (нажимай на события по очереди)" : digits && c.options ? "Ответ — цифры (можно нажимать на варианты)" : digits ? "Ответ — цифры" : c.kind === "open" ? "Твой ответ (можно кратко)" : "Твой ответ"}</span>
+      <label class="field"><span>${c.kind === "match" ? "Ответ - цифры по порядку букв А, Б, В…" : c.kind === "order" ? "Ответ - цифры в нужном порядке (нажимай на события по очереди)" : digits && c.options ? "Ответ - цифры (можно нажимать на варианты)" : digits ? "Ответ - цифры" : c.kind === "open" ? "Твой ответ (можно кратко)" : "Твой ответ"}</span>
       ${c.kind === "open" ? `<textarea id="ege-in" rows="3" maxlength="600"></textarea>` : `<input id="ege-in" type="text" autocomplete="off" ${digits ? 'inputmode="numeric"' : ""} maxlength="200" value="${esc(q.given || "")}">`}</label>
       <div class="row"><button class="btn primary" type="submit">${c.kind === "open" ? "Показать ответ" : "Проверить"}</button><button class="btn" data-act="ege-dunno" type="button">Не знаю</button></div></form>`;
   } else if (q.phase === "self") {
@@ -1675,10 +1675,10 @@ function egeCardHTML(n) {
     if (!base) { egeLoad(sub).then(() => { if (view === "topics") render(); }); return `<div class="egesub"><b>${esc(sub)}</b><span class="small muted">загружаю…</span></div>`; }
     const s = egeStats(base, n.today);
     return `<div class="egesub"><div class="cardhead"><b>${esc(sub)}</b><span class="small muted">изучено ${s.seen} из ${s.total}${s.due ? ` · повторить ${s.due}` : ""}</span></div>
-      <div class="egeblocks">${base.blocks.map(b => { const x = s.by[b] || { total: 0, seen: 0, right: 0, tries: 0 }; const pct = x.tries ? Math.round(x.right / x.tries * 100) : null; return `<div class="egeblk"><span>${esc(b)}</span><div class="progress"><i style="width:${x.total ? Math.round(x.seen / x.total * 100) : 0}%;background:${pct == null ? "var(--line2)" : pct >= 75 ? "var(--ok)" : pct >= 50 ? "var(--warn)" : "var(--accent)"}"></i></div><small>${pct == null ? "—" : pct + "%"}</small></div>`; }).join("")}</div>
+      <div class="egeblocks">${base.blocks.map(b => { const x = s.by[b] || { total: 0, seen: 0, right: 0, tries: 0 }; const pct = x.tries ? Math.round(x.right / x.tries * 100) : null; return `<div class="egeblk"><span>${esc(b)}</span><div class="progress"><i style="width:${x.total ? Math.round(x.seen / x.total * 100) : 0}%;background:${pct == null ? "var(--line2)" : pct >= 75 ? "var(--ok)" : pct >= 50 ? "var(--warn)" : "var(--accent)"}"></i></div><small>${pct == null ? "-" : pct + "%"}</small></div>`; }).join("")}</div>
       <button class="btn primary" data-ege-start="${esc(sub)}" type="button" style="justify-content:center">${s.due ? `Повторить и выучить новое · 10` : "Тренировка · 10 карточек"}</button></div>`;
   }).join("");
-  return `<div class="card"><div class="cardhead"><h2>Тренажёр ЕГЭ</h2></div><p class="small muted" style="margin:0">Карточки по всем темам кодификатора, в формате заданий экзамена. Полоска — сколько изучено, процент — сколько верных.</p>${parts}</div>`;
+  return `<div class="card"><div class="cardhead"><h2>Тренажёр ЕГЭ</h2></div><p class="small muted" style="margin:0">Карточки по всем темам кодификатора, в формате заданий экзамена. Полоска - сколько изучено, процент - сколько верных.</p>${parts}</div>`;
 }
 
 function dayDialog(date) {
@@ -1778,7 +1778,7 @@ document.addEventListener("click", e => {
       }); return;
     }
     case "micro-no": change(() => { S.tired[n.today].rest = true; say("user", S.tired[n.today].micro ? "Всё, отдыхаю" : "Не сегодня"); say("assistant", "Отдыхай 🫶 Всё несделанное я перенесла на ближайшие дни, ничего не потеряется."); }); return;
-    case "lighten": change(() => { S.capFactor = 0.75; (S.lightenAsked ||= {})[n.today] = true; say("assistant", "Готово: облегчила план на четверть. Если станет легче — верну обычную нагрузку в разделе «Расписание»."); }); return;
+    case "lighten": change(() => { S.capFactor = 0.75; (S.lightenAsked ||= {})[n.today] = true; say("assistant", "Готово: облегчила план на четверть. Если станет легче - верну обычную нагрузку в разделе «Расписание»."); }); return;
     case "nolighten": change(() => { (S.lightenAsked ||= {})[n.today] = true; }); return;
     case "unlighten": change(() => { S.capFactor = 1; }); return;
   }
@@ -1799,7 +1799,7 @@ document.addEventListener("submit", async e => {
     const titles = $("#topic-titles").value.split("\n").map(s => s.trim()).filter(Boolean).slice(0, 30);
     if (!titles.length) return;
     const subj = $("#topic-subj").value;
-    change(() => { titles.forEach(t => C.addTopic(S, t, subj, n.today)); say("assistant", `Добавила ${titles.length} ${word(titles.length, "тему", "темы", "тем")} на повторение 📚 Первое — завтра.`); });
+    change(() => { titles.forEach(t => C.addTopic(S, t, subj, n.today)); say("assistant", `Добавила ${titles.length} ${word(titles.length, "тему", "темы", "тем")} на повторение 📚 Первое - завтра.`); });
     return;
   }
   if (e.target.matches("[data-ege-form]")) { e.preventDefault(); const v = (document.getElementById("ege-in")?.value || "").trim(); const c = ege.cards[ege.i]; if (!v && c.kind !== "open") return; egeAnswer(v); return; }
@@ -1829,7 +1829,7 @@ document.addEventListener("submit", async e => {
       setTimeout(() => { highlight = new Set(); render(); }, 4000);
     } catch {
       thinking = false; S.chat = S.chat.filter(m => !m.pending);
-      S.chat.push({ role: "assistant", text: "Нет связи. Проверь интернет и отправь ещё раз — текст я вернула в поле.", at: Date.now() });
+      S.chat.push({ role: "assistant", text: "Нет связи. Проверь интернет и отправь ещё раз - текст я вернула в поле.", at: Date.now() });
       input.value = msg; render();
     }
     (matchMedia("(min-width:1000px)").matches ? $("#msg-desk") : $("#msg-m"))?.focus();
@@ -1844,7 +1844,7 @@ function showMoved(to) {
   const link = `${to}/app?u=${encodeURIComponent(U)}`;
   $("#dock").hidden = true; document.querySelector(".top").hidden = false; flash("");
   $("#date").textContent = ""; $("#hello").textContent = "Козя переехала!";
-  $("#view").innerHTML = `<div class="hero"><div class="bubble">Теперь я живу по новому адресу — открываюсь без VPN. Весь твой план, темы и переписка уже там.</div><div class="mascot">${mascot("happy")}</div></div>
+  $("#view").innerHTML = `<div class="hero"><div class="bubble">Теперь я живу по новому адресу - открываюсь без VPN. Весь твой план, темы и переписка уже там.</div><div class="mascot">${mascot("happy")}</div></div>
     <div class="card"><a class="btn primary" style="justify-content:center;text-decoration:none" href="${esc(link)}">Открыть Козю на новом адресе</a>
     <p class="small muted" style="margin:0">Открой ссылку в Safari и поставь иконку заново: Поделиться → На экран «Домой». Старую иконку можно удалить.</p>
     <p class="small muted" style="margin:0;overflow-wrap:anywhere">${esc(link)}</p></div>`;

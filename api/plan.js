@@ -1,7 +1,7 @@
 import { redis, hasDb } from "./_redis.js";
 
-// POST — сохраняет анкету для плана (повторная отправка заменяет прошлую).
-// GET ?key=... — отдаёт все анкеты, только если ключ совпадает с ADMIN_KEY в настройках Vercel.
+// POST - сохраняет анкету для плана (повторная отправка заменяет прошлую).
+// GET ?key=... - отдаёт все анкеты, только если ключ совпадает с ADMIN_KEY в настройках Vercel.
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (!hasDb()) return res.status(503).json({ error: "База не подключена" });

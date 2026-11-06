@@ -2,7 +2,7 @@ import { hasDb } from "./_redis.js";
 import { validU, loadState, saveState, readBody } from "./_store.js";
 import { markSeen } from "./_limits.js";
 
-// GET ?u=... — план; PUT {u, state} — сохранить (с проверкой версии rev).
+// GET ?u=... - план; PUT {u, state} - сохранить (с проверкой версии rev).
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (process.env.MOVED_TO) return res.status(410).json({ error: "Козя переехала", movedTo: process.env.MOVED_TO.replace(/\/$/, "") });

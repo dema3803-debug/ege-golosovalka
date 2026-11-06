@@ -1,4 +1,4 @@
-// Выгрузка и загрузка всех данных — для переезда на другой сервер.
+// Выгрузка и загрузка всех данных - для переезда на другой сервер.
 import { redis } from "./_redis.js";
 
 const pairs = flat => { const o = {}; for (let i = 0; i + 1 < (flat || []).length; i += 2) o[flat[i]] = flat[i + 1]; return o; };
