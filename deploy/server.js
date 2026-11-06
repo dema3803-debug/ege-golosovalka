@@ -12,7 +12,7 @@ const TYPES = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json; charset=utf-8",
   ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".txt": "text/plain; charset=utf-8", ".webmanifest": "application/manifest+json",
 };
-const PAGES = { "/": "index.html", "/app": "app.html", "/plan": "plan.html", "/start": "plan.html", "/privacy": "privacy.html", "/stats": "stats.html", "/consent": "consent.html" };
+const PAGES = { "/poll": "index.html", "/app": "app.html", "/plan": "plan.html", "/start": "plan.html", "/privacy": "privacy.html", "/stats": "stats.html", "/consent": "consent.html" };
 const PUBLIC = new Set(["index.html", "app.html", "plan.html", "privacy.html", "stats.html", "consent.html", "core.js", "sw.js", "manifest.json"]);
 const handlers = new Map();
 
@@ -71,6 +71,7 @@ const server = http.createServer(async (req, res) => {
       }
       return await h(req, res);
     }
+    if (p === "/" || p === "/index.html") { res.statusCode = 302; res.setHeader("Location", "/app" + url.search); return res.end(); } // главный адрес ведёт в Козю (старый опрос - /poll)
     if (PAGES[p]) return sendFile(res, PAGES[p]);
     if (p.endsWith(".html") && PAGES["/" + p.slice(1, -5)]) { res.statusCode = 301; res.setHeader("Location", "/" + p.slice(1, -5) + url.search); return res.end(); }
     const rel = p.slice(1);
