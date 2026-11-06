@@ -89,7 +89,7 @@ export async function uploadImage(buf, mime = "image/jpeg") {
     Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="purpose"\r\n\r\ngeneral\r\n--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="schedule.${ext}"\r\nContent-Type: ${mime}\r\n\r\n`),
     buf, Buffer.from(`\r\n--${boundary}--\r\n`),
   ]);
-  let lastErr = null;
+  const errs = [];
   for (const base of BASES) {
     try {
       const r = await request(`${base}/api/v1/files`, {
@@ -97,8 +97,8 @@ export async function uploadImage(buf, mime = "image/jpeg") {
         body, extraCa: russianCerts(), timeout: 30000,
       });
       if (r.status === 200) return { base, id: JSON.parse(r.text).id };
-      lastErr = new Error(`${base}: HTTP ${r.status} ${r.text.slice(0, 200)}`);
-    } catch (e) { lastErr = new Error(`${base}: ${e.message}`); }
+      errs.push(`${base}: HTTP ${r.status} ${r.text.replace(/\s+/g, " ").slice(0, 300)}`);
+    } catch (e) { errs.push(`${base}: ${e.message}`); }
   }
-  throw lastErr;
+  throw new Error("загрузка картинки: " + errs.join(" | "));
 }
