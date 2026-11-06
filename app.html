@@ -1563,7 +1563,7 @@ function outfitSVG(id) {
     case "crown": return `<path d="M78 52 L78 30 L89 41 L100 24 L111 41 L122 30 L122 52 Z" fill="#F6C343" stroke="#C9921B" stroke-width="2.5" stroke-linejoin="round"/><circle cx="100" cy="44" r="3.5" fill="${P}"/>`;
     case "scarf": return `<path d="M62 140 Q100 158 138 140 L138 152 Q100 170 62 152 Z" fill="${P}"/><path d="M118 154 L128 184 L114 186 L108 158 Z" fill="#C3326F"/><path d="M72 147 L76 157 M90 151 L92 162 M110 151 L108 162" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>`;
     case "stars": { const st = (x, y, s) => `<path transform="translate(${x} ${y}) scale(${s})" d="M0 -10 L2.5 -2.5 L10 0 L2.5 2.5 L0 10 L-2.5 2.5 L-10 0 L-2.5 -2.5 Z" fill="#F6C343"/>`; return st(28, 52, 1.1) + st(172, 40, 1.3) + st(180, 132, .9) + st(22, 150, .8); }
-    case "pioneer": return `<path d="M86 128 L100 150 L114 128" fill="none" stroke="${P}" stroke-width="7" stroke-linejoin="round"/><circle cx="100" cy="158" r="12" fill="#F6C343" stroke="#C9921B" stroke-width="2.5"/><path transform="translate(100 158) scale(.75)" d="M0 -10 L2.9 -3.1 L9.5 -3.1 L4.2 1.5 L6.2 8.5 L0 4.4 L-6.2 8.5 L-4.2 1.5 L-9.5 -3.1 L-2.9 -3.1 Z" fill="#FFFFFF"/>`;
+    case "pioneer": return `<path d="M86 130 L97 158 M114 130 L103 158" stroke="${P}" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="164" r="9" fill="#F6C343" stroke="#C9921B" stroke-width="2"/><path transform="translate(100 164) scale(.55)" d="M0 -10 L2.9 -3.1 L9.5 -3.1 L4.2 1.5 L6.2 8.5 L0 4.4 L-6.2 8.5 L-4.2 1.5 L-9.5 -3.1 L-2.9 -3.1 Z" fill="#FFFFFF"/>`;
     case "friend": return `<path d="M158 100 Q170 80 172 58" fill="none" stroke="#6B5A63" stroke-width="2"/><path transform="translate(173 42) scale(1.7)" d="M0 9 C-13 0 -9 -11 0 -5 C9 -11 13 0 0 9 Z" fill="${P}" stroke="#B8325E" stroke-width="1.2"/><path d="M166 34 Q168 30 172 30" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>`;
     case "cap": return `<path d="M60 40 L100 26 L140 40 L100 54 Z" fill="#1B1620" stroke="#FFFFFF" stroke-width="1.5"/><path d="M80 46 L80 56 Q100 64 120 56 L120 46" fill="#1B1620"/><path d="M136 41 L138 66" stroke="#F6C343" stroke-width="3" stroke-linecap="round"/><circle cx="138" cy="68" r="4" fill="#F6C343"/>`;
   }
@@ -1573,7 +1573,7 @@ function dressUp(svg, mood) {
   const l = S?.look || {}, ch = CHARS[l.char] || CHARS.kozya;
   if (ch !== CHARS.kozya) svg = svg.replaceAll(INK, ch.ink).replaceAll(FACE, ch.face);
   const o = l.outfit && (OUTFITS.find(x => x[0] === l.outfit) || SPECIAL.find(x => x[0] === l.outfit && x[4]()));
-  if (o && !(o[0] === "glasses" && mood === "plead")) svg = svg.replace("<!--outfit-->", outfitSVG(o[0]));
+  if (o && !(o[0] === "glasses" && mood === "plead") && !(o[0] === "pioneer" && (mood === "focus" || mood === "plead"))) svg = o[0] === "pioneer" ? svg.replace(/(<ellipse cx="100" cy="160"[^>]*\/>)/, "$1" + outfitSVG(o[0])) : svg.replace("<!--outfit-->", outfitSVG(o[0])); // медаль висит на шее: под головой, поверх животика
   return svg;
 }
 function bestStreak(today) {
