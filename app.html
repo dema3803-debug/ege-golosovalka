@@ -364,6 +364,7 @@ i.dl{width:6px;height:6px;border-radius:50%;background:var(--warn)}
 .egeblocks{display:flex;flex-direction:column;gap:6px}
 .egeblk{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 38px;gap:8px;align-items:center;font-size:14px}.egeblk small{text-align:right;font-weight:700;color:var(--muted)}
 .genderask{gap:8px;border:2px solid var(--accent-line)}
+.movedays{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.movedays .btn{justify-content:center}
 </style>
 </head>
 <body>
@@ -1017,6 +1018,22 @@ dlgform.addEventListener("click", e => {
 });
 const val = id => dlgform.querySelector("#" + id)?.value?.trim() ?? "";
 
+function moveDialog(id) {
+  const t = S.tasks.find(x => x.id === id); if (!t) return;
+  const n = now(), days = Array.from({ length: 7 }, (_, i) => C.addDays(n.today, i));
+  openDialog("На какой день перенести?", `<p class="small muted" style="margin:0">«${esc(t.title)}»${t.due ? ` · срок ${C.humanDate(t.due)}` : ""}</p>
+    <div class="movedays">${days.map(d => `<button type="button" class="btn${t.on === d ? " primary" : ""}" data-move-day="${d}">${d === n.today ? "Сегодня" : d === C.addDays(n.today, 1) ? "Завтра" : C.DAYS[C.weekday(d)] + ", " + C.humanDate(d)}</button>`).join("")}</div>
+    <label class="field"><span>Или другая дата</span><input type="date" id="f-moveday" value="${esc(t.on || "")}"></label>
+    ${t.on ? `<button type="button" class="btn sm" data-move-day="" style="align-self:flex-start">Пусть Козя решает сама</button>` : ""}`, {
+    submit: () => { const d = val("f-moveday"); if (!d) return false; setOn(id, d); },
+  });
+  dlgform.querySelectorAll("[data-move-day]").forEach(b => b.addEventListener("click", () => { dlg.close(); setOn(id, b.dataset.moveDay); }));
+}
+function setOn(id, d) {
+  change(() => { const x = S.tasks.find(y => y.id === id); x.on = d || null; if (d) x.pin = null; });
+  const t = S.tasks.find(y => y.id === id);
+  flash(d ? `Перенесла «${t.title}» на ${d === now().today ? "сегодня" : C.humanDate(d)}${t.due && d > t.due ? " — это позже срока!" : ""}` : "Хорошо, сама подберу день"); setTimeout(() => flash(""), 3000);
+}
 function taskDialog(t, preset = {}) {
   const n = now();
   const isNew = !t;
@@ -1027,7 +1044,7 @@ function taskDialog(t, preset = {}) {
       <label class="field"><span>Сколько сессий по ${S.sessionMin} мин</span><input type="number" id="f-sess" min="1" max="20" value="${t.sessions}"></label></div>
     <div class="grid2"><label class="field"><span>Срок (необязательно)</span><input type="date" id="f-due" value="${esc(t.due || "")}"></label>
       <label class="field"><span>До скольки</span><input type="time" id="f-duetime" value="${esc(t.dueTime || "")}"></label></div>
-    <div class="field"><span>Сделать в конкретное время (необязательно)</span><div class="grid2"><input type="date" id="f-pindate" aria-label="День" value="${esc(t.pin?.date || "")}"><input type="time" id="f-pinfrom" aria-label="Начало" value="${esc(t.pin?.from || "")}"></div></div>
+    <div class="field"><span>Когда делать (необязательно) — день, время можно не указывать</span><div class="grid2"><input type="date" id="f-pindate" aria-label="День" value="${esc(t.pin?.date || t.on || "")}"><input type="time" id="f-pinfrom" aria-label="Начало" value="${esc(t.pin?.from || "")}"></div></div>
     ${!isNew ? `<div class="small muted">Сделано ${t.done} из ${t.sessions}</div>` : ""}${isNew ? "" : matsHTML({ t: "task", id: t.id })}`, {
     submit: () => {
       const title = val("f-title"); if (!title) return false;
@@ -1035,13 +1052,14 @@ function taskDialog(t, preset = {}) {
       const pd = val("f-pindate"), pf = val("f-pinfrom");
       change(() => {
         const target = isNew ? { id: C.uid("t"), done: 0, created: n.today } : S.tasks.find(x => x.id === t.id);
-        Object.assign(target, { title, subject: val("f-subj"), sessions: Math.max(sessions, target.done || 0), due: val("f-due") || null, dueTime: val("f-duetime") || null, kind: "other", pin: pd && pf ? { date: pd, from: pf } : null });
+        Object.assign(target, { title, subject: val("f-subj"), sessions: Math.max(sessions, target.done || 0), due: val("f-due") || null, dueTime: val("f-duetime") || null, kind: "other", pin: pd && pf ? { date: pd, from: pf } : null, on: pd && !pf ? pd : null });
         if (isNew) S.tasks.push(target);
       });
     },
     actions: isNew ? {} : {
       attach: { label: "📎", run: () => setTimeout(() => materialDialog({ ref: { t: "task", id: t.id }, subject: t.subject }), 0) },
-      skip: { label: "Не сегодня", run: () => change(() => { const x = S.tasks.find(y => y.id === t.id); (x.skip ||= []).push(n.today); if (x.pin?.date === n.today) x.pin = null; }) },
+      move: { label: "📅 На другой день", run: () => setTimeout(() => moveDialog(t.id), 0) },
+      skip: { label: "Не сегодня", run: () => change(() => { const x = S.tasks.find(y => y.id === t.id); (x.skip ||= []).push(n.today); if (x.pin?.date === n.today) x.pin = null; if (x.on === n.today) x.on = null; }) },
       done: { label: "Готово целиком", run: () => change(() => { const x = S.tasks.find(y => y.id === t.id); x.done = x.sessions; x.doneAt = n.today; }) },
       del: { label: "Удалить", cls: "danger", run: () => change(() => { S.tasks = S.tasks.filter(y => y.id !== t.id); }) },
     },

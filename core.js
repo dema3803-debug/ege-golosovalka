@@ -145,14 +145,22 @@ export function buildPlan(state, today, nDays = 7, nowMin = null) {
           for (let k = 0; k < (h.sessions || 1); k++) queue.push({ type: "habit", len: S, title: h.title, subject: h.subject, ref: h.id });
         }
         // 3) задачи по срочности
-        const active = state.tasks.filter(t => remaining[t.id] > 0 && !(t.skip || []).includes(date) && !(t.pin && t.pin.date > date))
+        const active = state.tasks.filter(t => remaining[t.id] > 0 && !(t.skip || []).includes(date) && !(t.pin && t.pin.date > date) && !(t.on && t.on > date))
           .map(t => ({ t, due: t.due || addDays(date, 14) }))
           .sort((a, b) => a.due.localeCompare(b.due) || (a.t.created || "").localeCompare(b.t.created || ""));
         for (const { t, due } of active) {
           const overdue = due < date;
           const must = due <= date;
-          const quota = must ? remaining[t.id] : Math.ceil(remaining[t.id] / workDaysLeft(state, date, due));
-          for (let k = 0; k < quota; k++) queue.push({ type: "task", len: S, title: t.title, subject: t.subject, ref: t.id, due: t.due, dueTime: t.dueTime, overdue, must });
+          const planned = t.on === date; // она сама выбрала этот день
+          let quota;
+          if (must || planned) quota = remaining[t.id];
+          else if (!t.due) quota = Math.ceil(remaining[t.id] / workDaysLeft(state, date, due));
+          else {
+            // распределяем по неделе: заканчиваем за день до срока и не начинаем слишком рано
+            const eff = Math.max(1, workDaysLeft(state, date, due) - 1);
+            quota = eff > remaining[t.id] + 1 ? 0 : Math.ceil(remaining[t.id] / eff);
+          }
+          for (let k = 0; k < quota; k++) queue.push({ type: "task", len: S, title: t.title, subject: t.subject, ref: t.id, due: t.due, dueTime: t.dueTime, overdue, must: must || planned });
         }
 
         // раскладка по свободным окнам
