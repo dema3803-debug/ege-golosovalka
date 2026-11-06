@@ -1639,7 +1639,7 @@ function renderBuddy(n) {
     <div class="rewards">${OUTFITS.map(([k, t, em, d]) => { const open = best >= d, on = l.outfit === k; return `<button type="button" class="rw${open ? "" : " off"}${on ? " on" : ""}" ${open ? `data-outfit-set="${k}"` : "disabled"} aria-pressed="${on}" aria-label="${t}, ${d} ${word(d, "день", "дня", "дней")}${open ? "" : " - пока закрыто"}"><span>${em}</span><small>${d} ${word(d, "день", "дня", "дней")}</small></button>`; }).join("")}</div>
     ${next ? `<div class="progress"><i style="width:${Math.round(Math.min(1, best / next[3]) * 100)}%;background:var(--accent)"></i></div><p class="small muted" style="margin:0">Ещё ${next[3] - best} ${word(next[3] - best, "день", "дня", "дней")} до ${next[2]} - ${esc(helperName())} получит ${next[1].toLowerCase()}. Награды - это наряды: нажми на открытую, чтобы надеть.</p>` : `<p class="small muted" style="margin:0">Все награды открыты 🏆</p>`}
     ${l.outfit ? `<button class="btn sm" data-outfit-set="" type="button" style="align-self:flex-start">Снять наряд</button>` : ""}
-    <p class="small muted" style="margin:0">Серия - дни подряд, когда сделан хотя бы один блок. Выходные её не рвут. Награды остаются навсегда.</p></div>`;
+    <p class="small muted" style="margin:0">Серия - дни подряд, когда сделан хотя бы один блок. Выходные не прерывают серию. Награды остаются навсегда.</p></div>`;
 }
 function charPic(k) { const save0 = look().char; look().char = k; const s = dressUp(mascot("happy", CHARS[k].name).replace("<svg ", '<svg width="64" height="64" '), "happy"); look().char = save0; return s; }
 function nameDialog() {
