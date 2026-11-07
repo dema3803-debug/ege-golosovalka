@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     if (!mailReady()) return res.status(503).json({ error: "Восстановление по почте пока не настроено. Напиши на kozya9828@gmail.com - поможем." });
     const email = normEmail(b.email);
     if (!validEmail(email)) return res.status(400).json({ error: "Проверь почту - похоже, в ней опечатка." });
-    if (await overLimit(`lim:reset:${ip}`, 10, 3600) || await overLimit(`lim:reset:${email}`, 3, 3600)) return res.status(429).json({ error: "Письмо уже отправлено. Проверь «Входящие» и «Спам» или попробуй через час." });
+    if (await overLimit(`lim:reset:${ip}`, 10, 3600) || await overLimit(`lim:reset:${email}`, 3, 3600)) return res.status(429).json({ error: "Слишком много попыток. Проверь «Входящие» и «Спам» - письмо может уже лежать там. Новую ссылку можно запросить через час." });
     const raw = await redis("HGET", "users", email);
     if (raw) {
       const token = crypto.randomBytes(24).toString("hex");
@@ -33,7 +33,12 @@ export default async function handler(req, res) {
       const text = `Привет!\n\nКто-то (надеюсь, ты) попросил сменить пароль в Козе для этой почты.\n\nЧтобы придумать новый пароль, открой ссылку:\n${link}\n\nСсылка работает 1 час. Если это был не ты, просто ничего не делай: пароль останется прежним.\n\nКозя 🐐\nkozya-ege.ru`;
       const html = `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.5;color:#1B1620;max-width:480px"><p>Привет!</p><p>Кто-то (надеюсь, ты) попросил сменить пароль в Козе для этой почты.</p><p><a href="${link}" style="display:inline-block;background:#1B1620;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold">Придумать новый пароль</a></p><p style="color:#6B5A63;font-size:14px">Ссылка работает 1 час. Если это был не ты, просто ничего не делай: пароль останется прежним.</p><p>Козя 🐐<br><a href="${SITE()}" style="color:#B8325E">kozya-ege.ru</a></p></div>`;
       try { await sendMail({ to: email, subject: "Козя: новый пароль", text, html }); }
-      catch (e) { console.error("reset: письмо не ушло:", e.message); return res.status(502).json({ error: "Не получилось отправить письмо. Попробуй через пару минут." }); }
+      catch (e) {
+        console.error("reset: письмо не ушло:", e.message);
+        // неудачная отправка не должна съедать лимит: вернём попытку
+        try { await redis("DECR", `lim:reset:${email}`); await redis("DECR", `lim:reset:${ip}`); await redis("DEL", `reset:${token}`); } catch {}
+        return res.status(502).json({ error: "Не получилось отправить письмо. Попробуй через пару минут." });
+      }
     }
     return res.status(200).json({ ok: true });
   }
