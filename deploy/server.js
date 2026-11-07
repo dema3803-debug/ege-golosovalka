@@ -73,7 +73,7 @@ const server = http.createServer(async (req, res) => {
       return await h(req, res);
     }
     if (p === "/" || p === "/index.html") { // главная - страница о Козе для новых людей и поисковиков; ссылки с параметрами (?u=, ?ref=) по-прежнему ведут в приложение
-  if (url.search && !/^\?home\b/.test(url.search)) { res.statusCode = 302; res.setHeader("Location", "/app" + url.search); return res.end(); }
+  if (url.searchParams.has("u")) { res.statusCode = 302; res.setHeader("Location", "/app" + url.search); return res.end(); }
   return sendFile(res, "landing.html");
 }
     if (PAGES[p]) return sendFile(res, PAGES[p]);
