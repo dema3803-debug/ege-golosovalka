@@ -363,6 +363,7 @@ export function applyActions(state, actions, today) {
         break;
       }
       case "add_lesson_once": {
+        a.from ??= a.time ?? a.start; a.to ??= a.end;
         // день недели («вт») считаем сами: модель путает числа
         const wdI = parseDay(a.day);
         if (wdI != null) { let d = today; for (let k = 0; k < 7 && weekday(d) !== wdI; k++) d = addDays(d, 1); a.date = d; }
@@ -374,6 +375,7 @@ export function applyActions(state, actions, today) {
         break;
       }
       case "add_lesson": {
+        a.from ??= a.time ?? a.start; a.to ??= a.end;
         const days = [...new Set((Array.isArray(a.days) ? a.days : [a.days]).map(parseDay).filter(x => x != null))].sort();
         if (!days.length || !isTime(a.from)) break;
         const to = isTime(a.to) && a.to > a.from ? a.to : toHHMM(Math.min(toMin(a.from) + 90, 1439));
