@@ -100,7 +100,7 @@ export function buildPlan(state, today, nDays = 7, nowMin = null) {
     const done = (state.log[date] || []).map(x => ({ ...x, type: "done", start: toMin(x.start), end: toMin(x.end) }));
     const tired = !!state.tired[date];
     const off = dayIsOff(state, date);
-    const blocks = timed.map(l => ({ type: "lesson", start: l.from, end: l.to, title: l.title, subject: l.subject, ref: l.id }));
+    const blocks = timed.map(l => ({ type: "lesson", start: l.from, end: l.to, title: l.title, subject: l.subject, ref: l.id, ...(l.kind === "exam" ? { kind: "exam", etype: l.type } : {}) }));
     blocks.push(...done.filter(d => d.start != null));
     const unplaced = [];
     let freeLeft = [];
