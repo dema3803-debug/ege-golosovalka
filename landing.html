@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Козя - бесплатный план подготовки к ЕГЭ под твоё расписание</title>
+<meta name="description" content="Козя составляет план подготовки к ЕГЭ под твоё расписание: раскладывает домашку и задачи по свободному времени, напоминает повторять темы, тренирует по карточкам. Бесплатно, работает в телефоне.">
+<link rel="canonical" href="https://kozya-ege.ru/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Козя">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:url" content="https://kozya-ege.ru/">
+<meta property="og:title" content="Козя - план подготовки к ЕГЭ, который подстраивается под тебя">
+<meta property="og:description" content="Раскладывает задачи по свободному времени, напоминает повторять темы и не ругает, когда нет сил. Бесплатно.">
+<meta property="og:image" content="https://kozya-ege.ru/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FBEFF3">
+<link rel="icon" type="image/png" href="/icons/favicon-64.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<script>try { if (localStorage.getItem("ege-u") && !/[?&]home\b/.test(location.search)) location.replace("/app"); } catch {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"WebApplication","name":"Козя","url":"https://kozya-ege.ru/","applicationCategory":"EducationalApplication","operatingSystem":"iOS, Android, Windows, macOS","inLanguage":"ru","description":"Планировщик подготовки к ЕГЭ: план под расписание школьника, интервальное повторение тем, карточки и тренажёр.","offers":{"@type":"Offer","price":"0","priceCurrency":"RUB"}},
+{"@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Это бесплатно?","acceptedAnswer":{"@type":"Answer","text":"Да. Козя бесплатная и без рекламы."}},
+{"@type":"Question","name":"Нужно ли что-то скачивать?","acceptedAnswer":{"@type":"Answer","text":"Нет. Козя работает в браузере телефона или компьютера. Если хочешь, её можно добавить на экран «Домой» - тогда она открывается как обычное приложение."}},
+{"@type":"Question","name":"Для каких предметов подходит?","acceptedAnswer":{"@type":"Answer","text":"План и повторение работают для любых предметов. Тренажёр с заданиями ЕГЭ сейчас есть по истории, обществознанию и русскому языку."}},
+{"@type":"Question","name":"Где хранятся мои данные?","acceptedAnswer":{"@type":"Answer","text":"На сервере в России. Мы не продаём данные и не ставим рекламные счётчики. Аккаунт и все данные можно удалить в настройках."}},
+{"@type":"Question","name":"Я уже хожу к репетитору или на курсы. Козя нужна?","acceptedAnswer":{"@type":"Answer","text":"Да, Козя как раз для этого: она учитывает занятия у репетитора и на курсах, а домашку и повторение раскладывает по оставшемуся времени."}}
+]}]}
+</script>
+<style>
+:root{--bg:#FBEFF3;--surface:#FFFFFF;--raised:#FDF5F8;--line:#F1DDE5;--ink:#1B1620;--muted:#6B5A63;--accent:#B8325E;--accent-soft:#FBE3EB;--primary:#1B1620;--primary-ink:#FFFFFF;--s1:#3A6EE8;--s2:#14825f;--s3:#C06A1B;--s4:#8A44C2;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 "Nunito","Segoe UI",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+header.top{padding-block:calc(14px + env(safe-area-inset-top,0px)) 6px}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:900;font-size:20px;color:var(--ink);text-decoration:none}
+.logo img{width:32px;height:32px;border-radius:9px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:999px;font:inherit;font-weight:800;text-decoration:none;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);white-space:nowrap}
+.btn.primary{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.btn.sm{min-height:40px;padding:0 16px;font-size:15px}
+.hero{padding-block:22px 40px}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:28px;align-items:center}
+.eyebrow{display:inline-block;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:14px;padding:6px 12px;border-radius:999px}
+h1{font-size:clamp(32px,5.4vw,52px);line-height:1.08;letter-spacing:-.02em;margin:14px 0 14px;font-weight:900;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.lead{font-size:19px;color:var(--muted);margin:0 0 22px;max-width:34em}
+.cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.note{font-size:14px;color:var(--muted);margin-top:12px}
+.shots{position:relative;display:flex;justify-content:center;gap:14px;min-width:0}
+.phone{width:min(46%,230px);aspect-ratio:390/700;border-radius:30px;overflow:hidden;border:6px solid var(--ink);background:var(--surface);box-shadow:0 18px 40px -18px rgba(27,22,32,.45);max-width:100%}
+.phone img{display:block;width:100%;height:auto}
+.phone.b{margin-top:38px}
+.kz{position:absolute;width:96px;left:-6px;bottom:-26px;filter:drop-shadow(0 6px 10px rgba(27,22,32,.15))}
+section{padding-block:34px}
+h2{font-size:clamp(25px,3.6vw,34px);line-height:1.15;margin:0 0 10px;font-weight:900;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 22px;max-width:40em}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{background:var(--surface);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card h3{margin:0;font-size:19px;line-height:1.25;font-weight:800}
+.card p{margin:0;color:var(--muted);font-size:16px}
+.ki{width:26px;height:26px;display:block}.gq{font-size:30px;line-height:1}.gq .ki{width:36px;height:36px}
+.ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:22px}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;counter-reset:s}
+.step{background:var(--surface);border-radius:22px;padding:20px;counter-increment:s;min-width:0}
+.step::before{content:counter(s);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--primary);color:var(--primary-ink);font-weight:900;margin-bottom:10px}
+.step b{display:block;font-size:18px;margin-bottom:4px}
+.step span{color:var(--muted);font-size:16px}
+.iv{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.iv span{background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:800;font-variant-numeric:tabular-nums}
+.iv span:first-child{background:var(--accent);border-color:var(--accent);color:#fff}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.quote{background:var(--accent-soft);border-radius:22px;padding:22px;display:flex;gap:14px;align-items:flex-start}
+.quote p{margin:0;font-size:18px;font-weight:700}
+.quote small{display:block;color:var(--muted);font-weight:600;margin-top:6px;font-size:14px}
+details{background:var(--surface);border-radius:18px;padding:16px 18px}
+details+details{margin-top:10px}
+summary{font-weight:800;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--accent);font-size:22px;line-height:1}
+details[open] summary::after{content:"−"}
+details p{margin:10px 0 0;color:var(--muted)}
+.final{background:var(--primary);color:var(--primary-ink);border-radius:28px;padding:30px 24px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
+.final h2{color:var(--primary-ink);margin:0}
+.final p{margin:6px 0 0;opacity:.8}
+.final .btn{background:#fff;color:var(--ink);border-color:#fff}
+footer{padding-block:28px calc(28px + env(safe-area-inset-bottom,0px));color:var(--muted);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between}
+footer nav{display:flex;flex-wrap:wrap;gap:8px 16px}
+@media (max-width:820px){
+  .hero .wrap{grid-template-columns:minmax(0,1fr)}
+  .grid,.steps,.split{grid-template-columns:minmax(0,1fr)}
+  .shots{margin-top:6px}
+}
+@media (max-width:420px){.btn{padding:0 18px}.lead{font-size:18px}.kz{width:76px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="logo" href="/"><img src="/icons/icon-192.png" alt="" width="32" height="32">Козя</a>
+  <a class="btn sm" href="/app#login">Войти</a>
+</div></header>
+
+<main>
+<section class="hero"><div class="wrap">
+  <div>
+    <span class="eyebrow">Бесплатно · для 10-11 класса</span>
+    <h1>План подготовки к ЕГЭ, который <em>подстраивается под тебя</em></h1>
+    <p class="lead">Козя раскладывает домашку, задачи и повторение тем по твоему свободному времени. Учитывает школу, репетиторов и пробники. Устал(а) - план станет легче, а не строже.</p>
+    <div class="cta"><a class="btn primary" href="/start">Собрать мой план</a><a class="btn" href="#kak">Как это работает</a></div>
+    <p class="note">2 минуты на анкету. Без рекламы. Работает в телефоне.</p>
+  </div>
+  <div class="shots" aria-hidden="true">
+    <div class="phone"><img src="/img/today.webp" alt="" width="390" height="700"></div>
+    <div class="phone b"><img src="/img/week.webp" alt="" width="390" height="700" loading="lazy"></div>
+    <svg class="kz" viewBox="0 0 200 196"><ellipse cx="100" cy="190" rx="52" ry="6" fill="#E9C3D1"/><rect x="60" y="126" width="80" height="58" rx="28" fill="#1B1620"/><ellipse cx="100" cy="160" rx="18" ry="13" fill="#F8D3DC"/><path d="M140 140 C158 128 164 112 160 100" fill="none" stroke="#1B1620" stroke-width="13" stroke-linecap="round"/><path d="M62 142 C50 150 48 162 54 170" fill="none" stroke="#1B1620" stroke-width="13" stroke-linecap="round"/><path d="M76 58 C66 38 66 20 74 6 C82 24 88 38 92 52 Z" fill="#1B1620"/><path d="M124 58 C134 38 134 20 126 6 C118 24 112 38 108 52 Z" fill="#1B1620"/><ellipse cx="44" cy="92" rx="25" ry="12" fill="#1B1620" transform="rotate(-14 44 92)"/><ellipse cx="47" cy="93" rx="15" ry="6" fill="#F8D3DC" transform="rotate(-14 47 93)"/><ellipse cx="156" cy="92" rx="25" ry="12" fill="#1B1620" transform="rotate(14 156 92)"/><ellipse cx="153" cy="93" rx="15" ry="6" fill="#F8D3DC" transform="rotate(14 153 93)"/><circle cx="100" cy="100" r="46" fill="#F8D3DC"/><ellipse cx="100" cy="72" rx="44" ry="24" fill="#FFFFFF"/><circle cx="62" cy="84" r="11" fill="#FFFFFF"/><circle cx="76" cy="90" r="11" fill="#FFFFFF"/><circle cx="91" cy="92" r="11" fill="#FFFFFF"/><circle cx="109" cy="92" r="11" fill="#FFFFFF"/><circle cx="124" cy="90" r="11" fill="#FFFFFF"/><circle cx="138" cy="84" r="11" fill="#FFFFFF"/><circle cx="68" cy="128" r="7" fill="#F29BB2"/><circle cx="132" cy="128" r="7" fill="#F29BB2"/><ellipse cx="84" cy="114" rx="11" ry="13" fill="#FFFFFF" stroke="#1B1620" stroke-width="2"/><ellipse cx="116" cy="114" rx="11" ry="13" fill="#FFFFFF" stroke="#1B1620" stroke-width="2"/><circle cx="85" cy="116" r="7" fill="#1B1620"/><circle cx="115" cy="116" r="7" fill="#1B1620"/><circle cx="87.5" cy="113" r="2.4" fill="#FFFFFF"/><circle cx="117.5" cy="113" r="2.4" fill="#FFFFFF"/><circle cx="96" cy="128" r="1.6" fill="#1B1620"/><circle cx="104" cy="128" r="1.6" fill="#1B1620"/><path d="M92 134 Q100 141 108 134" fill="none" stroke="#1B1620" stroke-width="2.5" stroke-linecap="round"/></svg>
+  </div>
+</div></section>
+
+<section id="kak"><div class="wrap">
+  <h2>Как составить план подготовки к ЕГЭ за 2 минуты</h2>
+  <p class="sub">Расписать подготовку на месяцы вперёд трудно, а держать всё в голове ещё труднее. Козя делает это за тебя и пересобирает план каждый день.</p>
+  <div class="steps">
+    <div class="step"><b>Ответь на вопросы</b><span>Какие предметы сдаёшь, сколько баллов сейчас и сколько хочешь, когда школа и репетиторы, сколько времени готов(а) заниматься.</span></div>
+    <div class="step"><b>Получи план на каждый день</b><span>Задачи разложены по свободным окнам: по 25 минут с перерывами. Видно, что делать сейчас и что дальше.</span></div>
+    <div class="step"><b>Меняй на ходу</b><span>Напиши Козе «завтра английского не будет, но зачёт по обществу», и она сама перестроит неделю.</span></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Всё для подготовки в одном месте</h2>
+  <p class="sub">Вместо заметок, скриншотов, чатов и календаря в телефоне.</p>
+  <div class="grid">
+    <div class="card"><div class="ic" data-ki="calendar">📅</div><h3>Расписание подготовки</h3><p>Школа, курсы, репетиторы и свободное время. Домашка и сроки встают в план сами.</p></div>
+    <div class="card"><div class="ic" data-ki="repeat">🔁</div><h3>Повторение тем</h3><p>Изучил(а) тему - Козя напомнит повторить её, пока она не забылась.</p></div>
+    <div class="card"><div class="ic" data-ki="pencil">📝</div><h3>Тренажёр ЕГЭ</h3><p>Задания в формате ЕГЭ по истории, обществознанию и русскому языку.</p></div>
+    <div class="card"><div class="ic" data-ki="puzzle">🃏</div><h3>Карточки и игры</h3><p>Термины, даты, определения. Игры «Найди пары» и «На скорость», рекорды по темам.</p></div>
+    <div class="card"><div class="ic" data-ki="trophy">🏆</div><h3>Пробники и зачёты</h3><p>Отметь дату пробника или итогового сочинения - подготовка появится в плане заранее.</p></div>
+    <div class="card"><div class="ic" data-ki="link">🔗</div><h3>Карточки для друзей</h3><p>Поделись набором карточек ссылкой: друг добавит его себе в один клик.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap split">
+  <div class="card">
+    <h2>Интервальное повторение: темы не забываются к экзамену</h2>
+    <p>Пройденную тему легко забыть через пару недель. Козя возвращает её в план через растущие промежутки:</p>
+    <div class="iv" aria-label="Повторение через 1, 3, 7, 14, 30 и 60 дней"><span>1 день</span><span>3</span><span>7</span><span>14</span><span>30</span><span>60 дней</span></div>
+    <p>На каждом повторении Козя задаёт 5 вопросов по твоим карточкам. Помнишь легко - следующий раз будет позже. Забыл(а) - тема вернётся скорее.</p>
+  </div>
+  <div class="card">
+    <h2>Когда нет сил готовиться к ЕГЭ</h2>
+    <p>Бывает. Нажми «Сил нет»: Козя перенесёт задачи на другие дни и ничего не потеряет. А потом попросит совсем чуть-чуть: 3 вопроса или 5 минут. Сделал(а) - это засчитывается в серию.</p>
+    <div class="quote" style="margin-top:8px"><span class="gq" data-ki="goat" aria-hidden="true">🐐</span><div><p>«Ну пожааалуйста, 3 малюсеньких вопроса. Это 5 минут, честно.»</p><small>Козя в режиме «Сил нет»</small></div></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Частые вопросы</h2>
+  <details><summary>Это бесплатно?</summary><p>Да. Козя бесплатная и без рекламы.</p></details>
+  <details><summary>Нужно ли что-то скачивать?</summary><p>Нет. Козя работает в браузере телефона или компьютера. Если хочешь, её можно добавить на экран «Домой» - тогда она открывается как обычное приложение.</p></details>
+  <details><summary>Для каких предметов подходит?</summary><p>План и повторение работают для любых предметов. Тренажёр с заданиями ЕГЭ сейчас есть по истории, обществознанию и русскому языку.</p></details>
+  <details><summary>Я уже хожу к репетитору или на курсы. Козя нужна?</summary><p>Да, Козя как раз для этого: она учитывает занятия у репетитора и на курсах, а домашку и повторение раскладывает по оставшемуся времени.</p></details>
+  <details><summary>Где хранятся мои данные?</summary><p>На сервере в России. Мы не продаём данные и не ставим рекламные счётчики. Аккаунт и все данные можно удалить в настройках. Подробнее - в <a href="/privacy">политике обработки данных</a>.</p></details>
+  <details><summary>Мне меньше 14 лет. Можно?</summary><p>Можно, но зарегистрироваться нужно вместе с родителем: согласие на обработку данных даёт он.</p></details>
+</div></section>
+
+<section><div class="wrap">
+  <div class="final"><div><h2>Начни готовиться без завалов</h2><p>Козя соберёт план за 2 минуты.</p></div><a class="btn" href="/start">Собрать мой план</a></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <span>© 2026 Козя · kozya-ege.ru · <a href="mailto:kozya9828@gmail.com">kozya9828@gmail.com</a></span>
+  <nav><a href="/privacy">Политика данных</a><a href="/consent">Согласие</a><a href="/app#login">Войти</a></nav>
+</div></footer>
+<script type="module">import { ki } from "/icons.js"; for (const el of document.querySelectorAll("[data-ki]")) { const h = ki(el.dataset.ki); if (h) el.innerHTML = h; }</script>
+</body>
+</html>

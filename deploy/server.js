@@ -10,10 +10,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."); /
 const PORT = Number(process.env.PORT) || 3000;
 const TYPES = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json; charset=utf-8",
-  ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".txt": "text/plain; charset=utf-8", ".webmanifest": "application/manifest+json",
+  ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".txt": "text/plain; charset=utf-8", ".webmanifest": "application/manifest+json", ".xml": "application/xml; charset=utf-8", ".webp": "image/webp",
 };
 const PAGES = { "/poll": "index.html", "/app": "app.html", "/plan": "plan.html", "/start": "plan.html", "/privacy": "privacy.html", "/stats": "stats.html", "/consent": "consent.html" };
-const PUBLIC = new Set(["index.html", "app.html", "plan.html", "privacy.html", "stats.html", "consent.html", "core.js", "icons.js", "sw.js", "manifest.json"]);
+const PUBLIC = new Set(["index.html", "app.html", "plan.html", "privacy.html", "stats.html", "consent.html", "core.js", "icons.js", "sw.js", "manifest.json", "robots.txt", "sitemap.xml"]);
 const handlers = new Map();
 
 async function handler(name) {
@@ -51,7 +51,7 @@ function sendFile(res, rel) {
   res.setHeader("Content-Type", TYPES[path.extname(file)] || "application/octet-stream");
   if (rel === "sw.js") { res.setHeader("Cache-Control", "no-cache"); res.setHeader("Service-Worker-Allowed", "/"); }
   else if (rel === "manifest.json") res.setHeader("Content-Type", "application/manifest+json");
-  else if (rel.startsWith("icons/")) res.setHeader("Cache-Control", "public, max-age=604800");
+  else if (rel.startsWith("icons/") || rel.startsWith("img/")) res.setHeader("Cache-Control", "public, max-age=604800");
   else res.setHeader("Cache-Control", "no-cache");
   fs.createReadStream(file).pipe(res);
 }
@@ -72,11 +72,14 @@ const server = http.createServer(async (req, res) => {
       }
       return await h(req, res);
     }
-    if (p === "/" || p === "/index.html") { res.statusCode = 302; res.setHeader("Location", "/app" + url.search); return res.end(); } // главный адрес ведёт в Козю (старый опрос - /poll)
+    if (p === "/" || p === "/index.html") { // главная - страница о Козе для новых людей и поисковиков; ссылки с параметрами (?u=, ?ref=) по-прежнему ведут в приложение
+  if (url.search && !/^\?home\b/.test(url.search)) { res.statusCode = 302; res.setHeader("Location", "/app" + url.search); return res.end(); }
+  return sendFile(res, "landing.html");
+}
     if (PAGES[p]) return sendFile(res, PAGES[p]);
     if (p.endsWith(".html") && PAGES["/" + p.slice(1, -5)]) { res.statusCode = 301; res.setHeader("Location", "/" + p.slice(1, -5) + url.search); return res.end(); }
     const rel = p.slice(1);
-    if (PUBLIC.has(rel) || /^icons\/[a-z0-9-]+\.png$/.test(rel) || /^data\/ege\/[a-z0-9-]+\.json$/.test(rel)) return sendFile(res, rel);
+    if (PUBLIC.has(rel) || /^icons\/[a-z0-9-]+\.png$/.test(rel) || /^img\/[a-z0-9-]+\.(png|webp)$/.test(rel) || /^data\/ege\/[a-z0-9-]+\.json$/.test(rel)) return sendFile(res, rel);
     res.status(404).setHeader("Content-Type", "text/plain; charset=utf-8"); res.end("Не найдено");
   } catch (e) {
     if (!e.logged) console.error(e);

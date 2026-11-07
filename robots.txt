@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /stats
+Disallow: /poll
+Disallow: /*?u=
+Disallow: /*&u=
+Clean-param: ref /start
+
+Sitemap: https://kozya-ege.ru/sitemap.xml
