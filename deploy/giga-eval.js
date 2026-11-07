@@ -1,10 +1,10 @@
 // Экзамен для Кози: прогоняет типичные просьбы через GigaChat и проверяет, что план поменялся правильно.
 // Запуск на сервере (ключ GigaChat берётся из /etc/kozya.env, в вывод не попадает):
-//   cd /opt/kozya && set -a && . /etc/kozya.env && set +a && node deploy/giga-eval.js
+//   cd /opt/kozya && set -a && . /etc/kozya.env && set +a && node deploy/giga-eval.js > /tmp/eval.txt; cat /tmp/eval.txt | head -40
+// (полный отчёт остаётся в /tmp/eval.txt: следующие строки - tail -n +41 /tmp/eval.txt | head -40)
 // Только часть проверок: node deploy/giga-eval.js 1,2,5
 // Настоящие планы пользователей не трогаются: всё происходит на тестовом плане в памяти.
-import { chat } from "../api/_giga.js";
-import { buildPrompt, prepareActions, extractJson } from "../api/assistant.js";
+import { buildPrompt, prepareActions, askModel } from "../api/assistant.js";
 import { emptyState, applyActions, lessonsOn, toMin } from "../core.js";
 
 function base() {
@@ -48,21 +48,21 @@ for (const [i, c] of CASES.entries()) {
   if (only.length && !only.includes(i + 1)) continue;
   n++;
   const s = base(); c.setup?.(s);
-  const msgs = [{ role: "system", content: buildPrompt(s, c.today, c.now || "15:40") }, { role: "user", content: c.msg }];
-  let raw = "", parsed = null, err = "";
-  try { raw = (await chat(msgs, { model: "GigaChat-2-Pro", temperature: 0.2, maxTokens: 900 })).text; parsed = extractJson(raw); }
-  catch (e) { err = e.message; }
+  const ask = await askModel(buildPrompt(s, c.today, c.now || "15:40"), [], c.msg);
+  const err = ask.down ? "нейросеть недоступна" : "", parsed = ask.parsed, raw = ask.raw || "";
   const notes = [];
   const acts = parsed ? prepareActions(parsed.actions, c.today, c.now || "15:40", notes, c.msg) : [];
   const changes = parsed ? applyActions(s, acts, c.today) : [];
-  const res = err ? "ошибка связи: " + err : !parsed ? "ответ не JSON" : c.check(s, changes);
+  const res = err ? "ошибка связи: " + err : !parsed ? "ответ не JSON: " + raw.replace(/\s+/g, " ").slice(0, 200) : c.check(s, changes);
   if (res === true) ok++;
   console.log(`${res === true ? "✅" : "❌"} ${i + 1}. «${c.msg}» (сегодня ${c.today})`);
   if (res !== true) {
     console.log(`   что не так: ${res}`);
-    console.log(`   ответ Кози: ${parsed?.reply || "-"}`);
-    console.log(`   действия нейросети: ${JSON.stringify(parsed?.actions || []).slice(0, 500)}`);
-    console.log(`   что изменилось: ${changes.join("; ") || "ничего"}`);
+    if (parsed) {
+      console.log(`   ответ: ${String(parsed.reply || "-").replace(/\s+/g, " ").slice(0, 160)}`);
+      console.log(`   действия: ${JSON.stringify(parsed.actions || []).slice(0, 300)}`);
+      console.log(`   изменилось: ${changes.join("; ") || "ничего"}`);
+    }
   }
 }
 console.log(`\nИтог: ${ok} из ${n}`);

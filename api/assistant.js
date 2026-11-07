@@ -23,31 +23,10 @@ export default async function handler(req, res) {
 
   const prompt = buildPrompt(state, today, now);
   const history = (state.chat || []).slice(-6).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.role === "user" ? m.text : JSON.stringify({ reply: m.text, actions: [] }) }));
-  let raw;
-  try {
-    const r = await chat([{ role: "system", content: prompt }, ...history, { role: "user", content: message }], { model: "GigaChat-2-Pro", temperature: 0.2, maxTokens: 900 });
-    raw = r.text;
-  } catch (e) {
-    try {
-      const r = await chat([{ role: "system", content: prompt }, ...history, { role: "user", content: message }], { model: "GigaChat-2", temperature: 0.2, maxTokens: 900 });
-      raw = r.text;
-    } catch (e2) {
-      return res.status(502).json({ error: "Помощник сейчас недоступен. Попробуй через минуту." });
-    }
-  }
-  let parsed = extractJson(raw);
-  let repaired = null;
-  if (!parsed) {
-    // просим модель переписать свой ответ в правильный JSON
-    try {
-      const r = await chat([
-        { role: "system", content: 'Перепиши текст пользователя в один валидный JSON вида {"reply":"...","actions":[...]}. Сохрани смысл и все действия. Только JSON, без пояснений и без markdown.' },
-        { role: "user", content: raw.slice(0, 4000) },
-      ], { model: "GigaChat-2", temperature: 0, maxTokens: 900 });
-      repaired = r.text;
-      parsed = extractJson(repaired);
-    } catch {}
-  }
+  const ask = await askModel(prompt, history, message);
+  if (ask.down) return res.status(502).json({ error: "Помощник сейчас недоступен. Попробуй через минуту." });
+  const { raw, repaired } = ask;
+  let parsed = ask.parsed;
   try {
     await redis("LPUSH", "giga_log", JSON.stringify({ at: new Date().toISOString(), today, now, message, raw: String(raw).slice(0, 3000), repaired: repaired && repaired.slice(0, 2000), ok: !!parsed }));
     await redis("LTRIM", "giga_log", 0, 29);
@@ -97,6 +76,12 @@ function prepareActions(actions, today, now, notes, message = "") {
   if (days.length && once.length === days.length && once.some(a => !days.includes(weekday(a.date)))) {
     once.sort((x, y) => x.date.localeCompare(y.date)).forEach((a, i) => { a.day = days[i]; delete a.date; });
   }
+  // назван ровно один день недели («к пятнице», «в понедельник зачёт»), а дата в действии на другой день - ставим ближайший такой день
+  if (days.length === 1 && !/(завтра|сегодня|послезавтра|\d{1,2}[.\/]\d{1,2}|\d{1,2}\s+(январ|феврал|март|апрел|ма[яй]|июн|июл|август|сентябр|октябр|ноябр|декабр))/i.test(message)) {
+    let d = today; for (let k = 0; k < 7 && weekday(d) !== days[0]; k++) d = addDays(d, 1);
+    for (const a of actions) for (const f of ["date", "due_date", "exam_date"])
+      if (a && a.type !== "tired" && a.type !== "not_tired" && a.type !== "learned_topic" && /^\d{4}-\d{2}-\d{2}$/.test(a[f] || "") && weekday(a[f]) !== days[0]) a[f] = d;
+  }
   const nowMin = now ? Number(now.split(":")[0]) * 60 + Number(now.split(":")[1]) : null;
   const night = nowMin != null && nowMin < 5 * 60;
   const out = [];
@@ -116,6 +101,25 @@ function prepareActions(actions, today, now, notes, message = "") {
     out.push(a);
   }
   return out;
+}
+
+// запрос к нейросети: Pro, при сбое обычная модель; если ответ не JSON - просим переписать
+async function askModel(prompt, history, message) {
+  const msgs = [{ role: "system", content: prompt }, ...history, { role: "user", content: message }];
+  let raw;
+  try { raw = (await chat(msgs, { model: "GigaChat-2-Pro", temperature: 0.2, maxTokens: 900 })).text; }
+  catch { try { raw = (await chat(msgs, { model: "GigaChat-2", temperature: 0.2, maxTokens: 900 })).text; } catch { return { down: true }; } }
+  let parsed = extractJson(raw), repaired = null;
+  if (!parsed) {
+    try {
+      repaired = (await chat([
+        { role: "system", content: 'Перепиши текст пользователя в один валидный JSON вида {"reply":"...","actions":[...]}. Сохрани смысл и все действия. Только JSON, без пояснений и без markdown.' },
+        { role: "user", content: raw.slice(0, 4000) },
+      ], { model: "GigaChat-2", temperature: 0, maxTokens: 900 })).text;
+      parsed = extractJson(repaired);
+    } catch {}
+  }
+  return { raw, repaired, parsed };
 }
 
 function extractJson(text) {
@@ -210,6 +214,7 @@ ${tasks}
 - Если она называет время занятия, у которого «время не указано» - set_lesson_time.
 - Если она устала - действие tired, ответ мягкий, без упрёков, предложи совсем маленький шаг на 5 минут.
 - Если она просто болтает или спрашивает совет - actions пустой, ответь по делу коротко.
+- Не переспрашивай про число сессий, длительность или конец занятия: оцени сама и сразу добавь. Переспрашивай, только если непонятно, ЧТО добавить.
 - reply: 1–3 коротких предложения, что ты поменяла и почему. Не перечисляй время блоков. Без переносов строк и фигурных скобок в тексте.
 - НИКОГДА не пиши «вернула/убрала/добавила», если в actions нет соответствующего действия. Если не знаешь, каким действием это сделать, - честно скажи, что не смогла, и предложи поправить в разделе «Расписание».
 - Не создавай add_lesson_once, чтобы вернуть отменённое регулярное занятие, - для этого restore_lesson.
@@ -219,4 +224,4 @@ ${tasks}
 }
 
 // для проверки Кози на наборе фраз (deploy/giga-eval.js)
-export { buildPrompt, prepareActions, extractJson };
+export { buildPrompt, prepareActions, extractJson, askModel };
