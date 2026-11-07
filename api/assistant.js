@@ -217,3 +217,6 @@ ${tasks}
 Отвечай СТРОГО одним JSON без пояснений вокруг:
 {"reply":"...","actions":[...]}`;
 }
+
+// для проверки Кози на наборе фраз (deploy/giga-eval.js)
+export { buildPrompt, prepareActions, extractJson };
