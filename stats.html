@@ -51,6 +51,7 @@ svg text{fill:var(--muted);font-size:10px}
 <div class="kpis" id="kpis"></div>
 <div class="card"><div class="top"><h2>Заходы за 30 дней</h2><div class="legend"><span><span class="dot" style="background:var(--pink)"></span>заходили</span><span><span class="dot" style="background:var(--ink)"></span>новые</span></div></div><div class="scroll"><div id="chart"></div></div></div>
 <div class="card"><h2>Люди</h2><p class="small muted" style="margin:0">Сверху те, кто заходил недавно. Таблицу можно листать вбок.</p><div class="scroll"><table id="people"></table></div></div>
+<div class="card"><div class="top"><h2>Откуда пришли</h2><span class="small muted">по меткам в ссылках постов</span></div><div id="src"></div></div>
 <div class="card"><h2>Жалобы на карточки тренажёра</h2><div id="reports"></div></div>
 <div class="card"><div class="top"><h2>Как справляется Козя в чате</h2><span class="small muted">за 7 дней</span></div><div id="ai"></div></div>
 </div>
@@ -97,11 +98,16 @@ function render(j) {
   </svg>`;
   $("#chart").parentElement.scrollLeft = 1e6; // на телефоне сразу видны последние дни
   // люди
-  const cols = [["Имя", p => esc(p.name || "-")], ["Почта", p => esc(p.email || "-")], ["С какого числа", p => fmtD(p.created)], ["Последний заход", p => fmtD(p.lastSeen)],
+  const cols = [["Имя", p => esc(p.name || "-")], ["Почта", p => esc(p.email || "-")], ["С какого числа", p => fmtD(p.created)], ["Откуда", p => esc(({ vk: "ВК", tg: "Telegram", friend: "друг", none: "-" })[p.откуда] || p.откуда || "-") + (p.тема_поста ? ` <span class="muted">· ${esc(p.тема_поста)}</span>` : "")], ["Последний заход", p => fmtD(p.lastSeen)],
     ["Дней заходил(а)", p => p.daysActive, 1], ["Дел сделано", p => p.doneBlocks, 1], ["Задач", p => p.задач ?? "-", 1], ["Тренажёр, ответов", p => p.тренажёр.ответов, 1], ["Верно", p => p.тренажёр.процент == null ? "-" : p.тренажёр.процент + "%", 1],
     ["Игр", p => p.игр ?? 0, 1], ["Тем", p => p.topics, 1], ["Карточек", p => p.cards, 1], ["Сообщений Козе", p => p.messages, 1], ["Привёл друзей", p => p.привёл_друзей ?? 0, 1]];
   $("#people").innerHTML = `<tr>${cols.map(c => `<th class="${c[2] ? "num" : ""}">${c[0]}</th>`).join("")}</tr>` +
     j.люди.filter(p => p.email).map(p => `<tr>${cols.map(c => `<td class="${c[2] ? "num" : ""}">${c[1](p)}</td>`).join("")}</tr>`).join("");
+  const SRC = { vk: "ВКонтакте", tg: "Telegram", friend: "по приглашению друга", none: "без метки (сам, поиск, личная ссылка)" };
+  const S2 = j.откуда_пришли || [];
+  $("#src").innerHTML = !S2.length ? `<p class="small muted" style="margin:0">Пока никто не зарегистрировался.</p>` :
+    S2.map(r => `<div class="rep"><b>${esc(SRC[r.источник] || r.источник)}: ${r.всего}</b><span class="small muted">за 7 дней ${r.за_7_дней}${Object.keys(r.темы).length ? " · темы: " + Object.entries(r.темы).sort((a, b) => b[1] - a[1]).map(([t, n]) => esc(t) + " " + n).join(", ") : ""}</span></div>`).join("") + `
+    <p class="small muted" style="margin:0">Метка берётся из ссылки, по которой человек пришёл: kozya-ege.ru/?utm_source=vk&amp;utm_campaign=sily-net. Метки учитываются у тех, кто зарегистрировался с 7 ноября 2026.</p>`;
   const A = j.козя_за_7_дней;
   if (A) {
     const t = A.итог, total = Object.values(t).reduce((a, x) => a + x, 0), good = t.changed + t.quiz + t.talk, bad = t.claimed + t.notjson + t.down;

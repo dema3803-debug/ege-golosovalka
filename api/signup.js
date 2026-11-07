@@ -36,7 +36,9 @@ export default async function handler(req, res) {
   const u = crypto.randomBytes(12).toString("hex");
   const { salt, hash } = hashPassword(password);
   await saveState(u, state);
-  const ok = await redis("HSETNX", "users", email, JSON.stringify({ u, salt, hash, created: mskToday(), consentAt: new Date().toISOString(), consentVer: CONSENT_VER, age, parentConsent: age === "<14" }));
+  // откуда пришёл: метка utm_source из ссылки поста (vk, tg…) и utm_campaign (тема)
+  const srcS = /^[a-z0-9_-]{1,30}$/.test(b.src?.s || "") ? b.src.s : null, srcC = /^[a-z0-9_-]{1,40}$/.test(b.src?.c || "") ? b.src.c : null;
+  const ok = await redis("HSETNX", "users", email, JSON.stringify({ u, salt, hash, created: mskToday(), consentAt: new Date().toISOString(), consentVer: CONSENT_VER, age, parentConsent: age === "<14", ...(srcS ? { src: srcS, camp: srcC || undefined } : {}) }));
   if (Number(ok) !== 1) return res.status(409).json({ error: "Эта почта уже зарегистрирована - нажми «Войти»." });
   try { await redis("HSET", "plans", "signup-" + u, JSON.stringify({ ...b.form, sentAt: Date.now(), via: "signup" })); } catch {}
   // пришёл по приглашению друга: обоим наряд «Сердечко дружбы»
