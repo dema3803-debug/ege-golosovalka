@@ -14,6 +14,7 @@ h1{font-size:26px;margin:0;font-weight:800}
 h2{font-size:17px;margin:0;font-weight:800}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .muted{color:var(--muted)}.small{font-size:13px}
+.aig{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}.aik{background:var(--bg);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}.aik b{font-size:22px}.aik span{font-size:13px;color:var(--muted)}.aik.bad b{color:var(--accent)}.aik.warn b{color:var(--warn)}
 .card{background:var(--card);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .kpi{background:var(--card);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:2px}
@@ -51,6 +52,7 @@ svg text{fill:var(--muted);font-size:10px}
 <div class="card"><div class="top"><h2>Заходы за 30 дней</h2><div class="legend"><span><span class="dot" style="background:var(--pink)"></span>заходили</span><span><span class="dot" style="background:var(--ink)"></span>новые</span></div></div><div class="scroll"><div id="chart"></div></div></div>
 <div class="card"><h2>Люди</h2><p class="small muted" style="margin:0">Сверху те, кто заходил недавно. Таблицу можно листать вбок.</p><div class="scroll"><table id="people"></table></div></div>
 <div class="card"><h2>Жалобы на карточки тренажёра</h2><div id="reports"></div></div>
+<div class="card"><div class="top"><h2>Как справляется Козя в чате</h2><span class="small muted">за 7 дней</span></div><div id="ai"></div></div>
 </div>
 </div>
 <script>
@@ -100,6 +102,19 @@ function render(j) {
     ["Игр", p => p.игр ?? 0, 1], ["Тем", p => p.topics, 1], ["Карточек", p => p.cards, 1], ["Сообщений Козе", p => p.messages, 1], ["Привёл друзей", p => p.привёл_друзей ?? 0, 1]];
   $("#people").innerHTML = `<tr>${cols.map(c => `<th class="${c[2] ? "num" : ""}">${c[0]}</th>`).join("")}</tr>` +
     j.люди.filter(p => p.email).map(p => `<tr>${cols.map(c => `<td class="${c[2] ? "num" : ""}">${c[1](p)}</td>`).join("")}</tr>`).join("");
+  const A = j.козя_за_7_дней;
+  if (A) {
+    const t = A.итог, total = Object.values(t).reduce((a, x) => a + x, 0), good = t.changed + t.quiz + t.talk, bad = t.claimed + t.notjson + t.down;
+    const KIND = { claimed: "сказала, но не сделала", notjson: "не поняла ответ нейросети" };
+    const row = (lbl, v, cls = "") => `<div class="aik ${cls}"><b>${v}</b><span>${lbl}</span></div>`;
+    $("#ai").innerHTML = !total ? `<p class="small muted" style="margin:0">Пока никто не писал Козе в чат.</p>` : `
+      <p style="margin:0"><b>${Math.round(good / (good + bad || 1) * 100)}%</b> сообщений Козя обработала нормально (${good} из ${good + bad}).</p>
+      <div class="aig">${row("поменяла план", t.changed)}${row("ответила словами", t.talk)}${row("начала проверку", t.quiz)}${row("сказала, но не сделала", t.claimed, t.claimed ? "bad" : "")}${row("не поняла", t.notjson, t.notjson ? "bad" : "")}${row("нейросеть недоступна", t.down, t.down ? "bad" : "")}${row("упёрлись в лимит", t.limit)}${row("тревожных сообщений", t.safety, t.safety ? "warn" : "")}</div>
+      ${t.safety ? `<p class="small" style="margin:0;color:var(--warn)">Были сообщения о тяжёлом состоянии. Козя ответила телефоном доверия. Сами тексты не сохраняются в статистике.</p>` : ""}
+      <h3 style="margin:6px 0 0;font-size:15px">Последние неудачи</h3>
+      ${A.неудачи.length ? A.неудачи.map(f => `<div class="rep"><b>${esc(f.сообщение)}</b><span class="small muted">${esc(f.когда)} · ${esc(KIND[f.что] || f.что)}</span></div>`).join("") : `<p class="small muted" style="margin:0">Нет, всё хорошо.</p>`}
+      <p class="small muted" style="margin:0">Присылай неудачи Claude: он добавит их в экзамен Кози и поправит.</p>`;
+  }
   const R = j.жалобы_на_карточки || [];
   $("#reports").innerHTML = R.length ? R.map(r => `<div class="rep"><b>${esc(r.что_не_так || "без текста")}</b><span class="small muted">${esc(r.когда)} · ${esc(r.кто)} · ${esc(r.предмет)} · ${esc(r.карточка)}</span><span class="small">${esc(r.вопрос)}${r.ответ_ученика ? ` · ответ: ${esc(r.ответ_ученика)}` : ""}</span></div>`).join("") : `<span class="small muted">Жалоб нет 🎉</span>`;
 }

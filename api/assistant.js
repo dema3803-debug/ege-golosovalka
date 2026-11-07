@@ -19,12 +19,20 @@ export default async function handler(req, res) {
 
   let state = await loadState(b.u);
   if (!state) return res.status(404).json({ error: "План не найден" });
-  if (await aiOverLimit(b.u)) return res.status(429).json({ error: "На сегодня я наговорилась 😴 Завтра продолжим. А план можно поправить руками." });
+  // тревожное сообщение: отвечаем сами, бережно, без нейросети и без лимита
+  const safe = safetyReply(message, state);
+  if (safe) {
+    pushChat(state, "user", message); pushChat(state, "assistant", safe);
+    state.rev = (state.rev || 0) + 1; await saveState(b.u, state);
+    await aiStat(today, "safety");
+    return res.status(200).json({ reply: safe, changes: [], state });
+  }
+  if (await aiOverLimit(b.u)) { await aiStat(today, "limit"); return res.status(429).json({ error: "На сегодня я наговорилась 😴 Завтра продолжим. А план можно поправить руками." }); }
 
   const prompt = buildPrompt(state, today, now);
   const history = (state.chat || []).slice(-6).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.role === "user" ? m.text : JSON.stringify({ reply: m.text, actions: [] }) }));
   const ask = await askModel(prompt, history, message);
-  if (ask.down) return res.status(502).json({ error: "Помощник сейчас недоступен. Попробуй через минуту." });
+  if (ask.down) { await aiStat(today, "down"); return res.status(502).json({ error: "Помощник сейчас недоступен. Попробуй через минуту." }); }
   const { raw, repaired } = ask;
   let parsed = ask.parsed;
   try {
@@ -34,6 +42,7 @@ export default async function handler(req, res) {
   if (!parsed) {
     { const fresh = await loadState(b.u); if (fresh) state = fresh; }
     const fallback = "Не до конца поняла 🙈 Скажи чуть по-другому: что, к какому дню и по какому предмету?";
+    await aiStat(today, "notjson", message);
     pushChat(state, "user", message); pushChat(state, "assistant", fallback);
     state.rev = (state.rev || 0) + 1; await saveState(b.u, state);
     return res.status(200).json({ reply: fallback, changes: [], state });
@@ -46,11 +55,14 @@ export default async function handler(req, res) {
   const quiz = quizAct ? { subject: quizAct.subject || null, topic: quizAct.topic || null, n: Math.max(3, Math.min(10, parseInt(quizAct.n) || 5)) } : null;
   const actions = prepareActions(parsed.actions, today, now, notes, message);
   const changes = applyActions(state, actions, today);
-  let reply = String(parsed.reply || "").replace(/\s*\u2014\s*/g, " - ").replace(/\s*\(?\b(?:lesson_id|task_id|topic_id|event_id|exam_id|id)\s*[=:]\s*[\w-]+\)?/gi, "").replace(/[^.!?\n]*\b(?:actions?|json)\b[^.!?\n]*[.!?]?/gi, "").replace(/\{[\s\\n]*\}/g, " ").replace(/\\n/g, " ").replace(/\s{2,}/g, " ").replace(/["«»]\s*([^\p{L}\p{N}\s]{1,4})\s*["«»]/gu, "$1").replace(/"/g, "").trim().slice(0, 500) || (changes.length ? "Готово!" : "Окей!");
+  let reply = cleanReply(parsed.reply) || (changes.length ? "Готово!" : "Окей!");
+  let claimed = false;
   if (!changes.length && !quiz && /(вернул|верну|возвращ|убрал|убер|убира|добавл|добавил|постав|ставлю|перенес|перенёс|перенош|отмен|восстанов|удал|сдвин|запис|запомн)/i.test(reply)) {
+    claimed = true;
     reply = `Хм, кажется, я ничего не поменяла 🙈 Скажи чуть по-другому - или поправь ${state.gender === "m" ? "сам" : "сама"}: нажми на занятие или задачу, либо открой раздел «Расписание».`;
   }
   if (notes.length) reply = (reply ? reply + " " : "") + notes.join(" ");
+  await aiStat(today, changes.length ? "changed" : quiz ? "quiz" : claimed ? "claimed" : "talk", claimed ? message : null);
   pushChat(state, "user", message);
   pushChat(state, "assistant", reply, changes.length ? { changes } : {});
   state.rev = (state.rev || 0) + 1;
@@ -101,6 +113,29 @@ function prepareActions(actions, today, now, notes, message = "") {
     out.push(a);
   }
   return out;
+}
+
+// чистим ответ модели: без длинного тире, служебных слов и мусора
+function cleanReply(text) {
+  return String(text || "").replace(/\s*\u2014\s*/g, " - ").replace(/\s*\(?\b(?:lesson_id|task_id|topic_id|event_id|exam_id|id)\s*[=:]\s*[\w-]+\)?/gi, "").replace(/[^.!?\n]*\b(?:actions?|json)\b[^.!?\n]*[.!?]?/gi, "").replace(/\{[\s\\n]*\}/g, " ").replace(/\\n/g, " ").replace(/\s{2,}/g, " ").replace(/["«»]\s*([^\p{L}\p{N}\s]{1,4})\s*["«»]/gu, "$1").replace(/"/g, "").trim().slice(0, 500);
+}
+
+// мысли о смерти и самоповреждении - не отдаём нейросети, отвечаем бережно и даём телефон доверия
+const RISK_RE = /(не\s+хочу\s+(больше\s+)?жить|не\s+хочется\s+жить|жить\s+не\s+хочется|хочу\s+умереть|хочется\s+умереть|лучше\s+(бы\s+)?(мне\s+)?умереть|покончить\s+с\s+собой|покончу\s+с\s+собой|убить\s+себя|убью\s+себя|суицид|самоубий|выпилиться|выпилюсь|роскомнадзорнуться|лучше\s+бы\s+меня\s+не\s+было|меня\s+не\s+должно\s+быть|(порезать|порезала|порезал|порежу|режу|резать)\s+(себя|себе|руки|вены)|(наношу|нанести|наносить|причиняю|причинить|причиню)\s+себе\s+(вред|боль|порез))/i;
+function safetyReply(message, s) {
+  const m = String(message || "").toLowerCase().replace(/ё/g, "е");
+  if (!RISK_RE.test(m)) return null;
+  const f = s.gender !== "m";
+  return `Мне очень жаль, что тебе сейчас так тяжело 💛 Ты не ${f ? "одна" : "один"} с этим. Пожалуйста, расскажи кому-то из близких взрослых или позвони на Детский телефон доверия: 8-800-2000-122, бесплатно и круглосуточно, можно анонимно. Если прямо сейчас ты в опасности, звони 112. Учёба подождёт, сейчас важнее ты.`;
+}
+
+// счётчики для /stats: как справляется Козя (по дням) и последние неудачные сообщения
+async function aiStat(day, field, message = null) {
+  try {
+    await redis("HINCRBY", `ai:day:${day}`, field, 1);
+    await redis("EXPIRE", `ai:day:${day}`, 60 * 86400);
+    if (message) { await redis("LPUSH", "ai:fails", JSON.stringify({ at: new Date().toISOString(), kind: field, message: String(message).slice(0, 200) })); await redis("LTRIM", "ai:fails", 0, 29); }
+  } catch {}
 }
 
 // запрос к нейросети: Pro, при сбое обычная модель; если ответ не JSON - просим переписать
@@ -214,6 +249,7 @@ ${tasks}
 - Если она называет время занятия, у которого «время не указано» - set_lesson_time.
 - Если она устала - действие tired, ответ мягкий, без упрёков, предложи совсем маленький шаг на 5 минут.
 - Если она просто болтает или спрашивает совет - actions пустой, ответь по делу коротко.
+- Если она пишет, что ей очень плохо, что не хочет жить, думает о смерти или хочет причинить себе вред (даже намёком) - actions пустой, план не трогай, ответь очень бережно и обязательно дай Детский телефон доверия 8-800-2000-122 (бесплатно, круглосуточно) и 112, если опасно прямо сейчас. Шутки вроде «ЕГЭ меня убьёт» - это не про это, отвечай как обычно.
 - Не переспрашивай про число сессий, длительность или конец занятия: оцени сама и сразу добавь. Переспрашивай, только если непонятно, ЧТО добавить.
 - reply: 1–3 коротких предложения, что ты поменяла и почему. Не перечисляй время блоков. Без переносов строк и фигурных скобок в тексте.
 - НИКОГДА не пиши «вернула/убрала/добавила», если в actions нет соответствующего действия. Если не знаешь, каким действием это сделать, - честно скажи, что не смогла, и предложи поправить в разделе «Расписание».
@@ -224,4 +260,4 @@ ${tasks}
 }
 
 // для проверки Кози на наборе фраз (deploy/giga-eval.js)
-export { buildPrompt, prepareActions, extractJson, askModel };
+export { buildPrompt, prepareActions, extractJson, askModel, cleanReply, safetyReply };

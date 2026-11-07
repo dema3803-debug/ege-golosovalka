@@ -43,8 +43,22 @@ export default async function handler(req, res) {
   for (let i = 29; i >= 0; i--) { const d = addDays(today, -i); days.push({ день: d, заходили: people.filter(p => p.seen.includes(d)).length, новых: signedUp.filter(p => p.created === d).length }); }
   const sumH = async key => { try { return ((await redis("HVALS", key)) || []).reduce((a, x) => a + (Number(x) || 0), 0); } catch { return 0; } };
   let pioneers = 0; try { pioneers = Number(await redis("HLEN", "pioneers")) || 0; } catch {}
+  // как справляется Козя в чате (счётчики из api/assistant.js)
+  const AI_F = ["changed", "quiz", "talk", "claimed", "notjson", "down", "limit", "safety"];
+  const aiDays = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = addDays(today, -i), row = { день: d };
+    let flat = []; try { flat = (await redis("HGETALL", `ai:day:${d}`)) || []; } catch {}
+    for (const f of AI_F) row[f] = 0;
+    for (let k = 0; k + 1 < flat.length; k += 2) row[flat[k]] = Number(flat[k + 1]) || 0;
+    aiDays.push(row);
+  }
+  const aiSum = Object.fromEntries(AI_F.map(f => [f, aiDays.reduce((a, r) => a + r[f], 0)]));
+  let aiFails = [];
+  try { aiFails = ((await redis("LRANGE", "ai:fails", 0, 14)) || []).map(x => { try { const r = JSON.parse(x); return { когда: new Date(Date.parse(r.at) + 3 * 3600000).toISOString().slice(0, 16).replace("T", " "), что: r.kind, сообщение: r.message }; } catch { return null; } }).filter(Boolean); } catch {}
   res.status(200).json({
     сегодня: today,
+    козя_за_7_дней: { итог: aiSum, по_дням: aiDays, неудачи: aiFails },
     всего_планов: people.length,
     зарегистрировались_сами: signedUp.length,
     заходили_сегодня: people.filter(p => p.lastSeen === today).length,
