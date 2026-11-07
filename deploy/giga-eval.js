@@ -65,7 +65,7 @@ const chk = (q, a, answer, want) => ({ name: `проверка ответа «${
 const FACTS = [[/полтав/i, "1709"], [/табел[ья] о ранг/i, "1722"], [/сенат/i, "1711"], [/синод/i, "1721"], [/конституци[яи] рф|конституци[яи] российской федерации/i, "1993"]];
 const cardsCase = (subject, topic) => ({ name: `карточки: ${subject}, «${topic}»`, run: async () => {
   const cs = await makeCards(subject, topic, 6);
-  if (cs.length < 4) return `ожидала хотя бы 4 карточки, а пришло ${cs.length}`;
+  if (cs.length < 4) return `ожидала хотя бы 4 карточки, а пришло ${cs.length}. Нейросеть ответила: ${String(cs.raw || "").replace(/\s+/g, " ").slice(0, 250)}`;
   const bad = [];
   for (const c of cs) {
     const t = c.q + " " + c.a;

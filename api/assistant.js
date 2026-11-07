@@ -175,6 +175,12 @@ function extractJson(text) {
     const z = t.lastIndexOf("}");
     if (z > a) tries.push(t.slice(a, z + 1));
   }
+  // частая поломка GigaChat: {"reply":"текст,\"actions\":[{\"type\":...}]} - кавычка не закрыта, внутри экранировано
+  if (/\\"actions\\"\s*:/.test(t)) {
+    const u = t.replace(/\\"/g, '"').replace(/("reply"\s*:\s*"[^"]*?)\s*,?\s*"actions"/, '$1","actions"');
+    tries.push(u);
+    const a2 = u.indexOf("{"), z2 = u.lastIndexOf("}"); if (a2 >= 0 && z2 > a2) tries.push(u.slice(a2, z2 + 1));
+  }
   for (const c of tries) {
     for (const v of [c, c.replace(/\/\/[^\n"]*$/gm, "").replace(/,\s*([}\]])/g, "$1"), c.replace(/'/g, '"').replace(/,\s*([}\]])/g, "$1")]) {
       try { const o = JSON.parse(v); if (o && typeof o === "object" && !Array.isArray(o)) return { reply: o.reply ?? o.answer ?? "", actions: Array.isArray(o.actions) ? o.actions : [] }; } catch {}

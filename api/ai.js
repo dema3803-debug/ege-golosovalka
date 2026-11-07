@@ -35,13 +35,19 @@ export async function checkAnswer(q, a, answer) {
 // придумать карточки по теме: [{q, a}]
 export async function makeCards(subject, topic, n) {
   n = Math.max(3, Math.min(12, parseInt(n) || 6));
-  const r = await chat([
-    { role: "system", content: `Ты составляешь карточки для подготовки к ЕГЭ. Дай ${n} коротких вопросов с точными ответами по теме - то, что реально спрашивают на ЕГЭ: термины, даты, ключевые факты, определения. Ответы короткие (до 25 слов) и фактически верные; если не уверена в факте - не включай его. Ответ строго JSON: {"cards":[{"q":"...","a":"..."}]}` },
-    { role: "user", content: `Предмет: ${clip(subject, 40)}. Тема: ${clip(topic, 120)}` },
-  ], { model: "GigaChat-2-Pro", temperature: 0.3, maxTokens: 1200 });
-  const j = parse(r.text);
-  const cards = (Array.isArray(j?.cards) ? j.cards : []).filter(c => c && c.q && c.a).slice(0, n).map(c => ({ q: clip(c.q, 300), a: clip(c.a, 500) }));
-  return JSON.parse(JSON.stringify(cards).replace(/\s*\u2014\s*/g, " - "));
+  const sys = `Ты составляешь карточки для подготовки к ЕГЭ. Дай ${n} коротких вопросов с точными ответами по теме - то, что реально спрашивают на ЕГЭ: термины, даты, ключевые факты, определения. Ответы короткие (до 25 слов) и фактически верные; если не уверена в факте - не включай его. Ответ строго JSON: {"cards":[{"q":"...","a":"..."}]}`;
+  const get = async (model, content) => {
+    const r = await chat([{ role: "system", content: sys }, { role: "user", content }], { model, temperature: 0.3, maxTokens: 1200 });
+    const j = parse(r.text);
+    const cards = (Array.isArray(j?.cards) ? j.cards : []).filter(c => c && c.q && c.a).slice(0, n).map(c => ({ q: clip(c.q, 300), a: clip(c.a, 500) }));
+    return { cards, raw: r.text };
+  };
+  let res = await get("GigaChat-2-Pro", `Предмет: ${clip(subject, 40)}. Тема: ${clip(topic, 120)}`);
+  // GigaChat иногда отказывается от тем вроде политики или права - повторяем, объясняя, что это школьная программа
+  if (!res.cards.length) res = await get("GigaChat-2", `Это учебные карточки по школьной программе 11 класса и кодификатору ЕГЭ, только термины и определения из учебника, без оценок и мнений. Предмет: ${clip(subject, 40)}. Тема: ${clip(topic, 120)}`);
+  const out = JSON.parse(JSON.stringify(res.cards).replace(/\s*\u2014\s*/g, " - "));
+  Object.defineProperty(out, "raw", { value: res.raw }); // для экзамена Кози
+  return out;
 }
 function parse(text) {
   const t = String(text || "").replace(/```(?:json)?/g, "");
