@@ -13,7 +13,7 @@ const TYPES = {
   ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".txt": "text/plain; charset=utf-8", ".webmanifest": "application/manifest+json", ".xml": "application/xml; charset=utf-8", ".webp": "image/webp",
 };
 const PAGES = { "/poll": "index.html", "/app": "app.html", "/plan": "plan.html", "/start": "plan.html", "/privacy": "privacy.html", "/stats": "stats.html", "/consent": "consent.html" };
-const PUBLIC = new Set(["index.html", "app.html", "plan.html", "privacy.html", "stats.html", "consent.html", "core.js", "icons.js", "sw.js", "manifest.json", "robots.txt", "sitemap.xml", "yandex_fc086ec18c7c495d.html"]);
+const PUBLIC = new Set(["index.html", "app.html", "plan.html", "privacy.html", "stats.html", "consent.html", "core.js", "icons.js", "sw.js", "manifest.json", "robots.txt", "sitemap.xml", "favicon.ico", "yandex_fc086ec18c7c495d.html"]);
 const handlers = new Map();
 
 async function handler(name) {
@@ -51,7 +51,7 @@ function sendFile(res, rel) {
   res.setHeader("Content-Type", TYPES[path.extname(file)] || "application/octet-stream");
   if (rel === "sw.js") { res.setHeader("Cache-Control", "no-cache"); res.setHeader("Service-Worker-Allowed", "/"); }
   else if (rel === "manifest.json") res.setHeader("Content-Type", "application/manifest+json");
-  else if (rel.startsWith("icons/") || rel.startsWith("img/")) res.setHeader("Cache-Control", "public, max-age=604800");
+  else if (rel.startsWith("icons/") || rel.startsWith("img/") || rel === "favicon.ico") res.setHeader("Cache-Control", "public, max-age=604800");
   else res.setHeader("Cache-Control", "no-cache");
   fs.createReadStream(file).pipe(res);
 }
