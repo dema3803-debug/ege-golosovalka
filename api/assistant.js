@@ -2,7 +2,7 @@ import { aiOverLimit } from "./_limits.js";
 import { hasDb, redis } from "./_redis.js";
 import { validU, loadState, saveState, readBody } from "./_store.js";
 import { chat } from "./_giga.js";
-import { applyActions, pushChat, DAYS_FULL, weekday, addDays, humanDate } from "../core.js";
+import { applyActions, pushChat, DAYS_FULL, weekday, addDays, humanDate, parseDay } from "../core.js";
 
 // POST {u, message, today, now} - помощник понимает сообщение и правит план.
 export default async function handler(req, res) {
@@ -65,10 +65,10 @@ export default async function handler(req, res) {
   const notes = [];
   const quizAct = Array.isArray(parsed.actions) ? parsed.actions.find(a => a && a.type === "start_quiz") : null;
   const quiz = quizAct ? { subject: quizAct.subject || null, topic: quizAct.topic || null, n: Math.max(3, Math.min(10, parseInt(quizAct.n) || 5)) } : null;
-  const actions = prepareActions(parsed.actions, today, now, notes);
+  const actions = prepareActions(parsed.actions, today, now, notes, message);
   const changes = applyActions(state, actions, today);
   let reply = String(parsed.reply || "").replace(/\s*\u2014\s*/g, " - ").replace(/\s*\(?\b(?:lesson_id|task_id|topic_id|event_id|exam_id|id)\s*[=:]\s*[\w-]+\)?/gi, "").replace(/[^.!?\n]*\b(?:actions?|json)\b[^.!?\n]*[.!?]?/gi, "").replace(/\{[\s\\n]*\}/g, " ").replace(/\\n/g, " ").replace(/\s{2,}/g, " ").replace(/["«»]\s*([^\p{L}\p{N}\s]{1,4})\s*["«»]/gu, "$1").replace(/"/g, "").trim().slice(0, 500) || (changes.length ? "Готово!" : "Окей!");
-  if (!changes.length && !quiz && /(вернул|убрал|добавил|постав|перенес|перенёс|отменил|восстанов|удалил|сдвинул|записал|запомнил)/i.test(reply)) {
+  if (!changes.length && !quiz && /(вернул|верну|возвращ|убрал|убер|убира|добавл|добавил|постав|ставлю|перенес|перенёс|перенош|отмен|восстанов|удал|сдвин|запис|запомн)/i.test(reply)) {
     reply = `Хм, кажется, я ничего не поменяла 🙈 Скажи чуть по-другому - или поправь ${state.gender === "m" ? "сам" : "сама"}: нажми на занятие или задачу, либо открой раздел «Расписание».`;
   }
   if (notes.length) reply = (reply ? reply + " " : "") + notes.join(" ");
@@ -82,8 +82,21 @@ export default async function handler(req, res) {
 const EXAM_RE = /(зач[её]т|контрольн|экзамен|пробник|тест|проверочн|самостоятельн)/i;
 
 // Поправки к действиям модели: зачёты и контрольные считаем по дате самого события.
-function prepareActions(actions, today, now, notes) {
+// дни недели, названные в сообщении («сб пн и вт», «по вторникам»), по порядку от сегодня
+function mentionedDays(message, today) {
+  const words = String(message || "").toLowerCase().match(/[а-яё]+/g) || [];
+  const DAY_RE = /^(пн|вт|ср|чт|пт|сб|вс|понедельник[а-я]*|вторник[а-я]*|сред(а|у|ы|е|ой|ам|ами|ах)|четверг[а-я]*|пятниц[а-я]*|суббот[а-я]*|воскресень[а-я]*)$/;
+  const set = new Set(words.filter(w => DAY_RE.test(w)).map(parseDay).filter(x => x != null));
+  return [...set].sort((a, b) => ((a - weekday(today) + 7) % 7) - ((b - weekday(today) + 7) % 7));
+}
+function prepareActions(actions, today, now, notes, message = "") {
   if (!Array.isArray(actions)) return [];
+  // нейросеть путает числа и дни недели: если она прислала даты не на те дни, что назвала ученица, ставим по названным дням
+  const days = mentionedDays(message, today);
+  const once = actions.filter(a => a && a.type === "add_lesson_once" && !a.day && /^\d{4}-\d{2}-\d{2}$/.test(a.date || ""));
+  if (days.length && once.length === days.length && once.some(a => !days.includes(weekday(a.date)))) {
+    once.sort((x, y) => x.date.localeCompare(y.date)).forEach((a, i) => { a.day = days[i]; delete a.date; });
+  }
   const nowMin = now ? Number(now.split(":")[0]) * 60 + Number(now.split(":")[1]) : null;
   const night = nowMin != null && nowMin < 5 * 60;
   const out = [];
@@ -181,7 +194,8 @@ ${tasks}
 - delete_event: {"type":"delete_event","event_id":"..."} - убрать разовое занятие/событие.
 - add_cards: {"type":"add_cards","subject":"...","topic":"название темы или null","cards":[{"q":"вопрос","a":"ответ"}]} - когда она просит запомнить факт/термин/дату («запомни: ...», «добавь в карточки ...»). Сформулируй вопрос сама.
 - start_quiz: {"type":"start_quiz","subject":"предмет или null","topic":"тема или null","n":число 3-10} - когда она просит её поспрашивать/проверить («спроси меня по истории», «погоняй по терминам»).
-- add_lesson_once: {"type":"add_lesson_once","title":"...","subject":"...","date":"YYYY-MM-DD","from":"HH:MM","to":"HH:MM"}
+- add_lesson: {"type":"add_lesson","title":"...","subject":"...","days":["пн","вт"],"from":"HH:MM","to":"HH:MM"} - РЕГУЛЯРНОЕ занятие каждую неделю (репетитор, курс, вебинары, «занятия по понедельникам и вторникам», «в расписание»). days - коды дней: пн, вт, ср, чт, пт, сб, вс. Если конец не назван, "to" не пиши.
+- add_lesson_once: {"type":"add_lesson_once","title":"...","subject":"...","day":"вт","from":"HH:MM","to":"HH:MM"} - РАЗОВОЕ занятие. Если она назвала день недели («во вторник»), пиши "day" кодом дня, а не дату: программа сама найдёт ближайший такой день. Если назвала число или «завтра» - пиши "date":"YYYY-MM-DD". Для нескольких дней - несколько действий. Если конец не назван, "to" не пиши.
 - set_availability: {"type":"set_availability","date":"YYYY-MM-DD","from":"HH:MM","to":"HH:MM"} или {"type":"set_availability","date":"...","off":true} - ТОЛЬКО когда она сама говорит, во сколько свободна («сегодня свободна после 19», «в субботу уезжаю»). Не используй для отмены занятий.
 - set_lesson_time: {"type":"set_lesson_time","lesson_id":"...","from":"HH:MM","to":"HH:MM"} - указать время регулярного занятия (если конец неизвестен - плюс 1,5 часа)
 - learned_topic: {"type":"learned_topic","title":"название темы","subject":"..."} - она изучила тему, нужно поставить интервальные повторения
@@ -189,7 +203,9 @@ ${tasks}
 - not_tired: {"type":"not_tired","date":"YYYY-MM-DD"} - силы вернулись
 
 Правила:
-- «завтра», «в пятницу» и т.п. переводи в точные даты по списку выше.
+- «завтра», «послезавтра», числа переводи в точные даты по списку выше. Дни недели для занятий передавай кодом (пн, вт…) в "day" или "days".
+- «на 19», «с 19», «в 7 вечера» - это время 19:00, а не число месяца.
+- Если не сказано «только на этой неделе» или «один раз», занятия по дням недели (вебинары, репетитор, курсы) считай регулярными: add_lesson.
 - Если она говорит, что занятие (английский, вебинар) не нужно или отменили - cancel_lesson с lesson_id из списка «Занятия на ближайшие дни».
 - Если она называет время занятия, у которого «время не указано» - set_lesson_time.
 - Если она устала - действие tired, ответ мягкий, без упрёков, предложи совсем маленький шаг на 5 минут.

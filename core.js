@@ -3,6 +3,15 @@
 
 export const DAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 export const DAYS_FULL = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"];
+const DAY_KEYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"], DAY_STEMS = ["пон", "вто", "сре", "чет", "пят", "суб", "вос"];
+// «пн», «Вторник», «в субботу», 0-6 → номер дня (0 = понедельник)
+export function parseDay(x) {
+  if (typeof x === "number" && x >= 0 && x <= 6) return Math.floor(x);
+  const w = String(x ?? "").toLowerCase().replace(/^во?\s+/, "").trim();
+  if (!w) return null;
+  let i = DAY_KEYS.indexOf(w.slice(0, 2)); if (i >= 0 && (w.length === 2 || DAY_STEMS[i] === w.slice(0, 3))) return i;
+  i = DAY_STEMS.indexOf(w.slice(0, 3)); return i >= 0 ? i : null;
+}
 export const INTERVALS = [1, 3, 7, 14, 30, 60]; // дни между повторениями темы
 export const REVIEW_MIN = 10;
 export const MAX_REVIEWS_PER_DAY = 4;
@@ -354,10 +363,23 @@ export function applyActions(state, actions, today) {
         break;
       }
       case "add_lesson_once": {
-        if (!isDate(a.date) || !isTime(a.from) || !isTime(a.to)) break;
+        // день недели («вт») считаем сами: модель путает числа
+        const wdI = parseDay(a.day);
+        if (wdI != null) { let d = today; for (let k = 0; k < 7 && weekday(d) !== wdI; k++) d = addDays(d, 1); a.date = d; }
+        if (!isDate(a.date) || !isTime(a.from)) break;
+        const to = isTime(a.to) && a.to > a.from ? a.to : toHHMM(Math.min(toMin(a.from) + 90, 1439));
         const title = clip(a.title, 80) || "Занятие";
-        state.extraLessons.push({ id: uid("x"), title, subject: clip(a.subject, 40), date: a.date, from: a.from, to: a.to });
-        changes.push(`поставила «${title}» ${humanDate(a.date)} в ${a.from}`);
+        state.extraLessons.push({ id: uid("x"), title, subject: clip(a.subject, 40), date: a.date, from: a.from, to });
+        changes.push(`поставила «${title}» ${humanDate(a.date)} (${DAYS[weekday(a.date)].toLowerCase()}) ${a.from}–${to}`);
+        break;
+      }
+      case "add_lesson": {
+        const days = [...new Set((Array.isArray(a.days) ? a.days : [a.days]).map(parseDay).filter(x => x != null))].sort();
+        if (!days.length || !isTime(a.from)) break;
+        const to = isTime(a.to) && a.to > a.from ? a.to : toHHMM(Math.min(toMin(a.from) + 90, 1439));
+        const title = clip(a.title, 80) || "Занятие";
+        state.lessons.push({ id: uid("l"), title, subject: clip(a.subject, 40), days, from: a.from, to, where: "", src: "chat" });
+        changes.push(`добавила в расписание «${title}»: ${days.map(d => DAYS[d].toLowerCase()).join(", ")} ${a.from}–${to}, каждую неделю`);
         break;
       }
       case "set_availability": {
