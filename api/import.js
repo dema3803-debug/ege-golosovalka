@@ -82,7 +82,7 @@ export default async function handler(req, res) {
   res.status(200).json({ job });
 }
 
-async function runImport(state, text, images) {
+export async function runImport(state, text, images) {
   const t0 = Date.now();
   const today = mskToday();
   const subjects = state.subjects || [];

@@ -5,7 +5,10 @@
 // Только часть проверок: node deploy/giga-eval.js 1,2,5
 // Настоящие планы пользователей не трогаются: всё происходит на тестовом плане в памяти.
 import { buildPrompt, prepareActions, askModel, cleanReply, safetyReply } from "../api/assistant.js";
-import { emptyState, applyActions, lessonsOn, toMin } from "../core.js";
+import { emptyState, applyActions, lessonsOn, toMin, addDays } from "../core.js";
+import { checkAnswer, makeCards } from "../api/ai.js";
+import { runImport } from "../api/import.js";
+import { mskToday } from "../api/_fromForm.js";
 
 function base() {
   const s = emptyState();
@@ -53,11 +56,59 @@ const CASES = [
     check: s => s.tasks.find(t => t.id === "t1")?.due === "2026-11-09" || fail("ожидала срок ДЗ по истории 9 ноября (пн)") },
 ];
 
+// ---------- остальные функции на ИИ: проверка ответов, карточки, импорт расписания ----------
+const chk = (q, a, answer, want) => ({ name: `проверка ответа «${answer}» на «${q}»`, run: async () => {
+  const r = await checkAnswer(q, a, answer);
+  return want.includes(r.verdict) || `ожидала ${want.join(" или ")}, а Козя: ${r.verdict} (${r.comment || "-"})`;
+} });
+// известные факты: если карточка упоминает событие, год должен совпасть
+const FACTS = [[/полтав/i, "1709"], [/табел[ья] о ранг/i, "1722"], [/сенат/i, "1711"], [/синод/i, "1721"], [/конституци[яи] рф|конституци[яи] российской федерации/i, "1993"]];
+const cardsCase = (subject, topic) => ({ name: `карточки: ${subject}, «${topic}»`, run: async () => {
+  const cs = await makeCards(subject, topic, 6);
+  if (cs.length < 4) return `ожидала хотя бы 4 карточки, а пришло ${cs.length}`;
+  const bad = [];
+  for (const c of cs) {
+    const t = c.q + " " + c.a;
+    if (c.a.split(/\s+/).length > 30) bad.push(`слишком длинный ответ: «${c.a.slice(0, 60)}…»`);
+    for (const [re, year] of FACTS) { const ys = t.match(/\b1[0-9]{3}\b/g); if (re.test(t) && ys && !ys.includes(year)) bad.push(`неверный год: «${t.slice(0, 120)}» (должен быть ${year})`); }
+  }
+  console.log(`   карточки: ${cs.map(c => c.q + " → " + c.a).join(" | ").slice(0, 600)}`);
+  return bad.length ? bad.join("; ") : true;
+} });
+const ymd = s => { const d = mskToday(); const y = d.slice(0, 4); const x = `${y}-${s}`; return x >= d ? x : `${+y + 1}-${s}`; };
+const AI_CASES = [
+  chk("Год принятия Конституции РФ", "1993", "в 1993 году", ["yes"]),
+  chk("Что такое инфляция?", "Устойчивый рост общего уровня цен", "когда цены всё время растут", ["yes", "partly"]),
+  chk("Что такое инфляция?", "Устойчивый рост общего уровня цен", "когда деньги становятся дороже и цены падают", ["no"]),
+  chk("Столица Византии", "Константинополь", "Констанинополь", ["yes"]),
+  chk("Кто осуществляет правосудие в РФ?", "Только суд", "президент", ["no"]),
+  cardsCase("История", "Реформы Петра I"),
+  cardsCase("Обществознание", "Политические партии"),
+  { name: "импорт расписания из текста", run: async () => {
+    const s = base();
+    const f = await runImport(s, "Вебинары по истории каждый вторник и четверг в 18:00.\nПробник по обществознанию 21 ноября в 10:00.\nДЗ по истории сдать до 25 ноября 23:59.", []);
+    const errs = [];
+    if (!f.lessons.some(l => l.days.join() === "1,3" && l.from === "18:00" && /истор/i.test(l.subject + l.title))) errs.push("нет регулярных вебинаров по истории вт, чт 18:00");
+    if (!f.events.some(e => e.date === ymd("11-21") && e.from === "10:00")) errs.push(`нет пробника ${ymd("11-21")} 10:00`);
+    if (!f.deadlines.some(d => d.date === ymd("11-25") && /истор/i.test(d.subject + d.title))) errs.push(`нет срока ДЗ по истории ${ymd("11-25")}`);
+    if (errs.length) console.log(`   нашла: ${JSON.stringify(f).slice(0, 500)}`);
+    return errs.length ? errs.join("; ") : true;
+  } },
+];
+for (const [k, c] of AI_CASES.entries()) CASES.push({ ...c, num: CASES.length + 1 });
+
 const only = (process.argv[2] || "").split(",").map(Number).filter(Boolean);
 let ok = 0, n = 0;
 for (const [i, c] of CASES.entries()) {
   if (only.length && !only.includes(i + 1)) continue;
   n++;
+  if (c.run) {
+    let res; try { res = await c.run(); } catch (e) { res = "ошибка: " + e.message; }
+    if (res === true) ok++;
+    console.log(`${res === true ? "✅" : "❌"} ${i + 1}. ${c.name}`);
+    if (res !== true) console.log(`   что не так: ${res}`);
+    continue;
+  }
   const s = base(); if (c.gender) s.gender = c.gender; c.setup?.(s);
   const safe = safetyReply(c.msg, s);
   const ask = safe ? { parsed: { reply: safe, actions: [] } } : await askModel(buildPrompt(s, c.today, c.now || "15:40"), [], c.msg);
