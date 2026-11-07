@@ -386,6 +386,8 @@ dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
 .exrow .tx b{display:block;font-weight:700;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}.exrow .tx span{font-size:13px;color:var(--muted)}
 .left{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}.left.soon{color:var(--accent)}
 .calhead{display:flex;justify-content:space-between;align-items:center}
+.scorechart{width:100%;height:auto;display:block;overflow:visible}.scorechart .sgl{stroke:var(--line);stroke-width:1}.scorechart .sgt{font-size:10px;fill:var(--faint);font-family:var(--body)}.scorechart .sgv{font-size:11px;font-weight:800;font-family:var(--body)}
+.slegs{display:flex;flex-direction:column;gap:6px}.sleg{display:flex;align-items:center;gap:8px;font-size:14px;min-width:0}.sleg i{width:10px;height:10px;border-radius:50%;flex:none}.sleg b{font-weight:700}.sleg span{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}.sleg em{font-style:normal;font-weight:800}.sleg em.up{color:var(--ok)}.sleg em.down{color:var(--warn)}
 .calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 .calgrid .wdn{font-size:12px;font-weight:700;color:var(--muted);text-align:center;padding:2px 0}
 .cd{all:unset;box-sizing:border-box;cursor:pointer;aspect-ratio:1/1.05;border-radius:12px;background:var(--raised);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:14px;min-width:0}
@@ -529,11 +531,12 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "
 // личная ссылка: запоминаем, чтобы иконка на телефоне открывала свой план
 let U = new URLSearchParams(location.search).get("u");
 if (/[?&]new=1/.test(location.search)) history.replaceState(null, "", "/app?u=" + U + location.hash);
-try { if (U) localStorage.setItem("ege-u", U); else if (location.hash !== "#login") { U = localStorage.getItem("ege-u"); if (U) history.replaceState(null, "", "/app?u=" + U + location.hash); } } catch {}
+try { if (U) localStorage.setItem("ege-u", U); else if (location.hash !== "#login" && !location.hash.startsWith("#reset-")) { U = localStorage.getItem("ege-u"); if (U) history.replaceState(null, "", "/app?u=" + U + location.hash); } } catch {}
 if (U) document.getElementById("manifest-link")?.setAttribute("href", "/api/manifest?u=" + encodeURIComponent(U));
 const VIEWS = [["today", "Сегодня", "i-today"], ["week", "Неделя", "i-week"], ["topics", "Знания", "i-topics"], ["chat", "Козя", "i-chat"], ["setup", "Расписание", "i-set"], ["calendar", "Важные даты", "i-week"], ["settings", "Настройки", "i-set"], ["buddy", "Помощник", "i-set"], ["ege", "Тренажёр ЕГЭ", "i-topics"], ["help", "Как пользоваться", "i-set"], ["game", "Игра", "i-topics"]];
 const SUB = { ege: "Тренажёр ЕГЭ", day: "Весь план на сегодня", setup: "Расписание", calendar: "Важные даты", settings: "Настройки", buddy: "Помощник и награды", help: "Как пользоваться", game: "Игра с карточками" };
 // ссылка на набор карточек: /app#share-xxxxxxxx - запоминаем и предложим добавить после входа
+if (location.hash === "#pwdone") { history.replaceState(null, "", location.pathname + location.search + "#today"); setTimeout(() => flash("Пароль обновлён ✓ Ты в своём плане"), 1200); }
 { const m = location.hash.match(/^#share-([a-z0-9]{8})$/); if (m) { try { localStorage.setItem("ege-share", m[1]); } catch {} history.replaceState(null, "", location.pathname + location.search + "#today"); } }
 let backStack = [], BADGES = {};
 let S = null, view = (location.hash || "#today").slice(1), highlight = new Set(), saving = false, savePending = false, thinking = false, todayBlocks = [], showAllChat = false;
@@ -567,10 +570,43 @@ function flash(t, sticky = false) {
 }
 document.getElementById("status").addEventListener("click", e => { if (e.target.closest(".stx") || !flashSticky) { e.stopPropagation(); flash(""); } });
 
+// ---------- новый пароль по ссылке из письма ----------
+async function resetView(token) {
+  $("#date").textContent = ""; $("#hello").textContent = "Новый пароль";
+  $("#view").innerHTML = `<div class="hero"><div class="bubble">Проверяю ссылку…</div><div class="mascot">${mascot("happy")}</div></div>`;
+  let info = null; try { const r = await fetch("/api/reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "check", token }) }); info = r.ok ? await r.json() : null; } catch {}
+  if (!info) {
+    $("#view").innerHTML = `<div class="hero"><div class="bubble">Эта ссылка уже не работает: она живёт 1 час и срабатывает один раз. Запроси новую 🙈</div><div class="mascot">${mascot("plead")}</div></div>
+      <a class="btn primary" href="#login" style="justify-content:center;text-decoration:none">Войти или запросить новую ссылку</a>`;
+    return;
+  }
+  $("#view").innerHTML = `<div class="hero"><div class="bubble">Придумай новый пароль для ${esc(info.email)} - и сразу пущу в твой план.</div><div class="mascot">${mascot("happy")}</div></div>
+    <form class="card" id="resetform"><b>Новый пароль</b>
+    <label class="field"><span>Пароль, минимум 8 символов</span><input type="password" id="n-pass" autocomplete="new-password" minlength="8" maxlength="100" required></label>
+    <label class="field"><span>Ещё раз</span><input type="password" id="n-pass2" autocomplete="new-password" minlength="8" maxlength="100" required></label>
+    <span class="small" id="n-err" style="color:var(--bad,#c0392b)" hidden></span>
+    <button class="btn primary" type="submit" style="justify-content:center">Сохранить и войти</button></form>`;
+  $("#resetform").addEventListener("submit", async e => {
+    e.preventDefault();
+    const err = $("#n-err"), btn = e.target.querySelector("button"), p1 = $("#n-pass").value, p2 = $("#n-pass2").value; err.hidden = true;
+    if (p1 !== p2) { err.textContent = "Пароли не совпадают."; err.hidden = false; return; }
+    btn.disabled = true; btn.textContent = "Сохраняю…";
+    try {
+      const r = await fetch("/api/reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "confirm", token, password: p1 }) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.u) { try { localStorage.setItem("ege-u", j.u); } catch {} location.replace("/app?u=" + j.u + "#pwdone"); return; }
+      err.textContent = j.error || "Не получилось."; err.hidden = false;
+    } catch { err.textContent = "Нет связи. Проверь интернет."; err.hidden = false; }
+    btn.disabled = false; btn.textContent = "Сохранить и войти";
+  });
+}
+
 // ---------- загрузка и сохранение ----------
 async function load() {
   if (!U) {
     $("#date").textContent = ""; $("#hello").textContent = "Привет!";
+    const resetTok = (location.hash.match(/^#reset-([a-f0-9]{48})$/) || [])[1];
+    if (resetTok) return resetView(resetTok);
     const login = location.hash === "#login", deleted = location.hash === "#deleted", lost = location.hash === "#notfound";
     $("#view").innerHTML = `<div class="hero"><div class="bubble">${deleted ? "Аккаунт удалён, все твои данные стёрты. Будет нужна помощь с ЕГЭ - я тут 🐐" : lost ? "Не нашла такой план. Войди по почте и паролю - или собери новый план." : login ? "С возвращением! Введи почту и пароль - и продолжим." : "Я Козя! Помогу готовиться к ЕГЭ без завалов: соберу план и буду напоминать, что делать."}</div><div class="mascot">${mascot("happy")}</div></div>
       ${login ? "" : `<a class="btn primary" href="/start" style="justify-content:center;text-decoration:none">Начать - собрать мой план</a>`}
@@ -579,7 +615,8 @@ async function load() {
       <label class="field"><span>Почта</span><input type="email" id="l-email" autocomplete="email" inputmode="email" required></label>
       <label class="field"><span>Пароль</span><input type="password" id="l-pass" autocomplete="current-password" required></label>
       <span class="small" id="l-err" style="color:var(--bad,#c0392b)" hidden></span>
-      <button class="btn ${login ? "primary" : ""}" type="submit" style="justify-content:center">Войти</button></form>
+      <button class="btn ${login ? "primary" : ""}" type="submit" style="justify-content:center">Войти</button>
+      <button class="linkbtn" type="button" id="forgot" style="align-self:center">Забыли пароль?</button></form>
       <details class="card"><summary class="small muted" style="cursor:pointer">У меня ссылка на план</summary>
       <form id="linkform" style="display:flex;flex-direction:column;gap:10px;margin-top:10px"><label class="field"><span>Ссылка на план (или код после «u=»)</span><input type="text" id="link-in" autocomplete="off" placeholder="https://…/app?u=…" required></label>
       <span class="small muted" id="link-err" hidden>Не вижу кода. Скопируй ссылку целиком - в ней есть «?u=» и буквы с цифрами.</span>
@@ -590,6 +627,29 @@ async function load() {
         if (!set || !$("#sharepend")) return; const n = set.cards.length;
         $("#sharepend").innerHTML = `<div class="card" style="gap:6px"><b>${ki("books")} Тебе прислали карточки</b><span>«${esc(set.title)}»${set.subject ? ` · ${esc(set.subject)}` : ""} · ${n} ${word(n, "карточка", "карточки", "карточек")}${set.by ? `, от ${esc(set.by)}` : ""}</span><span class="small muted">Собери свой план или войди - и я сразу предложу добавить их к тебе.</span></div>`;
       }).catch(() => {}); }
+    // восстановление пароля: «Забыли пароль?» → письмо со ссылкой
+    $("#forgot").addEventListener("click", () => {
+      const typed = $("#l-email")?.value || "";
+      const f = document.createElement("form"); f.className = "card"; f.id = "forgotform";
+      $("#loginform").replaceWith(f);
+      f.innerHTML = `<b>Новый пароль по почте</b><p class="small muted" style="margin:0">Пришлю на почту ссылку. По ней можно придумать новый пароль, план останется на месте.</p>
+        <label class="field"><span>Почта, на которую заведён план</span><input type="email" id="r-email" autocomplete="email" inputmode="email" required value="${esc(typed)}"></label>
+        <span class="small" id="r-msg" hidden></span>
+        <button class="btn primary" type="submit" style="justify-content:center">Прислать ссылку</button>
+        <a class="linkbtn" href="#login" style="align-self:center">Вспомнил${S?.gender === "m" ? "" : "(а)"} - войти</a>`;
+      f.querySelector("#r-email").focus();
+      f.onsubmit = async e => {
+        e.preventDefault();
+        const msg = $("#r-msg"), btn = f.querySelector("button[type=submit]"); msg.hidden = true; btn.disabled = true; btn.textContent = "Отправляю…";
+        try {
+          const r = await fetch("/api/reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "request", email: $("#r-email").value }) });
+          const j = await r.json().catch(() => ({}));
+          if (r.ok) { msg.style.color = ""; msg.textContent = "Если такая почта есть в Козе, письмо уже летит ✉️ Проверь «Входящие» и «Спам». Ссылка работает 1 час."; msg.hidden = false; btn.textContent = "Отправить ещё раз"; btn.disabled = false; return; }
+          msg.style.color = "var(--bad,#c0392b)"; msg.textContent = j.error || "Не получилось отправить."; msg.hidden = false;
+        } catch { msg.style.color = "var(--bad,#c0392b)"; msg.textContent = "Нет связи. Проверь интернет."; msg.hidden = false; }
+        btn.disabled = false; btn.textContent = "Прислать ссылку";
+      };
+    });
     $("#loginform").addEventListener("submit", async e => {
       e.preventDefault();
       const err = $("#l-err"), b = e.target.querySelector("button"); err.hidden = true; b.disabled = true; b.textContent = "Входим…";
@@ -1456,7 +1516,37 @@ function renderCalendar(n) {
     <div class="calgrid">${C.DAYS.map(d => `<span class="wdn">${d}</span>`).join("")}${cells}</div>
     <div class="small muted"><i class="dl" style="display:inline-block;vertical-align:middle"></i> - дедлайн задачи</div></div>
   <div class="card"><div class="cardhead"><h2>Скоро</h2><span class="small muted">${up.length}</span></div>${up.length ? `<div class="list">${up.map(row).join("")}</div>` : `<p class="empty">Пока ничего. Добавь ближайший пробник или олимпиаду.</p>`}</div>
+  ${scoresCard()}
   ${past.length ? `<div class="card"><div class="cardhead"><h2>Прошли</h2><span class="small muted">${past.length}</span></div><p class="small muted" style="margin:0">Впиши баллы - потом покажу, как растут результаты.</p><div class="list">${past.map(row).join("")}</div></div>` : ""}`;
+}
+// график баллов за пробники и экзамены: по предметам, с линией цели
+function scoresCard() {
+  const pts = (S.exams || []).filter(e => e.score !== "" && e.score != null && isFinite(+e.score) && e.date).map(e => ({ ...e, v: +e.score })).sort((a, b) => a.date.localeCompare(b.date));
+  if (!pts.length) return "";
+  const subs = [...new Set(pts.map(e => e.subject || "Без предмета"))];
+  const dates = [...new Set(pts.map(e => e.date))];
+  const target = n => S.subjects.find(x => x.name === n)?.target;
+  const max = Math.max(100, ...pts.map(e => e.v), ...subs.map(n => +target(n) || 0));
+  const W = 320, H = 150, L = 28, R = 10, T = 12, B = 22;
+  const x = d => dates.length === 1 ? (L + W - R) / 2 : L + (W - L - R) * dates.indexOf(d) / (dates.length - 1);
+  const y = v => T + (H - T - B) * (1 - v / max);
+  const grid = [0, 0.25, 0.5, 0.75, 1].map(f => Math.round(max * f)).map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="sgl"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" class="sgt">${v}</text>`).join("");
+  const xl = dates.map((d, i) => dates.length <= 6 || i % Math.ceil(dates.length / 6) === 0 || i === dates.length - 1 ? `<text x="${x(d)}" y="${H - 6}" text-anchor="middle" class="sgt">${d.slice(8, 10)}.${d.slice(5, 7)}</text>` : "").join("");
+  const lines = subs.map(n => {
+    const c = color(n === "Без предмета" ? "" : n), ps = pts.filter(e => (e.subject || "Без предмета") === n), t = +target(n);
+    return (t ? `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="${c}" stroke-dasharray="4 4" stroke-width="1.5" opacity=".6"/>` : "")
+      + (ps.length > 1 ? `<polyline fill="none" stroke="${c}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="${ps.map(e => x(e.date) + "," + y(e.v)).join(" ")}"/>` : "")
+      + ps.map(e => `<circle cx="${x(e.date)}" cy="${y(e.v)}" r="4.5" fill="${c}" stroke="var(--surface)" stroke-width="2"><title>${esc(e.title)}: ${e.v}</title></circle>`).join("")
+      + `<text x="${x(ps.at(-1).date)}" y="${y(ps.at(-1).v) - 9}" text-anchor="middle" class="sgv" fill="${c}">${ps.at(-1).v}</text>`;
+  }).join("");
+  const legend = subs.map(n => {
+    const ps = pts.filter(e => (e.subject || "Без предмета") === n), first = ps[0].v, last = ps.at(-1).v, t = target(n), d = last - first;
+    return `<div class="sleg"><i style="background:${color(n === "Без предмета" ? "" : n)}"></i><b>${esc(n)}</b><span>${ps.length > 1 ? `${first} → ${last} <em class="${d >= 0 ? "up" : "down"}">${d >= 0 ? "+" : ""}${d}</em>` : `${last}`}${t ? ` · цель ${t}` : ""}</span></div>`;
+  }).join("");
+  return `<div class="card"><div class="cardhead"><h2>Баллы за пробники</h2><span class="small muted">${pts.length} ${word(pts.length, "результат", "результата", "результатов")}</span></div>
+    <svg class="scorechart" viewBox="0 0 ${W} ${H}" role="img" aria-label="График баллов по предметам">${grid}${xl}${lines}</svg>
+    <div class="slegs">${legend}</div>
+    <p class="small muted" style="margin:0">Пунктир - твоя цель. Балл вписывается в прошедшую дату: нажми на неё в списке «Прошли».</p></div>`;
 }
 function examDialog(e, preset = {}) {
   const n = now(), isNew = !e;
@@ -2491,7 +2581,7 @@ document.addEventListener("submit", async e => {
   }
 });
 function planKeys(plan) { const k = new Set(); for (const d of plan) for (const b of d.blocks) if (b.type !== "done") k.add(`${d.date}|${b.type}|${b.ref}|${b.start}`); return k; }
-addEventListener("hashchange", () => { const v = location.hash.slice(1); if (VIEWS.some(x => x[0] === v) || v === "session" || v === "day") { view = v; if (S) render(); } });
+addEventListener("hashchange", () => { if (!U) { load(); return; } const v = location.hash.slice(1); if (VIEWS.some(x => x[0] === v) || v === "session" || v === "day") { view = v; if (S) render(); } });
 setInterval(() => { if (S && !quiz && view !== "ege" && !document.hidden && !dlg.open && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) render(); }, 60000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && S && !thinking && !quiz && !dlg.open) load(); });
 // ---------- переезд на новый адрес ----------
